@@ -1,182 +1,336 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="scroll-smooth">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ReuxMarketing - Home</title>
-    <!-- Tailwind CSS CDN for easy styling -->
+    
+    <!-- SEO & Metadata -->
+    <title>ReuxMarketing | We Build Funnels That Print Cash</title>
+    <meta name="description" content="ReuxMarketing is a digital marketing agency specializing in high-converting ad campaigns and sales funnels that scale brands to $100k+ months. Book a free strategy call today.">
+    
+    <!-- Open Graph / Social Media -->
+    <meta property="og:title" content="ReuxMarketing | Scale or Die">
+    <meta property="og:description" content="We build funnels that print cash. Businesses pay us to kill their CAC and scale to $100k+ months.">
+    <meta property="og:image" content="https://placehold.co/1200x630/0A0A0A/FFD700?text=ReuxMarketing">
+    <meta property="og:url" content="https://your-domain.com"> <!-- Replace with your actual domain -->
+    <meta property="og:type" content="website">
+
+    <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Google Fonts: Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    
+    <!-- Custom Tailwind Config -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        gold: '#FFD700',
+                        'lime-green': '#32CD32',
+                    },
+                    boxShadow: {
+                        'gold-glow': '0 0 20px 0px rgba(255, 215, 0, 0.5)',
+                    }
+                }
+            }
+        }
+    </script>
+
+    <!-- Custom Styles -->
     <style>
-        /* Custom font for a clean look */
         body {
             font-family: 'Inter', sans-serif;
-            background-color: #f0f2f5; /* Light gray background */
+            background-color: #0A0A0A;
+            color: #F5F5F5;
         }
-        /* Ensure main content takes full height on small screens */
-        .min-h-screen-minus-nav {
-            min-height: calc(100vh - 64px); /* Adjust based on nav height */
+        .hover\:bg-gold-dark:hover { background-color: #e6c200; }
+        .reveal {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: opacity 0.6s ease-out, transform 0.6s ease-out;
         }
-        /* Smooth scroll for anchor links */
-        html {
-            scroll-behavior: smooth;
+        .reveal.visible {
+            opacity: 1;
+            transform: translateY(0);
         }
     </style>
 </head>
-<body class="text-gray-800">
-    <!-- Navigation Bar -->
-    <nav class="bg-gradient-to-r from-blue-600 to-purple-700 p-4 shadow-lg sticky top-0 z-50">
-        <div class="container mx-auto flex justify-between items-center">
-            <!-- Brand Logo/Name -->
-            <a href="index.html" class="text-white text-3xl font-bold rounded-md p-2 hover:bg-white hover:text-blue-600 transition duration-300">
-                ReuxMarketing
-            </a>
+<body class="bg-[#0A0A0A] text-[#F5F5F5] antialiased">
 
-            <!-- Mobile Menu Button (Hamburger) -->
-            <div class="md:hidden">
-                <button id="mobile-menu-button" class="text-white focus:outline-none focus:ring-2 focus:ring-white p-2 rounded-md">
-                    <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
-                    </svg>
+    <!-- ===== Header ===== -->
+    <header id="header" class="bg-[#0A0A0A]/80 backdrop-blur-sm sticky top-0 z-50 transition-all duration-300">
+        <nav class="container mx-auto px-6 py-4 flex justify-between items-center">
+            <a href="#" class="text-2xl font-bold tracking-tighter">
+                Reux<span class="text-gold">Marketing</span>
+            </a>
+            <div class="hidden md:flex items-center space-x-8">
+                <a href="#services" class="text-sm font-medium hover:text-gold transition-colors duration-300">Services</a>
+                <a href="#why-us" class="text-sm font-medium hover:text-gold transition-colors duration-300">Why Us</a>
+                <a href="#resources" class="text-sm font-medium hover:text-gold transition-colors duration-300">Resources</a>
+                <button class="calendly-trigger bg-gold text-black text-sm font-bold py-2 px-5 rounded-lg hover:bg-gold-dark transition-all duration-300 transform hover:scale-105">
+                    Free Strategy Call
                 </button>
             </div>
-
-            <!-- Desktop Navigation Links -->
-            <ul class="hidden md:flex space-x-6">
-                <li><a href="index.html" class="text-white text-lg font-medium hover:text-blue-200 transition duration-300 rounded-md px-3 py-2">Home</a></li>
-                <li><a href="about.html" class="text-white text-lg font-medium hover:text-blue-200 transition duration-300 rounded-md px-3 py-2">About Us</a></li>
-                <li><a href="portfolio.html" class="text-white text-lg font-medium hover:text-blue-200 transition duration-300 rounded-md px-3 py-2">Portfolio</a></li>
-                <li><a href="contact.html" class="text-white text-lg font-medium hover:text-blue-200 transition duration-300 rounded-md px-3 py-2">Contact</a></li>
-                <li><a href="#services" class="text-white text-lg font-medium hover:text-blue-200 transition duration-300 rounded-md px-3 py-2">Services</a></li>
-            </ul>
-        </div>
-
-        <!-- Mobile Menu (Hidden by default) -->
-        <div id="mobile-menu" class="md:hidden hidden bg-blue-700 mt-2 rounded-lg shadow-inner">
-            <ul class="flex flex-col space-y-2 p-4">
-                <li><a href="index.html" class="block text-white text-lg font-medium hover:bg-blue-600 px-3 py-2 rounded-md transition duration-300">Home</a></li>
-                <li><a href="about.html" class="block text-white text-lg font-medium hover:bg-blue-600 px-3 py-2 rounded-md transition duration-300">About Us</a></li>
-                <li><a href="portfolio.html" class="block text-white text-lg font-medium hover:bg-blue-600 px-3 py-2 rounded-md transition duration-300">Portfolio</a></li>
-                <li><a href="contact.html" class="block text-white text-lg font-medium hover:bg-blue-600 px-3 py-2 rounded-md transition duration-300">Contact</a></li>
-                <li><a href="#services" class="block text-white text-lg font-medium hover:bg-blue-600 px-3 py-2 rounded-md transition duration-300">Services</a></li>
-            </ul>
-        </div>
-    </nav>
-
-    <!-- Hero Section -->
-    <header class="bg-white py-20 px-4 text-center shadow-md rounded-b-lg">
-        <div class="container mx-auto">
-            <h1 class="text-5xl md:text-6xl font-extrabold text-gray-900 mb-4 leading-tight">
-                Welcome to <span class="text-blue-600">ReuxMarketing</span>
-            </h1>
-            <p class="text-xl md:text-2xl text-gray-600 mb-8 max-w-3xl mx-auto">
-                Your partner in crafting compelling digital strategies that drive growth and engagement.
-            </p>
-            <a href="contact.html" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 px-8 rounded-full shadow-lg transition duration-300 transform hover:scale-105">
-                Get a Free Consultation
-            </a>
+            <div class="md:hidden">
+                <button id="mobile-menu-button" class="text-white focus:outline-none">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7"></path></svg>
+                </button>
+            </div>
+        </nav>
+        <div id="mobile-menu" class="hidden md:hidden bg-[#111111]">
+            <a href="#services" class="mobile-link block py-3 px-6 text-sm hover:bg-gray-800">Services</a>
+            <a href="#why-us" class="mobile-link block py-3 px-6 text-sm hover:bg-gray-800">Why Us</a>
+            <a href="#resources" class="mobile-link block py-3 px-6 text-sm hover:bg-gray-800">Resources</a>
+            <div class="p-4">
+                <button class="calendly-trigger w-full bg-gold text-black text-sm font-bold py-3 px-5 rounded-lg hover:bg-gold-dark">
+                    Free Strategy Call
+                </button>
+            </div>
         </div>
     </header>
 
-    <!-- Services Section -->
-    <section id="services" class="container mx-auto py-16 px-4">
-        <h2 class="text-4xl font-bold text-center text-gray-900 mb-12">Our Core Services</h2>
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            <!-- Service Card 1: SEO -->
-            <div class="bg-white p-8 rounded-xl shadow-lg hover:shadow-xl transition duration-300 transform hover:-translate-y-1">
-                <div class="text-blue-600 mb-4">
-                    <svg class="w-12 h-12 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+    <!-- ===== Main Content ===== -->
+    <main>
+        <!-- Hero Section -->
+        <section id="hero" class="py-24 md:py-32 text-center">
+            <div class="container mx-auto px-6">
+                <div class="reveal">
+                    <h1 class="text-4xl md:text-6xl lg:text-7xl font-extrabold tracking-tighter leading-tight">
+                        Scale or Die: We Build Funnels <br class="hidden md:block"> That <span class="text-gold">Print Cash</span>
+                    </h1>
+                    <p class="mt-6 max-w-3xl mx-auto text-lg md:text-xl text-gray-200">
+                        Businesses pay us to kill their Customer Acquisition Cost (CAC) and scale to $100k+ months.
+                    </p>
+                    <button class="calendly-trigger mt-10 bg-gold text-black text-lg font-bold py-4 px-8 rounded-lg hover:bg-gold-dark transition-all duration-300 transform hover:scale-105 shadow-lg shadow-yellow-500/20">
+                        Book Your Free Strategy Call
+                    </button>
                 </div>
-                <h3 class="text-2xl font-semibold text-gray-900 mb-4 text-center">Search Engine Optimization (SEO)</h3>
-                <p class="text-gray-600 text-center">Boost your online visibility and rank higher on search engines with our expert SEO strategies.</p>
             </div>
+        </section>
 
-            <!-- Service Card 2: Social Media Marketing -->
-            <div class="bg-white p-8 rounded-xl shadow-lg hover:shadow-xl transition duration-300 transform hover:-translate-y-1">
-                <div class="text-purple-600 mb-4">
-                    <svg class="w-12 h-12 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H2v-2a4 4 0 014-4h2a4 4 0 014 4v2m3-3h-3m10-9a2 2 0 01-2 2H7a2 2 0 01-2-2V5a2 2 0 012-2h10a2 2 0 012 2v4zm-7 2h4"></path></svg>
+        <!-- Services Section -->
+        <section id="services" class="py-20 md:py-24 bg-[#111111]">
+            <div class="container mx-auto px-6">
+                <div class="text-center mb-16 reveal">
+                    <h2 class="text-3xl md:text-4xl font-bold tracking-tight">Your Client Growth Stack</h2>
+                    <p class="mt-3 text-gray-300 text-lg">The only services you need to scale.</p>
                 </div>
-                <h3 class="text-2xl font-semibold text-gray-900 mb-4 text-center">Social Media Marketing</h3>
-                <p class="text-gray-600 text-center">Engage your audience and build brand loyalty across all major social media platforms.</p>
-            </div>
-
-            <!-- Service Card 3: Content Marketing -->
-            <div class="bg-white p-8 rounded-xl shadow-lg hover:shadow-xl transition duration-300 transform hover:-translate-y-1">
-                <div class="text-green-600 mb-4">
-                    <svg class="w-12 h-12 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path></svg>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <!-- Service Card -->
+                    <div class="bg-[#1A1A1A] p-8 rounded-xl border border-gray-800 hover:border-gold hover:shadow-gold-glow hover:-translate-y-2 transition-all duration-300 reveal">
+                        <div class="mb-4" role="img" aria-label="Paid Ads Icon"><svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-lime-green" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" /></svg></div>
+                        <h3 class="text-2xl font-bold mb-2">Paid Ads That Actually Convert</h3>
+                        <p class="text-gray-300 text-base">Data-driven campaigns that print money.</p>
+                    </div>
+                    <div class="bg-[#1A1A1A] p-8 rounded-xl border border-gray-800 hover:border-gold hover:shadow-gold-glow hover:-translate-y-2 transition-all duration-300 reveal">
+                        <div class="mb-4" role="img" aria-label="Funnels Icon"><svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-lime-green" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z" /></svg></div>
+                        <h3 class="text-2xl font-bold mb-2">Funnels That Print Cash</h3>
+                        <p class="text-gray-300 text-base">No clickbait, only conversions.</p>
+                    </div>
+                    <div class="bg-[#1A1A1A] p-8 rounded-xl border border-gray-800 hover:border-gold hover:shadow-gold-glow hover:-translate-y-2 transition-all duration-300 reveal">
+                        <div class="mb-4" role="img" aria-label="Copywriting Icon"><svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-lime-green" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg></div>
+                        <h3 class="text-2xl font-bold mb-2">Copywriting That Sells</h3>
+                        <p class="text-gray-300 text-base">Words that stop scrolls and drive action.</p>
+                    </div>
+                    <div class="bg-[#1A1A1A] p-8 rounded-xl border border-gray-800 hover:border-gold hover:shadow-gold-glow hover:-translate-y-2 transition-all duration-300 reveal">
+                        <div class="mb-4" role="img" aria-label="Data Scaling Icon"><svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-lime-green" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a2 2 0 01-2 2H6a2 2 0 01-2-2V4z" /></svg></div>
+                        <h3 class="text-2xl font-bold mb-2">Data-Driven Scaling</h3>
+                        <p class="text-gray-300 text-base">Strategy powered by hard metrics.</p>
+                    </div>
                 </div>
-                <h3 class="text-2xl font-semibold text-gray-900 mb-4 text-center">Content Marketing</h3>
-                <p class="text-gray-600 text-center">Create valuable and engaging content that attracts, informs, and converts your target audience.</p>
             </div>
-
-            <!-- Service Card 4: Web Design & Development -->
-            <div class="bg-white p-8 rounded-xl shadow-lg hover:shadow-xl transition duration-300 transform hover:-translate-y-1">
-                <div class="text-red-600 mb-4">
-                    <svg class="w-12 h-12 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"></path></svg>
+        </section>
+        
+        <!-- Why Us Section -->
+        <section id="why-us" class="py-20 md:py-24">
+            <div class="container mx-auto px-6">
+                <div class="text-center mb-16 reveal">
+                    <h2 class="text-3xl md:text-4xl font-bold tracking-tight">The Reux Difference</h2>
+                    <p class="mt-3 text-gray-300 text-lg">Why smart businesses choose us.</p>
                 </div>
-                <h3 class="text-2xl font-semibold text-gray-900 mb-4 text-center">Web Design & Development</h3>
-                <p class="text-gray-600 text-center">Build stunning, responsive, and user-friendly websites that convert visitors into customers.</p>
-            </div>
-
-            <!-- Service Card 5: Email Marketing -->
-            <div class="bg-white p-8 rounded-xl shadow-lg hover:shadow-xl transition duration-300 transform hover:-translate-y-1">
-                <div class="text-yellow-600 mb-4">
-                    <svg class="w-12 h-12 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>
+                <div class="max-w-5xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
+                    <!-- Difference Card 1 -->
+                    <div class="reveal">
+                        <div class="p-6 bg-[#1A1A1A] rounded-full inline-block border border-gray-800 mb-4">
+                             <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-gold" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
+                        </div>
+                        <h3 class="text-xl font-bold mb-2">Radical Transparency</h3>
+                        <p class="text-gray-400">You see the data we see. No black boxes, no confusing reports. Just clear, actionable insights.</p>
+                    </div>
+                    <!-- Difference Card 2 -->
+                    <div class="reveal">
+                        <div class="p-6 bg-[#1A1A1A] rounded-full inline-block border border-gray-800 mb-4">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-gold" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M12 6V3m0 18v-3" /></svg>
+                        </div>
+                        <h3 class="text-xl font-bold mb-2">Data, Not Drama</h3>
+                        <p class="text-gray-400">We make decisions based on performance metrics, not guesswork. If it doesn't work, we fix it. If it works, we scale it.</p>
+                    </div>
+                    <!-- Difference Card 3 -->
+                    <div class="reveal">
+                        <div class="p-6 bg-[#1A1A1A] rounded-full inline-block border border-gray-800 mb-4">
+                             <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-gold" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6.253v11.494m-9-5.747h18" /></svg>
+                        </div>
+                        <h3 class="text-xl font-bold mb-2">Your Unfair Advantage</h3>
+                        <p class="text-gray-400">We stay ahead of the trends so you can stay ahead of your competition. Your growth is our obsession.</p>
+                    </div>
                 </div>
-                <h3 class="text-2xl font-semibold text-gray-900 mb-4 text-center">Email Marketing</h3>
-                <p class="text-gray-600 text-center">Craft effective email campaigns that nurture leads and drive sales with personalized content.</p>
             </div>
+        </section>
 
-            <!-- Service Card 6: Paid Advertising (PPC) -->
-            <div class="bg-white p-8 rounded-xl shadow-lg hover:shadow-xl transition duration-300 transform hover:-translate-y-1">
-                <div class="text-indigo-600 mb-4">
-                    <svg class="w-12 h-12 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path></svg>
+        <!-- Resources Section -->
+        <section id="resources" class="py-20 md:py-24 bg-[#111111]">
+            <div class="container mx-auto px-6">
+                <div class="text-center mb-16 reveal">
+                    <h2 class="text-3xl md:text-4xl font-bold tracking-tight">Free Game That Hits Harder <br class="sm:hidden"> Than Most Paid Courses</h2>
                 </div>
-                <h3 class="text-2xl font-semibold text-gray-900 mb-4 text-center">Paid Advertising (PPC)</h3>
-                <p class="text-gray-600 text-center">Maximize your ROI with targeted paid advertising campaigns on Google, social media, and more.</p>
+                <div class="max-w-4xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-8 text-center">
+                    <!-- Discord Card -->
+                    <div class="bg-[#1A1A1A] p-8 rounded-xl border border-gray-800 flex flex-col items-center justify-between reveal hover:border-gold hover:-translate-y-2 transition-all duration-300">
+                        <div>
+                            <h3 class="text-2xl font-bold mb-2">ReuxForge Discord</h3>
+                            <p class="text-gray-300 mb-6 text-base">Join our private community for free templates, live support, and weekly strategy drops.</p>
+                        </div>
+                        <a href="https://discord.gg/4TgWtMK6fX" target="_blank" rel="noopener noreferrer" class="mt-auto w-full bg-gold text-black font-bold py-3 px-6 rounded-lg hover:bg-gold-dark transition-all duration-300 transform hover:scale-105">Join the ReuxForge – Free</a>
+                    </div>
+                    <!-- Tool Library Card -->
+                     <div class="bg-[#1A1A1A] p-8 rounded-xl border border-gray-800 flex flex-col items-center justify-between reveal hover:border-gold hover:-translate-y-2 transition-all duration-300">
+                        <div>
+                            <h3 class="text-2xl font-bold mb-2">$10K Tool Library</h3>
+                            <p class="text-gray-300 mb-6 text-base">Get free access to our curated library of AI tools for copy, ads, and funnels.</p>
+                        </div>
+                        <button class="calendly-trigger mt-auto w-full bg-transparent border-2 border-gold text-gold font-bold py-3 px-6 rounded-lg hover:bg-gold hover:text-black transition-all duration-300">Get Access Now</button>
+                    </div>
+                </div>
             </div>
-        </div>
-    </section>
+        </section>
 
-    <!-- Call to Action Section -->
-    <section class="bg-gradient-to-r from-purple-700 to-blue-600 py-16 px-4 text-white text-center rounded-t-lg shadow-md">
-        <div class="container mx-auto">
-            <h2 class="text-4xl font-bold mb-6">Ready to Transform Your Digital Presence?</h2>
-            <p class="text-xl mb-8 max-w-2xl mx-auto">
-                Let's discuss how ReuxMarketing can help you achieve your business goals with innovative digital solutions.
-            </p>
-            <a href="contact.html" class="bg-white text-blue-600 hover:bg-gray-100 font-bold py-4 px-8 rounded-full shadow-lg transition duration-300 transform hover:scale-105">
-                Contact Us Today
-            </a>
-        </div>
-    </section>
-
-    <!-- Footer -->
-    <footer class="bg-gray-900 text-white py-8 px-4 text-center rounded-b-lg">
-        <div class="container mx-auto">
-            <p>&copy; 2025 ReuxMarketing. All rights reserved.</p>
-            <div class="mt-4 flex justify-center space-x-6">
-                <a href="#" class="text-gray-400 hover:text-white transition duration-300">Privacy Policy</a>
-                <a href="#" class="text-gray-400 hover:text-white transition duration-300">Terms of Service</a>
+        <!-- Final CTA Section -->
+        <section id="final-cta" class="py-24 md:py-32">
+            <div class="container mx-auto px-6 text-center">
+                <div class="reveal">
+                    <h2 class="text-3xl md:text-5xl font-extrabold tracking-tight">Want Us to Scale Your Brand Next?</h2>
+                    <p class="mt-4 max-w-xl mx-auto text-lg text-gray-200">Let’s build your growth plan in 15 minutes flat. No fluff, no obligation.</p>
+                    <button class="calendly-trigger mt-10 bg-gold text-black text-lg font-bold py-4 px-8 rounded-lg hover:bg-gold-dark transition-all duration-300 transform hover:scale-105 shadow-lg shadow-yellow-500/20">
+                        Book Your Free Strategy Call
+                    </button>
+                </div>
             </div>
+        </section>
+    </main>
+
+    <!-- ===== Footer ===== -->
+    <footer class="py-8 border-t border-gray-800">
+        <div class="container mx-auto px-6 text-center text-gray-400">
+            <div class="flex justify-center space-x-6 mb-4">
+                <!-- X/Twitter Icon -->
+                <a href="https://x.com/ReuxMarketing" target="_blank" rel="noopener noreferrer" class="hover:text-gold transition-colors duration-300" aria-label="X/Twitter">
+                    <svg class="h-6 w-6" fill="currentColor" viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H4.68l4.713 6.231L18.244 2.25zM17.5 19.5h1.5l-8.5-11.5h-1.5l8.5 11.5z"/></svg>
+                </a>
+                <!-- YouTube Icon -->
+                <a href="https://www.youtube.com/@ReuxMarketing" target="_blank" rel="noopener noreferrer" class="hover:text-gold transition-colors duration-300" aria-label="YouTube">
+                    <svg class="h-6 w-6" fill="currentColor" viewBox="0 0 24 24"><path d="M19.615 3.184c-3.604-.246-11.631-.245-15.23 0-3.897.266-4.356 2.62-4.385 8.816.029 6.185.484 8.549 4.385 8.816 3.6.245 11.626.246 15.23 0 3.897-.266 4.356-2.62 4.385-8.816-.029-6.185-.484-8.549-4.385-8.816zm-10.615 12.816v-8l8 3.993-8 4.007z"/></svg>
+                </a>
+                <!-- Instagram Icon -->
+                <a href="https://www.instagram.com/reuxmarketing/" target="_blank" rel="noopener noreferrer" class="hover:text-gold transition-colors duration-300" aria-label="Instagram">
+                    <svg class="h-6 w-6" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.85s-.011 3.584-.069 4.85c-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07s-3.584-.012-4.85-.07c-3.252-.148-4.771-1.691-4.919-4.919-.058-1.265-.069-1.645-.069-4.85s.011-3.584.069-4.85c.149-3.225 1.664-4.771 4.919-4.919 1.266-.057 1.644-.069 4.85-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948s.014 3.667.072 4.947c.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072s3.667-.014 4.947-.072c4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.947s-.014-3.667-.072-4.947c-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.689-.073-4.948-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.162 6.162 6.162 6.162-2.759 6.162-6.162-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4s1.791-4 4-4 4 1.79 4 4-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44 1.441-.645 1.441-1.44-.645-1.44-1.441-1.44z"/></svg>
+                </a>
+                <!-- Discord Icon (FIXED) -->
+                <a href="https://discord.gg/4TgWtMK6fX" target="_blank" rel="noopener noreferrer" class="hover:text-gold transition-colors duration-300" aria-label="Discord">
+                   <svg class="h-6 w-6" fill="currentColor" role="img" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M20.317 4.3698a19.7913 19.7913 0 0 0-4.8851-1.5152.0741.0741 0 0 0-.0785.0371c-.211.3753-.4464.8254-.6184 1.2525a17.7363 17.7363 0 0 0-4.0784 0 18.443 18.443 0 0 0-.6184-1.2525.0741.0741 0 0 0-.0785-.0371 19.7364 19.7364 0 0 0-4.8851 1.5152c-1.896.5057-2.6187 1.234-2.6187 1.234a17.96 17.96 0 0 0 6.2783 15.6633.0741.0741 0 0 0 .0849-.0094 16.57 16.57 0 0 0 1.8328-2.0015.0741.0741 0 0 0-.0442-.1174 12.6452 12.6452 0 0 1-1.9212-.8846.0741.0741 0 0 1-.0057-.1174c.0211-.0233.0475-.04.077-.0517a12.104 12.104 0 0 1 1.8358-.55.0741.0741 0 0 1 .0877.0057c.3853.19.74.4012 1.0777.6248.0741.0741 0 0 1 .091.0442c.437.2806.84.5842 1.217.9072a.0741.0741 0 0 0 .091-.0442 16.57 16.57 0 0 0 1.8328 2.0015.0741.0741 0 0 0 .0849.0094 17.96 17.96 0 0 0 6.2783-15.6633s-.7227-.7283-2.6187-1.234zm-4.7077 11.5272c-.7779 0-1.4052-.6346-1.4052-1.4195s.6273-1.4195 1.4052-1.4195c.7778 0 1.4052.6346 1.4052 1.4195.0001.7849-.6274 1.4195-1.4052 1.4195zm-4.5918 0c-.7779 0-1.4052-.6346-1.4052-1.4195s.6273-1.4195 1.4052-1.4195c.7778 0 1.4052.6346 1.4052 1.4195s-.6274 1.4195-1.4052 1.4195z"/></svg>
+                </a>
+            </div>
+            <p class="text-sm">&copy; 2024 ReuxMarketing. All Rights Reserved.</p>
         </div>
     </footer>
 
-    <!-- JavaScript for Mobile Menu Toggle -->
+    <!-- ===== Calendly Modal ===== -->
+    <div id="calendly-modal" class="fixed inset-0 bg-black bg-opacity-80 backdrop-blur-sm flex items-center justify-center z-50 hidden">
+        <div class="bg-[#1A1A1A] rounded-lg w-11/12 max-w-4xl h-5/6 relative p-4">
+            <button id="close-modal" class="absolute -top-3 -right-3 text-white bg-black rounded-full p-2 z-10 hover:bg-gray-700 transition-colors">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+            </button>
+            <div class="w-full h-full rounded-lg overflow-hidden relative">
+                <div id="calendly-fallback" class="hidden absolute inset-0 bg-[#1A1A1A] flex-col items-center justify-center text-center p-4">
+                    <h3 class="text-2xl font-bold text-white mb-4">Having trouble loading?</h3>
+                    <p class="text-gray-300 mb-6">You can book your call directly or email us.</p>
+                    <a href="mailto:contact@reuxmarketing.com" class="bg-gold text-black font-bold py-3 px-6 rounded-lg hover:bg-gold-dark">Email Us: contact@reuxmarketing.com</a>
+                </div>
+                <iframe id="calendly-iframe" src="" class="w-full h-full border-0"></iframe>
+            </div>
+        </div>
+    </div>
+
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             const mobileMenuButton = document.getElementById('mobile-menu-button');
             const mobileMenu = document.getElementById('mobile-menu');
+            const mobileLinks = document.querySelectorAll('.mobile-link');
 
-            mobileMenuButton.addEventListener('click', function() {
+            mobileMenuButton.addEventListener('click', () => {
                 mobileMenu.classList.toggle('hidden');
             });
 
-            // Close mobile menu when a link is clicked (optional, but good UX)
-            const mobileLinks = mobileMenu.querySelectorAll('a');
-            mobileLinks.forEach(link => {
-                link.addEventListener('click', () => {
-                    mobileMenu.classList.add('hidden');
+            const closeMobileMenu = () => {
+                mobileMenu.classList.add('hidden');
+            };
+            
+            mobileLinks.forEach(link => link.addEventListener('click', closeMobileMenu));
+
+            const calendlyModal = document.getElementById('calendly-modal');
+            const closeModalButton = document.getElementById('close-modal');
+            const calendlyTriggers = document.querySelectorAll('.calendly-trigger');
+            const calendlyIframe = document.getElementById('calendly-iframe');
+            const calendlyFallback = document.getElementById('calendly-fallback');
+            const calendlyUrl = 'https://calendly.com/reuben-reuxmarketing/15m-information-call';
+
+            const openModal = (e) => {
+                e.preventDefault();
+                if (calendlyIframe.src !== calendlyUrl) {
+                    calendlyIframe.src = calendlyUrl;
+                }
+                calendlyModal.classList.remove('hidden');
+                document.body.style.overflow = 'hidden'; // Prevent background scrolling
+            };
+
+            const closeModal = () => {
+                calendlyModal.classList.add('hidden');
+                document.body.style.overflow = ''; // Restore background scrolling
+            };
+
+            calendlyTriggers.forEach(trigger => trigger.addEventListener('click', openModal));
+            closeModalButton.addEventListener('click', closeModal);
+            calendlyModal.addEventListener('click', (e) => {
+                if (e.target === calendlyModal) {
+                    closeModal();
+                }
+            });
+            
+            // Calendly iframe fallback
+            calendlyIframe.onerror = function() {
+                calendlyIframe.style.display = 'none';
+                calendlyFallback.classList.remove('hidden');
+                calendlyFallback.classList.add('flex');
+            };
+
+            const revealElements = document.querySelectorAll('.reveal');
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('visible');
+                    }
                 });
+            }, { threshold: 0.1 });
+
+            revealElements.forEach(el => observer.observe(el));
+
+            const header = document.getElementById('header');
+            window.addEventListener('scroll', () => {
+                header.classList.toggle('shadow-lg', window.scrollY > 10);
+                header.classList.toggle('shadow-black/20', window.scrollY > 10);
             });
         });
     </script>
