@@ -1,0 +1,1486 @@
+import React, { useState, useEffect } from 'react';
+import { initializeApp } from 'firebase/app';
+import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from 'firebase/auth';
+import { getFirestore, doc, setDoc, getDoc, collection, query, where, getDocs, onSnapshot, addDoc } from 'firebase/firestore';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@radix-ui/react-select';
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from '@radix-ui/react-tabs';
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from '@radix-ui/react-accordion';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogTitle,
+  DialogTrigger,
+} from '@radix-ui/react-dialog';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@radix-ui/react-tooltip';
+import { Download, Copy, Info, Mail, User, Briefcase, Target, Lightbulb, TrendingUp, Palette, FileText, FileDown, FileSpreadsheet, Zap, CheckCircle, Clock, CheckSquare, XCircle, ChevronDown, Rocket, LayoutDashboard, Settings, MessageSquare, ClipboardCopy, ChevronRight, Share2, Save, FolderOpen, GalleryVertical, LineChart } from 'lucide-react';
+
+
+// Main App Component
+const App = () => {
+  // Firebase state variables
+  const [db, setDb] = useState(null);
+  const [auth, setAuth] = useState(null);
+  const [userId, setUserId] = useState(null); // Keep userId for Firestore, but don't display it
+  const [isAuthReady, setIsAuthReady] = useState(false);
+  const [savedSequences, setSavedSequences] = useState([]);
+  const [selectedSequenceId, setSelectedSequenceId] = useState(null);
+  const [showSaveModal, setShowSaveModal] = useState(false);
+  const [showLoadModal, setShowLoadModal] = useState(false);
+  const [newSequenceName, setNewSequenceName] = useState('');
+  const [loadingSavedSequences, setLoadingSavedSequences] = useState(true);
+
+  // Input form state
+  const [campaignName, setCampaignName] = useState(''); // New: Campaign Name
+  const [persona, setPersona] = useState('');
+  const [industry, setIndustry] = useState('');
+  const [companySize, setCompanySize] = useState('');
+  const [painPoint, setPainPoint] = useState('');
+  const [offer, setOffer] = useState('');
+  const [outcome, setOutcome] = useState('');
+  const [tone, setTone] = useState('Professional');
+  const [framework, setFramework] = useState('None'); // PAS, AIDA, FAB, None
+  const [leadAwareness, setLeadAwareness] = useState('Cold / Awareness'); // New: Lead Awareness Level
+
+  // Generated email sequence state
+  const [generatedEmails, setGeneratedEmails] = useState({});
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [activeTab, setActiveTab] = useState('initial');
+
+  // Page navigation state
+  const [currentPage, setCurrentPage] = useState('inputs'); // 'inputs', 'generated', 'bestPractices', 'swipeFile'
+
+  // Notification state
+  const [showNotification, setShowNotification] = useState(false);
+  const [notificationMessage, setNotificationMessage] = useState('');
+
+  // App ID for Firestore
+  const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-cold-email-forge';
+
+  // Template Presets
+  const templatePresets = {
+    'SaaS SDR Assertive': {
+      persona: 'SDR',
+      industry: 'SaaS',
+      companySize: 'Mid-market (51-500 employees)',
+      painPoint: 'Low demo show-up rate',
+      offer: 'Calendar automation tool that boosts demo show-ups by 30%',
+      outcome: 'Higher demo show-up rates and more qualified meetings',
+      tone: 'Assertive',
+      framework: 'PAS (Problem, Agitate, Solve)',
+      leadAwareness: 'Cold / Awareness',
+    },
+    'Coaching Founder Friendly': {
+      persona: 'Founder',
+      industry: 'Consulting/Coaching',
+      companySize: 'SMB (1-50 employees)',
+      painPoint: 'Struggling to scale client acquisition without burnout',
+      offer: '1-on-1 coaching program for sustainable business growth',
+      outcome: 'Clear growth strategy, increased revenue, and more free time',
+      tone: 'Friendly',
+      framework: 'AIDA (Attention, Interest, Desire, Action)',
+      leadAwareness: 'Warm / Consideration',
+    },
+    'Agency Head of Ops Punchy': {
+      persona: 'Head of Operations',
+      industry: 'Marketing Agency',
+      companySize: 'Enterprise (500+ employees)',
+      painPoint: 'Inefficient project management leading to missed deadlines',
+      offer: 'AI-powered project management software for agencies',
+      outcome: 'Streamlined workflows, on-time project delivery, and improved team productivity',
+      tone: 'Punchy',
+      framework: 'FAB (Features, Advantages, Benefits)',
+      leadAwareness: 'Hot / Decision',
+    },
+  };
+
+  // Email Script Library (Expanded for various combinations)
+  const emailScriptLibrary = [
+    {
+      id: 'saas-sdr-assertive-low-demo-cold',
+      persona: 'SDR', industry: 'SaaS', companySize: 'Mid-market (51-500 employees)',
+      painPointKeywords: ['low demo show-up', 'missed demos', 'poor attendance'],
+      offerKeywords: ['calendar automation', 'scheduling tool', 'demo reminder'],
+      outcomeKeywords: ['increase show-ups', 'boost attendance', 'more demos'],
+      tone: 'Assertive', framework: 'PAS (Problem, Agitate, Solve)', leadAwareness: 'Cold / Awareness',
+      sequence: {
+        initial: {
+          subjectOptions: ['Still struggling with low demo show-ups?', 'Fixing [CompanyName]\'s demo attendance', 'Immediate boost for your demo show-up rate'],
+          body: `Hi [FirstName],
+
+Are you frustrated with the number of qualified demos that don't show up at [CompanyName]? This is a common problem for [Industry] companies, costing valuable sales team time and pipeline momentum.
+
+Our [Offer] directly tackles this by automating smart reminders and re-engagement, leading to a proven [Outcome] for our clients.
+
+Ready to stop wasting time on no-shows?`,
+          callToActionOptions: ['Book a 15-min strategy call here: [CalendarLink]', 'Reply "YES" to learn how we guarantee more show-ups', 'See our case study on boosting demo rates: [Link]'],
+        },
+        followUp1: {
+          subjectOptions: ['Following up: Demo show-ups', 'Did you see this for [CompanyName]?', 'Quick thought on your demo pipeline'],
+          body: `Hi [FirstName],
+
+Just wanted to quickly follow up on my previous email regarding [PainPoint].
+
+We consistently help sales teams like yours achieve [Outcome] with minimal effort.
+
+Still interested in improving your demo show-up rates?`,
+          callToActionOptions: ['Reply to this email if you\'d like to chat briefly', 'Learn more about our solution: [Link]', 'What are your thoughts on this challenge?'],
+        },
+        followUp2: {
+          subjectOptions: ['Last chance: Boost demo show-ups', 'One more idea for [CompanyName]', 'Don\'t miss out on higher demo rates'],
+          body: `Hi [FirstName],
+
+Circling back one last time on how [Offer] can help [CompanyName] achieve [Outcome].
+
+We understand you're busy, but this could genuinely save your team significant time and revenue.
+
+If now isn't the right time, no worries. If it is, let's connect.`,
+          callToActionOptions: ['Click here to opt-out of future emails', 'Reply "Not now" if this isn\'t a priority', 'Is this something worth exploring later?'],
+        },
+        breakup: {
+          subjectOptions: ['Closing the loop on demo show-ups', 'Permission to close your file?', 'Goodbye from [Your Company]'],
+          body: `Hi [FirstName],
+
+It seems my previous emails haven't resonated, which is perfectly fine. I'll take this as a sign that now isn't the best time to discuss improving [CompanyName]'s demo show-up rates.
+
+I'll close your file for now. If anything changes in the future, feel free to reach out.
+
+Wishing you all the best,
+[Your Name]`,
+          callToActionOptions: ['Click here to connect when ready', 'No hard feelings, unsubscribe here', 'Reply if you change your mind'],
+        },
+      }
+    },
+    {
+      id: 'coaching-founder-friendly-burnout-warm',
+      persona: 'Founder', industry: 'Consulting/Coaching', companySize: 'SMB (1-50 employees)',
+      painPointKeywords: ['burnout', 'scaling issues', 'client acquisition stress'],
+      offerKeywords: ['coaching program', 'growth strategy', 'business mentorship'],
+      outcomeKeywords: ['sustainable growth', 'more free time', 'increased revenue'],
+      tone: 'Friendly', framework: 'AIDA (Attention, Interest, Desire, Action)', leadAwareness: 'Warm / Consideration',
+      sequence: {
+        initial: {
+          subjectOptions: ['A quick thought for [FirstName] at [CompanyName]', 'Scaling without the stress?', 'Your next growth leap'],
+          body: `Hey [FirstName],
+
+I've been following [CompanyName]'s journey and it's inspiring! Many founders I speak with often hit a wall trying to scale without burning out. Does that resonate with you?
+
+I help founders like you create a clear roadmap for sustainable growth, leading to both increased revenue and more personal freedom. Imagine having a strategy that brings in clients consistently, without the constant grind.
+
+Curious how we do it?`,
+          callToActionOptions: ['Let\'s chat for 15 minutes about your growth goals', 'Reply "Growth" if you\'d like to see an example plan', 'Check out our founder success stories: [Link]'],
+        },
+        followUp1: {
+          subjectOptions: ['Following up: Your growth strategy', 'Still thinking about [CompanyName]\'s next step', 'Quick idea for sustainable scaling'],
+          body: `Hi [FirstName],
+
+Just wanted to gently follow up on my last email. I know building a business is a marathon, not a sprint, and finding the right support can make all the difference.
+
+My coaching program is designed to give you the clarity and systems you need to achieve [Outcome].
+
+Is this a challenge you're actively looking to solve?`,
+          callToActionOptions: ['What are your biggest scaling challenges right now?', 'Schedule a discovery call: [CalendarLink]', 'Happy to answer any questions you have!'],
+        },
+        followUp2: {
+          subjectOptions: ['One last thought on scaling [CompanyName]', 'A different approach to [PainPoint]', 'Final check-in from [Your Name]'],
+          body: `Hey [FirstName],
+
+I'm reaching out one more time. I genuinely believe that with the right guidance, you can overcome [PainPoint] and truly enjoy the journey of growing [CompanyName].
+
+If now isn't the right time, that's totally okay. No pressure at all.
+
+If you ever decide to explore a more sustainable path to [Outcome], I'm here.`,
+          callToActionOptions: ['No worries if not now, just reply "No thanks"', 'Connect with me on LinkedIn: [LinkedIn Profile]', 'Keep me in mind for the future'],
+        },
+        breakup: {
+          subjectOptions: ['Closing the loop on growth for [CompanyName]', 'All the best from [Your Company]', 'Final message from [Your Name]'],
+          body: `Hi [FirstName],
+
+It looks like my messages might not be a priority for you right now, and that's completely understandable. I'll assume you're all set for now and won't reach out further.
+
+I wish you immense success with [CompanyName] and hope you achieve all your growth aspirations.
+
+Warmly,
+[Your Name]`,
+          callToActionOptions: ['Reach out if anything changes!', 'Unsubscribe from future emails', 'Let\'s connect another time'],
+        },
+      }
+    },
+    {
+      id: 'default-professional-cold',
+      persona: 'Any', industry: 'Any', companySize: 'Any',
+      painPointKeywords: [], offerKeywords: [], outcomeKeywords: [],
+      tone: 'Professional', framework: 'None', leadAwareness: 'Cold / Awareness',
+      sequence: {
+        initial: {
+          subjectOptions: ['Connecting about [CompanyName]', 'Opportunity for [Outcome]'],
+          body: `Dear [FirstName],
+
+I hope this email finds you well. I'm reaching out because our [Offer] helps businesses like [CompanyName] achieve [Outcome].
+
+We understand that [PainPoint] can be a significant challenge. Our solution is designed to address this directly.
+
+Would you be open to a brief discussion to explore how we can assist you?
+
+Sincerely,
+[Your Name]`,
+          callToActionOptions: ['Schedule a call: [CalendarLink]', 'Reply to learn more'],
+        },
+        followUp1: {
+          subjectOptions: ['Following up: [Outcome] for [CompanyName]'],
+          body: `Dear [FirstName],
+
+Just a quick follow-up on my previous email regarding [CompanyName]'s potential to achieve [Outcome].
+
+I believe our [Offer] could provide significant value in overcoming [PainPoint].
+
+Please let me know if you'd like to explore this further.
+
+Regards,
+[Your Name]`,
+          callToActionOptions: ['Reply to this email', 'Visit our website: [WebsiteLink]'],
+        },
+        followUp2: {
+          subjectOptions: ['Last attempt: [Offer] for [CompanyName]'],
+          body: `Dear [FirstName],
+
+I'm reaching out one last time regarding [Offer] and its potential to help [CompanyName] with [PainPoint].
+
+If this isn't a priority for you at the moment, I completely understand.
+
+Wishing you success,
+[Your Name]`,
+          callToActionOptions: ['Unsubscribe from future emails', 'Reply "No thanks"'],
+        },
+        breakup: {
+          subjectOptions: ['Closing the loop from [Your Company]'],
+          body: `Dear [FirstName],
+
+As I haven't heard back, I'll assume this isn't the right time for [CompanyName] to explore [Offer].
+
+I'll close your file for now. Please don't hesitate to reach out if your needs change in the future.
+
+Best regards,
+[Your Name]`,
+          callToActionOptions: ['Reply if you change your mind', 'Connect on LinkedIn'],
+        },
+      }
+    },
+    {
+      id: 'default-friendly-warm',
+      persona: 'Any', industry: 'Any', companySize: 'Any',
+      painPointKeywords: [], offerKeywords: [], outcomeKeywords: [],
+      tone: 'Friendly', framework: 'None', leadAwareness: 'Warm / Consideration',
+      sequence: {
+        initial: {
+          subjectOptions: ['Thought of you, [FirstName]', 'Quick idea for [CompanyName]'],
+          body: `Hey [FirstName],
+
+Hope you're having a good week! I was thinking about [CompanyName] and how our [Offer] could potentially help you with [PainPoint].
+
+We've seen great results helping others in [Industry] achieve [Outcome].
+
+Would you be up for a quick chat to see if there's a fit?
+
+Best,
+[Your Name]`,
+          callToActionOptions: ['Grab 15 minutes on my calendar: [CalendarLink]', 'Reply if you\'re curious to learn more'],
+        },
+        followUp1: {
+          subjectOptions: ['Following up on [CompanyName]', 'Still relevant?'],
+          body: `Hey [FirstName],
+
+Just wanted to bump my last email. I know things get busy, but I genuinely believe our [Offer] could make a real difference in tackling [PainPoint] for [CompanyName].
+
+No pressure at all, but if you're keen to explore [Outcome], let me know!
+
+Cheers,
+[Your Name]`,
+          callToActionOptions: ['What are your thoughts?', 'Happy to send over more info'],
+        },
+        followUp2: {
+          subjectOptions: ['One last thought for [CompanyName]', 'Worth a quick look?'],
+          body: `Hey [FirstName],
+
+One final note on how we help with [PainPoint]. Our [Offer] is pretty straightforward, and the results for clients like you have been fantastic ([Outcome]).
+
+If it's not a good time, no worries at all.
+
+All the best,
+[Your Name]`,
+          callToActionOptions: ['No worries if not now', 'Connect on LinkedIn if you prefer: [LinkedIn Profile]'],
+        },
+        breakup: {
+          subjectOptions: ['All the best from [Your Company]'],
+          body: `Hey [FirstName],
+
+Looks like my timing might be off, or perhaps our [Offer] isn't the right fit for [CompanyName] right now. That's totally fine!
+
+I'll stop sending emails for now. If you ever need help with [PainPoint] in the future, you know where to find me.
+
+Wishing you success,
+[Your Name]`,
+          callToActionOptions: ['Reply if you change your mind', 'Unsubscribe here'],
+        },
+      }
+    }
+    // Add more specific templates here following the same structure
+  ];
+
+
+  // Swipe File Content (Local JSON array) - Kept separate for inspiration
+  const swipeFileContent = [
+    {
+      category: 'Subject Lines',
+      examples: [
+        { title: 'Pain-Focused', content: 'Struggling with [PainPoint]?' },
+        { title: 'Curiosity-Driven', content: 'Quick question about [CompanyName]' },
+        { title: 'Benefit-Oriented', content: 'Boost your [Outcome] by X%' },
+        { title: 'Urgency/Scarcity', content: 'Last chance for [Offer Benefit]' },
+        { title: 'Personalized Intro', content: 'Thought of you, [FirstName]' },
+        { title: 'Problem/Solution', content: '[Problem] + [Your Solution]' },
+        { title: 'Question-Based', content: 'Are you open to [Benefit]?' },
+        { title: 'Referral (if applicable)', content: 'Referred by [Mutual Connection]' },
+      ],
+    },
+    {
+      category: 'Initial Email Bodies',
+      examples: [
+        {
+          title: 'PAS Framework Example',
+          content: `Hi [FirstName],
+
+I noticed [CompanyName] might be facing [PainPoint]. Many [Industry] companies struggle with this, leading to [Agitation consequence].
+
+Our [Offer] helps you [Solve/Outcome]. We've seen clients achieve [Specific Result].
+
+Would you be open to a quick 15-minute chat to see how this could work for you?
+
+Best,
+[Your Name]`,
+          persona: 'Any', industry: 'Any', painPoint: 'a common challenge', offer: 'our solution', outcome: 'great results', tone: 'Professional', framework: 'PAS'
+        },
+        {
+          title: 'AIDA Framework Example',
+          content: `Subject: [Attention-grabbing subject]
+
+Hi [FirstName],
+
+Are you looking to [Interest-generating question related to outcome]? Many [Role]s at [CompanyName]'s size are focused on [common goal].
+
+Imagine achieving [Desired outcome] with [Specific feature/benefit]. Our [Offer] is designed to help you do just that.
+
+Would you be interested in learning more about how we can help you [Actionable benefit]?
+
+Best,
+[Your Name]`,
+          persona: 'Any', industry: 'Any', painPoint: 'a challenge', offer: 'our solution', outcome: 'great results', tone: 'Friendly', framework: 'AIDA'
+        },
+        {
+          title: 'FAB Framework Example',
+          content: `Hi [FirstName],
+
+I'm reaching out because our [Offer] has a unique [Feature] that provides [Advantage], leading to the significant [Benefit] of [Outcome].
+
+For example, clients like [Similar Company] used our [Offer] to [Specific Result].
+
+Are you available for a brief call to explore how these benefits could apply to [CompanyName]?
+
+Best,
+[Your Name]`,
+          persona: 'Any', industry: 'Any', painPoint: 'a challenge', offer: 'our solution', outcome: 'great results', tone: 'Professional', framework: 'FAB'
+        },
+        {
+          title: 'Problem-Solution (Concise)',
+          content: `Hi [FirstName],
+
+Quick thought: Are you finding it tough to [PainPoint] at [CompanyName]?
+
+My team helps [Role]s like you [Outcome] using [Offer].
+
+Worth a 10-min chat?
+
+Cheers,
+[Your Name]`,
+          persona: 'Any', industry: 'Any', painPoint: 'a specific problem', offer: 'our solution', outcome: 'a positive change', tone: 'Casual', framework: 'None'
+        },
+        {
+          title: 'Value-Driven (Social Proof)',
+          content: `Hi [FirstName],
+
+We've recently helped companies in [Industry] like [Similar Company 1] and [Similar Company 2] achieve [Specific Outcome] by [Offer].
+
+Given [CompanyName]'s focus on [Relevant Company Goal], I thought you might find value in exploring how we could help you [Desired Outcome].
+
+Let me know if you're open to a brief discussion.
+
+Regards,
+[Your Name]`,
+          persona: 'Any', industry: 'Any', painPoint: 'a common challenge', offer: 'our solution', outcome: 'measurable results', tone: 'Professional', framework: 'None'
+        },
+      ],
+    },
+  ];
+
+  // Initialize Firebase and authenticate
+  useEffect(() => {
+    try {
+      const firebaseConfig = JSON.parse(typeof __firebase_config !== 'undefined' ? __firebase_config : '{}');
+      const app = initializeApp(firebaseConfig);
+      const firestoreDb = getFirestore(app);
+      const firebaseAuth = getAuth(app);
+
+      setDb(firestoreDb);
+      setAuth(firebaseAuth);
+
+      const unsubscribe = onAuthStateChanged(firebaseAuth, async (user) => {
+        if (user) {
+          setUserId(user.uid);
+          setIsAuthReady(true);
+        } else {
+          // Sign in anonymously if no initial token or user is not authenticated
+          const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
+          if (initialAuthToken) {
+            try {
+              await signInWithCustomToken(firebaseAuth, initialAuthToken);
+            } catch (authError) {
+              console.error("Error signing in with custom token:", authError);
+              await signInAnonymously(firebaseAuth);
+            }
+          } else {
+            await signInAnonymously(firebaseAuth);
+          }
+        }
+      });
+
+      return () => unsubscribe(); // Cleanup auth listener
+    } catch (e) {
+      console.error("Firebase initialization failed:", e);
+      setError("Failed to initialize the application. Please try again.");
+    }
+  }, []);
+
+  // Fetch saved sequences when auth is ready and db is available
+  useEffect(() => {
+    if (isAuthReady && db && userId) {
+      const q = query(collection(db, `artifacts/${appId}/users/${userId}/coldEmailSequences`));
+      const unsubscribe = onSnapshot(q, (snapshot) => {
+        const sequences = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        setSavedSequences(sequences);
+        setLoadingSavedSequences(false);
+      }, (error) => {
+        console.error("Error fetching saved sequences:", error);
+        setError("Failed to load saved sequences.");
+        setLoadingSavedSequences(false);
+      });
+      return () => unsubscribe();
+    }
+  }, [isAuthReady, db, userId, appId]);
+
+  // Function to save the current sequence
+  const saveCurrentSequence = async () => {
+    if (!db || !userId) {
+      setError("Authentication not ready. Cannot save.");
+      return;
+    }
+    if (!newSequenceName.trim()) {
+      setError("Please provide a name for the sequence.");
+      return;
+    }
+
+    try {
+      const sequenceData = {
+        name: newSequenceName.trim(),
+        campaignName, // Save campaign name
+        persona, industry, companySize, painPoint, offer, outcome, tone, framework, leadAwareness, // Save lead awareness
+        generatedEmails,
+        timestamp: new Date(),
+      };
+      await addDoc(collection(db, `artifacts/${appId}/users/${userId}/coldEmailSequences`), sequenceData);
+      setShowSaveModal(false);
+      setNewSequenceName('');
+      console.log("Sequence saved successfully!");
+    } catch (e) {
+      console.error("Error saving sequence:", e);
+      setError("Failed to save sequence. Please try again.");
+    }
+  };
+
+  // Function to load a selected sequence
+  const loadSequence = (sequence) => {
+    setCampaignName(sequence.campaignName || ''); // Load campaign name
+    setPersona(sequence.persona || '');
+    setIndustry(sequence.industry || '');
+    setCompanySize(sequence.companySize || '');
+    setPainPoint(sequence.painPoint || '');
+    setOffer(sequence.offer || '');
+    setOutcome(sequence.outcome || '');
+    setTone(sequence.tone || 'Professional');
+    setFramework(sequence.framework || 'None');
+    setLeadAwareness(sequence.leadAwareness || 'Cold / Awareness'); // Load lead awareness
+    setGeneratedEmails(sequence.generatedEmails || {});
+    setSelectedSequenceId(sequence.id);
+    setShowLoadModal(false);
+    setError(''); // Clear any previous errors
+    setCurrentPage('generated'); // Navigate to generated emails after loading
+  };
+
+  // Function to apply a template preset
+  const applyTemplatePreset = (presetName) => {
+    const preset = templatePresets[presetName];
+    if (preset) {
+      setPersona(preset.persona);
+      setIndustry(preset.industry);
+      setCompanySize(preset.companySize); // This is where companySize is set
+      setPainPoint(preset.painPoint);
+      setOffer(preset.offer);
+      setOutcome(preset.outcome);
+      setTone(preset.tone);
+      setFramework(preset.framework);
+      setLeadAwareness(preset.leadAwareness);
+      setCampaignName(presetName + ' Campaign'); // Suggest a campaign name
+      setError(''); // Clear any errors
+    }
+  };
+
+  // Function to copy content to clipboard and show notification
+  const copyToClipboard = (content, message = 'Content copied to clipboard!') => {
+    const textarea = document.createElement('textarea');
+    textarea.value = content;
+    document.body.appendChild(textarea);
+    textarea.select();
+    try {
+      document.execCommand('copy');
+      setNotificationMessage(message);
+      setShowNotification(true);
+      setTimeout(() => setShowNotification(false), 3000); // Hide after 3 seconds
+    } catch (err) {
+      console.error('Failed to copy text: ', err);
+      setNotificationMessage('Failed to copy content.');
+      setShowNotification(true);
+      setTimeout(() => setShowNotification(false), 3000); // Hide after 3 seconds
+    }
+    document.body.removeChild(textarea);
+  };
+
+  // Function to apply swipe file content
+  const applySwipeFileContent = (content, type) => {
+    if (type === 'subject') {
+      copyToClipboard(content, `Subject line copied! Paste it into a subject field in the Personalization Inputs tab.`);
+    } else if (type === 'body') {
+      // For email bodies, copy to clipboard AND populate the 'offer' field
+      copyToClipboard(content, `Email body copied! It has also been pasted into 'Your Offer' field. Please adapt and distribute content as needed across other fields.`);
+      setOffer(content); // Populate the offer field
+    }
+    setCurrentPage('inputs'); // Navigate back to inputs
+  };
+
+  // Function to generate email content from the local library
+  const generateEmailContentFromLibrary = (emailType, timingRecommendation) => {
+    // Basic matching logic: Find the best-fit template
+    let bestMatch = null;
+    let maxScore = -1;
+
+    const lowerCasePainPoint = painPoint.toLowerCase();
+    const lowerCaseOffer = offer.toLowerCase();
+    const lowerCaseOutcome = outcome.toLowerCase();
+
+    emailScriptLibrary.forEach(template => {
+      let score = 0;
+
+      // Prioritize exact matches on categorical fields
+      if (template.persona === persona) score += 10;
+      if (template.industry === industry) score += 10;
+      if (template.companySize === companySize) score += 10;
+      if (template.tone === tone) score += 10;
+      if (template.framework === framework) score += 10;
+      if (template.leadAwareness === leadAwareness) score += 10;
+
+      // Keyword matching for free-text fields
+      template.painPointKeywords.forEach(keyword => {
+        if (lowerCasePainPoint.includes(keyword.toLowerCase())) score += 5;
+      });
+      template.offerKeywords.forEach(keyword => {
+        if (lowerCaseOffer.includes(keyword.toLowerCase())) score += 5;
+      });
+      template.outcomeKeywords.forEach(keyword => {
+        if (lowerCaseOutcome.includes(keyword.toLowerCase())) score += 5;
+      });
+
+      // If 'Any' is specified in template, it's a flexible match
+      if (template.persona === 'Any') score += 1;
+      if (template.industry === 'Any') score += 1;
+      if (template.companySize === 'Any') score += 1;
+      if (template.tone === 'Any') score += 1;
+      if (template.framework === 'Any') score += 1;
+      if (template.leadAwareness === 'Any') score += 1;
+
+
+      if (score > maxScore) {
+        maxScore = score;
+        bestMatch = template;
+      }
+    });
+
+    // Fallback to a default if no strong match found, or if bestMatch is null
+    if (!bestMatch || maxScore < 10) { // Adjust score threshold as needed
+      bestMatch = emailScriptLibrary.find(t => t.id === 'default-professional-cold'); // Fallback to a generic professional template
+      if (!bestMatch) { // If even default is missing
+        setError("No suitable email template found in the library for your criteria. Please try different inputs.");
+        return null;
+      }
+    }
+
+    // Return the specific email from the matched sequence
+    const emailContent = bestMatch.sequence[emailType];
+    if (!emailContent) {
+      setError(`Email type "${emailType}" not found in the selected template.`);
+      return null;
+    }
+
+    // Replace placeholders dynamically
+    let body = emailContent.body
+      .replace(/\[FirstName\]/g, '[FirstName]')
+      .replace(/\[CompanyName\]/g, '[CompanyName]')
+      .replace(/\[Role\]/g, '[Role]')
+      .replace(/\[PainPoint\]/g, painPoint)
+      .replace(/\[Industry\]/g, industry)
+      .replace(/\[Offer\]/g, offer)
+      .replace(/\[Outcome\]/g, outcome)
+      .replace(/\[Your Company\]/g, '[Your Company Name]') // Generic placeholder
+      .replace(/\[Your Name\]/g, '[Your Name]'); // Generic placeholder
+
+    // For specific examples in the library, replace their keywords too
+    // This is a simplified approach; a real system might use regex or more complex parsing
+    body = body.replace(/\[Agitation consequence\]/g, 'lost productivity and missed targets'); // Example specific replacement
+    body = body.replace(/\[Specific Result\]/g, 'a 25% increase in lead conversion'); // Example specific replacement
+    body = body.replace(/\[Similar Company\]/g, 'a leading competitor'); // Example specific replacement
+    body = body.replace(/\[Attention-grabbing subject\]/g, 'Your next big win'); // Example specific replacement
+    body = body.replace(/\[Interest-generating question related to outcome\]/g, 'supercharge your sales pipeline'); // Example specific replacement
+    body = body.replace(/\[common goal\]/g, 'efficient lead generation'); // Example specific replacement
+    body = body.replace(/\[Actionable benefit\]/g, 'get more qualified meetings'); // Example specific replacement
+    body = body.replace(/\[Feature\]/g, 'AI-driven analytics'); // Example specific replacement
+    body = body.replace(/\[Advantage\]/g, 'unparalleled insights'); // Example specific replacement
+    body = body.replace(/\[Benefit\]/g, 'a significant competitive edge'); // Example specific replacement
+    body = body.replace(/\[Similar Company 1\]/g, 'Company A');
+    body = body.replace(/\[Similar Company 2\]/g, 'Company B');
+    body = body.replace(/\[Relevant Company Goal\]/g, 'market expansion');
+
+
+    // Replace CTA placeholders
+    const ctaOptions = emailContent.callToActionOptions.map(cta =>
+      cta.replace(/\[CalendarLink\]/g, '[Your Calendar Link]')
+         .replace(/\[Link\]/g, '[Your Website Link]')
+         .replace(/\[WebsiteLink\]/g, '[Your Website Link]')
+         .replace(/\[LinkedIn Profile\]/g, '[Your LinkedIn Profile]')
+    );
+
+    return {
+      subjectOptions: emailContent.subjectOptions,
+      body: body,
+      callToActionOptions: ctaOptions,
+      selectedCta: ctaOptions[0], // Default to first CTA
+      frameworkUsed: bestMatch.framework,
+      timing: timingRecommendation
+    };
+  };
+
+  // Master function to generate the full sequence
+  const generateFullSequence = async () => {
+    setGeneratedEmails({}); // Clear previous emails
+    setLoading(true);
+    setError('');
+
+    // Validate inputs
+    if (!persona || !industry || !painPoint || !offer || !outcome || !campaignName) {
+      setError("Please fill in all required input fields (Campaign Name, Persona, Industry, Pain Point, Offer, Outcome).");
+      setLoading(false);
+      return;
+    }
+
+    const initialEmail = generateEmailContentFromLibrary(
+      'initial',
+      'Immediate'
+    );
+    if (!initialEmail) { setLoading(false); return; }
+
+    const followUp1 = generateEmailContentFromLibrary(
+      'followUp1',
+      '1-2 days later'
+    );
+    if (!followUp1) { setLoading(false); return; }
+
+    const followUp2 = generateEmailContentFromLibrary(
+      'followUp2',
+      '3-5 days later'
+    );
+    if (!followUp2) { setLoading(false); return; }
+
+    const breakupEmail = generateEmailContentFromLibrary(
+      'breakup',
+      '7-10 days later'
+    );
+    if (!breakupEmail) { setLoading(false); return; }
+
+    setGeneratedEmails({
+      initial: initialEmail,
+      followUp1: followUp1,
+      followUp2: followUp2,
+      breakup: breakupEmail,
+    });
+    setLoading(false);
+    setActiveTab('initial'); // Switch to initial email view after generation
+    setCurrentPage('generated'); // Navigate to generated emails page
+  };
+
+  // Function to download as TXT
+  const downloadTxt = () => {
+    let content = `Campaign Name: ${campaignName}\n\n`;
+    Object.entries(generatedEmails).forEach(([key, email]) => {
+      if (email) {
+        content += `--- ${key.replace(/([A-Z])/g, ' $1').trim().toUpperCase()} EMAIL ---\n`;
+        content += `Timing: ${email.timing}\n`;
+        content += `Subject Options:\n${email.subjectOptions.map(s => `- ${s}`).join('\n')}\n`;
+        content += `Body:\n${email.body}\n`;
+        content += `Selected CTA: ${email.selectedCta}\n\n`; // Use selected CTA
+      }
+    });
+
+    const blob = new Blob([content], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${campaignName.replace(/\s+/g, '_').toLowerCase()}_cold_email_sequence.txt`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
+
+  // Function to download as CSV
+  const downloadCsv = () => {
+    let csvContent = "Campaign Name,Email Type,Timing,Subject Option 1,Subject Option 2,Subject Option 3,Body,Selected CTA,Framework Used\n";
+
+    Object.entries(generatedEmails).forEach(([key, email]) => {
+      if (email) {
+        const type = key.replace(/([A-Z])/g, ' $1').trim();
+        const subjects = email.subjectOptions.map(s => `"${s.replace(/"/g, '""')}"`).join(',');
+        const body = `"${email.body.replace(/"/g, '""').replace(/\n/g, '\\n')}"`; // Handle newlines in CSV
+        const selectedCta = `"${email.selectedCta.replace(/"/g, '""')}"`; // Use selected CTA
+        const framework = email.frameworkUsed || 'N/A';
+        csvContent += `"${campaignName.replace(/"/g, '""')}",${type},${email.timing},${subjects},${body},${selectedCta},${framework}\n`;
+      }
+    });
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${campaignName.replace(/\s+/g, '_').toLowerCase()}_cold_email_sequence.csv`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
+
+  // Helper component for input fields
+  const InputField = ({ label, value, onChange, placeholder, type = 'text', options = [], isTextArea = false, isButtonSelection = false }) => {
+    if (isButtonSelection && options.length > 0) {
+      return (
+        <div className="mb-4">
+          <label className="block text-gray-700 text-sm font-bold mb-2">{label}</label>
+          <div className="flex flex-wrap gap-2">
+            {options.map((option) => (
+              <button
+                key={option}
+                type="button" // Important to prevent form submission
+                onClick={() => onChange(option)}
+                className={`px-4 py-2 rounded-lg font-semibold transition duration-200 ease-in-out border ${
+                  value === option
+                    ? 'bg-indigo-600 text-white border-indigo-600 shadow-md transform scale-105'
+                    : 'bg-gray-200 text-gray-700 border-gray-300 hover:bg-gray-300 hover:border-gray-400'
+                }`}
+              >
+                {option}
+              </button>
+            ))}
+          </div>
+        </div>
+      );
+    }
+
+    return (
+      <div className="mb-4">
+        <label className="block text-gray-700 text-sm font-bold mb-2">{label}</label>
+        {isTextArea ? (
+          <textarea
+            className="block w-full px-4 py-2 text-gray-800 bg-white border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition duration-200 ease-in-out placeholder-gray-400"
+            value={value}
+            onChange={(e) => onChange(e.target.value)}
+            placeholder={placeholder}
+            rows="4"
+          />
+        ) : options.length > 0 ? (
+          <Select onValueChange={onChange} value={value}>
+            <SelectTrigger className="block w-full px-4 py-2 text-gray-800 bg-white border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition duration-200 ease-in-out flex justify-between items-center placeholder-gray-400 min-w-[150px]"> {/* Added min-w */}
+              <SelectValue>{value || placeholder}</SelectValue> {/* Explicitly render value or placeholder */}
+            </SelectTrigger>
+            <SelectContent className="bg-white border border-gray-300 rounded-lg shadow-lg z-[9999] max-h-60 overflow-auto"> {/* High z-index */}
+              {options.map((option) => (
+                <SelectItem key={option} value={option} className="py-2 px-3 text-gray-800 hover:bg-indigo-50 hover:text-indigo-700 cursor-pointer rounded-md">
+                  {option}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        ) : (
+          <input
+            type={type}
+            className="block w-full px-4 py-2 text-gray-800 bg-white border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition duration-200 ease-in-out placeholder-gray-400"
+            value={value}
+            onChange={(e) => onChange(e.target.value)}
+            placeholder={placeholder}
+          />
+        )}
+      </div>
+    );
+  };
+
+  // Email Card Component
+  const EmailCard = ({ title, emailData, onCopy, onCtaChange }) => {
+    if (!emailData) return null;
+    return (
+      <div className="bg-white p-6 rounded-lg shadow-xl border border-gray-200 mb-6 relative">
+        <h3 className="text-2xl font-bold text-gray-800 mb-4">{title}</h3>
+        <button
+          onClick={() => onCopy(`Subject: ${emailData.subjectOptions[0]}\n\n${emailData.body}\n\n${emailData.selectedCta}`)}
+          className="absolute top-4 right-4 bg-blue-500 hover:bg-blue-600 text-white p-2 rounded-full shadow-md transition duration-200 flex items-center justify-center"
+          title="Copy Email Content"
+        >
+          <ClipboardCopy size={18} />
+        </button>
+        <p className="text-sm text-gray-500 mb-4 flex items-center">
+          <Clock size={16} className="mr-2" />
+          Timing: <span className="font-semibold ml-1">{emailData.timing}</span>
+        </p>
+        <p className="text-sm text-gray-500 mb-4 flex items-center">
+          <Lightbulb size={16} className="mr-2" />
+          Framework: <span className="font-semibold ml-1">{emailData.frameworkUsed || 'N/A'}</span>
+        </p>
+
+        <div className="mb-4">
+          <h4 className="text-lg font-semibold text-gray-700 mb-2">Subject Lines:</h4>
+          <ul className="list-disc list-inside text-gray-600">
+            {emailData.subjectOptions.map((subject, index) => (
+              <li key={index} className="mb-1">{subject}</li>
+            ))}
+          </ul>
+        </div>
+
+        <div className="mb-4">
+          <h4 className="text-lg font-semibold text-gray-700 mb-2">Body:</h4>
+          <div className="bg-gray-50 p-4 rounded-md border border-gray-200 text-gray-700 whitespace-pre-wrap">
+            {emailData.body}
+          </div>
+        </div>
+
+        <div>
+          <h4 className="text-lg font-semibold text-gray-700 mb-2">Call to Action:</h4>
+          <Select onValueChange={(value) => onCtaChange(value)} value={emailData.selectedCta}>
+            <SelectTrigger className="block w-full px-4 py-2 text-blue-800 bg-blue-50 border border-blue-200 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition duration-200 ease-in-out flex justify-between items-center font-medium">
+              <SelectValue placeholder="Select a CTA" />
+            </SelectTrigger>
+            <SelectContent className="bg-white border border-gray-300 rounded-lg shadow-lg z-50 max-h-60 overflow-auto">
+              {emailData.callToActionOptions.map((cta, index) => (
+                <SelectItem key={index} value={cta} className="py-2 px-3 text-gray-800 hover:bg-blue-50 hover:text-blue-700 cursor-pointer rounded-md">
+                  {cta}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+      </div>
+    );
+  };
+
+  // Function to update selected CTA for a specific email type
+  const handleCtaChange = (emailType, newCta) => {
+    setGeneratedEmails(prevEmails => ({
+      ...prevEmails,
+      [emailType]: {
+        ...prevEmails[emailType],
+        selectedCta: newCta
+      }
+    }));
+  };
+
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-8 font-inter text-gray-800">
+      {/* ReuxMarketing Watermark - Top Left */}
+      <div className="absolute top-4 left-4 text-gray-300 text-2xl font-bold opacity-70 select-none pointer-events-none z-10">
+        ReuxMarketing
+      </div>
+
+      {/* ReuxForge Watermark - Top Right */}
+      <div className="absolute top-4 right-4 text-gray-300 text-2xl font-bold opacity-70 select-none pointer-events-none z-10">
+        ReuxForge
+      </div>
+
+      <div className="max-w-7xl mx-auto relative z-20"> {/* Ensure content is above watermarks */}
+        <h1 className="text-5xl font-extrabold text-center text-indigo-700 mb-10 drop-shadow-lg">
+          <Rocket size={48} className="inline-block mr-4 text-blue-600" />
+          Cold Email Forge
+        </h1>
+        <p className="text-center text-lg text-gray-600 mb-12 max-w-2xl mx-auto">
+          Automatically generate hyper-personalized cold email sequences tailored to your prospect type.
+          Craft human-sounding, pain-driven, results-oriented copy that converts.
+        </p>
+
+        {/* Global Notification */}
+        {showNotification && (
+          <div className="fixed top-4 left-1/2 -translate-x-1/2 bg-blue-600 text-white px-6 py-3 rounded-lg shadow-lg z-50 animate-fade-in-out">
+            {notificationMessage}
+          </div>
+        )}
+
+        {error && (
+          <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-lg relative mb-6" role="alert">
+            <strong className="font-bold">Error!</strong>
+            <span className="block sm:inline ml-2">{error}</span>
+            <span className="absolute top-0 bottom-0 right-0 px-4 py-3" onClick={() => setError('')}>
+              <XCircle size={18} className="fill-current h-6 w-6 text-red-500 cursor-pointer" />
+            </span>
+          </div>
+        )}
+
+        {/* Navigation Bar */}
+        <nav className="mb-8 bg-white p-4 rounded-lg shadow-lg flex justify-center space-x-4">
+          <button
+            onClick={() => setCurrentPage('inputs')}
+            className={`py-2 px-6 rounded-lg font-semibold transition duration-200 flex items-center ${
+              currentPage === 'inputs' ? 'bg-indigo-600 text-white shadow-md' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+            }`}
+          >
+            <Settings size={20} className="mr-2" /> Personalization
+          </button>
+          <button
+            onClick={() => setCurrentPage('generated')}
+            className={`py-2 px-6 rounded-lg font-semibold transition duration-200 flex items-center ${
+              currentPage === 'generated' ? 'bg-indigo-600 text-white shadow-md' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+            }`}
+            disabled={Object.keys(generatedEmails).length === 0 && !loading} // Disable if no emails generated yet
+          >
+            <MessageSquare size={20} className="mr-2" /> Generated Emails
+          </button>
+          <button
+            onClick={() => setCurrentPage('bestPractices')}
+            className={`py-2 px-6 rounded-lg font-semibold transition duration-200 flex items-center ${
+              currentPage === 'bestPractices' ? 'bg-indigo-600 text-white shadow-md' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+            }`}
+          >
+            <CheckSquare size={20} className="mr-2" /> Best Practices
+          </button>
+          <button
+            onClick={() => setCurrentPage('swipeFile')}
+            className={`py-2 px-6 rounded-lg font-semibold transition duration-200 flex items-center ${
+              currentPage === 'swipeFile' ? 'bg-indigo-600 text-white shadow-md' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+            }`}
+          >
+            <GalleryVertical size={20} className="mr-2" /> Swipe File
+          </button>
+        </nav>
+
+        {/* Conditional Page Rendering */}
+        {currentPage === 'inputs' && (
+          <div className="bg-white p-8 rounded-lg shadow-xl border border-gray-200">
+            <h2 className="text-3xl font-bold text-gray-800 mb-6 flex items-center">
+              <Settings size={28} className="mr-3 text-blue-600" />
+              Personalization Inputs
+            </h2>
+
+            {/* Template Presets - Moved outside form */}
+            <div className="mb-6 pb-4 border-b border-gray-200">
+              <label className="block text-gray-700 text-sm font-bold mb-2">Template Presets</label>
+              <Select onValueChange={applyTemplatePreset}>
+                <SelectTrigger className="block w-full px-4 py-2 text-gray-800 bg-white border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition duration-200 ease-in-out flex justify-between items-center placeholder-gray-400">
+                  <SelectValue placeholder="Select a preset to auto-fill fields" />
+                </SelectTrigger>
+                <SelectContent className="bg-white border border-gray-300 rounded-lg shadow-lg z-[9999] max-h-60 overflow-auto">
+                  {Object.keys(templatePresets).map((presetName) => (
+                    <SelectItem key={presetName} value={presetName} className="py-2 px-3 text-gray-800 hover:bg-indigo-50 hover:text-indigo-700 cursor-pointer rounded-md">
+                      {presetName}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <form onSubmit={(e) => { e.preventDefault(); generateFullSequence(); }}>
+              <InputField
+                key="campaignName"
+                label="Campaign Name"
+                value={campaignName}
+                onChange={setCampaignName}
+                placeholder="e.g., SaaS CMO Outreach Q3"
+              />
+              <InputField
+                key="persona"
+                label="Target Persona (e.g., CMO, Head of Sales)"
+                value={persona}
+                onChange={setPersona}
+                placeholder="e.g., Head of Sales, VP Marketing"
+              />
+              <InputField
+                key="industry"
+                label="Industry (e.g., SaaS, E-commerce, Fintech)"
+                value={industry}
+                onChange={setIndustry}
+                placeholder="e.g., SaaS, Healthcare, Real Estate"
+              />
+              <InputField
+                key="companySize"
+                label="Company Size"
+                value={companySize}
+                onChange={setCompanySize}
+                placeholder="Select company size"
+                options={['SMB (1-50 employees)', 'Mid-market (51-500 employees)', 'Enterprise (500+ employees)']}
+              />
+              <InputField
+                key="painPoint"
+                label="Prospect's Pain Point / Obstacle"
+                value={painPoint}
+                onChange={setPainPoint}
+                placeholder="e.g., Low demo show-up rate, Inefficient lead qualification"
+                isTextArea
+              />
+              <InputField
+                key="offer"
+                label="Your Offer (product/service description)"
+                value={offer}
+                onChange={setOffer}
+                placeholder="e.g., Calendar automation tool, AI-powered lead scoring platform"
+                isTextArea
+              />
+              <InputField
+                key="outcome"
+                label="Desired Outcome/Transformation for Prospect"
+                value={outcome}
+                onChange={setOutcome}
+                placeholder="e.g., 25% increase in booked demos, Reduced sales cycle by 15%"
+                isTextArea
+              />
+              <InputField
+                key="tone"
+                label="Tone Selection"
+                value={tone}
+                onChange={setTone}
+                placeholder="Select tone"
+                options={['Professional', 'Friendly', 'Assertive', 'Casual', 'Punchy']}
+                isButtonSelection={true}
+              />
+              <InputField
+                key="framework"
+                label="Framework Preference"
+                value={framework}
+                onChange={setFramework}
+                placeholder="Select framework"
+                options={['None', 'PAS (Problem, Agitate, Solve)', 'AIDA (Attention, Interest, Desire, Action)', 'FAB (Features, Advantages, Benefits)']}
+                isButtonSelection={true}
+              />
+              <InputField
+                key="leadAwareness" // New input for lead awareness
+                label="Lead Awareness Level"
+                value={leadAwareness}
+                onChange={setLeadAwareness}
+                placeholder="Select awareness level"
+                options={['Cold / Awareness', 'Warm / Consideration', 'Hot / Decision']}
+                isButtonSelection={true}
+              />
+
+              <button
+                type="submit"
+                className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-4 rounded-lg focus:outline-none focus:shadow-outline transition duration-300 ease-in-out transform hover:-translate-y-1 hover:scale-105 flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed"
+                disabled={loading || !persona || !industry || !painPoint || !offer || !outcome || !campaignName}
+              >
+                {loading ? (
+                  <svg className="animate-spin h-5 w-5 text-white mr-3" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                ) : (
+                  <Mail size={20} className="mr-2" />
+                )}
+                {loading ? 'Generating...' : 'Generate Email Sequence'}
+              </button>
+            </form>
+
+            <div className="mt-6 flex flex-col space-y-3">
+              <button
+                onClick={() => setShowSaveModal(true)}
+                className="w-full bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded-lg focus:outline-none focus:shadow-outline transition duration-300 flex items-center justify-center"
+              >
+                <Save size={18} className="mr-2" /> Save Sequence
+              </button>
+              <button
+                onClick={() => setShowLoadModal(true)}
+                className="w-full bg-purple-500 hover:bg-purple-600 text-white font-bold py-2 px-4 rounded-lg focus:outline-none focus:shadow-outline transition duration-300 flex items-center justify-center"
+                disabled={loadingSavedSequences}
+              >
+                <FolderOpen size={18} className="mr-2" /> Load Sequence
+              </button>
+            </div>
+          </div>
+        )}
+
+        {currentPage === 'generated' && Object.keys(generatedEmails).length > 0 && (
+          <div className="bg-white p-8 rounded-lg shadow-xl border border-gray-200">
+            <h2 className="text-3xl font-bold text-gray-800 mb-6 flex items-center">
+              <MessageSquare size={28} className="mr-3 text-blue-600" />
+              Generated Email Sequence
+            </h2>
+
+            {/* Preview Email Flow Visualizer */}
+            <div className="mb-8 p-4 bg-blue-50 rounded-lg border border-blue-200 text-blue-800 shadow-inner">
+              <h3 className="text-xl font-bold mb-3 flex items-center">
+                <LayoutDashboard size={22} className="mr-2" /> Campaign Flow Preview
+              </h3>
+              <div className="flex flex-wrap justify-center items-center gap-4 text-center">
+                {Object.entries(generatedEmails).map(([key, email], index) => (
+                  <div key={key} className="flex flex-col items-center">
+                    <div className="bg-blue-200 text-blue-800 rounded-lg px-4 py-2 font-semibold text-sm shadow-md">
+                      {key.replace(/([A-Z])/g, ' $1').trim()}
+                    </div>
+                    <p className="text-xs text-blue-700 mt-1">{email.timing}</p>
+                    {index < Object.keys(generatedEmails).length - 1 && (
+                      <ChevronRight size={24} className="text-blue-400 mt-2" />
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Campaign Benchmarks */}
+            <div className="mb-8 p-4 bg-green-50 rounded-lg border border-green-200 text-green-800 shadow-inner">
+              <h3 className="text-xl font-bold mb-3 flex items-center">
+                <LineChart size={22} className="mr-2" /> Campaign Benchmarks
+              </h3>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-center">
+                <div className="p-3 bg-green-100 rounded-lg">
+                  <p className="text-2xl font-bold">15-25%</p>
+                  <p className="text-sm">Expected Open Rate</p>
+                </div>
+                <div className="p-3 bg-green-100 rounded-lg">
+                  <p className="text-2xl font-bold">1-3 days</p>
+                  <p className="text-sm">Follow-up Wait Time</p>
+                </div>
+                <div className="p-3 bg-green-100 rounded-lg">
+                  <p className="text-2xl font-bold">50-100</p>
+                  <p className="text-sm">Avg. Word Count (Initial)</p>
+                </div>
+              </div>
+              <p className="text-xs text-green-700 mt-3 text-center">
+                *These benchmarks are general guidelines and can vary based on industry, audience, and personalization.
+              </p>
+            </div>
+
+
+            <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+              <TabsList className="flex flex-wrap justify-center bg-gray-100 rounded-lg p-1 mb-6 shadow-inner">
+                <TabsTrigger value="initial" className="py-2 px-4 rounded-md text-gray-700 hover:bg-gray-200 data-[state=active]:bg-indigo-500 data-[state=active]:text-white data-[state=active]:font-semibold transition duration-200">Initial Outreach</TabsTrigger>
+                <TabsTrigger value="followUp1" className="py-2 px-4 rounded-md text-gray-700 hover:bg-gray-200 data-[state=active]:bg-indigo-500 data-[state=active]:text-white data-[state=active]:font-semibold transition duration-200">Follow-Up #1</TabsTrigger>
+                <TabsTrigger value="followUp2" className="py-2 px-4 rounded-md text-gray-700 hover:bg-gray-200 data-[state=active]:bg-indigo-500 data-[state=active]:text-white data-[state=active]:font-semibold transition duration-200">Follow-Up #2</TabsTrigger>
+                <TabsTrigger value="breakup" className="py-2 px-4 rounded-md text-gray-700 hover:bg-gray-200 data-[state=active]:bg-indigo-500 data-[state=active]:text-white data-[state=active]:font-semibold transition duration-200">Break-up Email</TabsTrigger>
+              </TabsList>
+
+              <TabsContent value="initial">
+                <EmailCard title="Initial Outreach Email" emailData={generatedEmails.initial} onCopy={copyToClipboard} onCtaChange={(cta) => handleCtaChange('initial', cta)} />
+              </TabsContent>
+              <TabsContent value="followUp1">
+                <EmailCard title="Follow-Up #1" emailData={generatedEmails.followUp1} onCopy={copyToClipboard} onCtaChange={(cta) => handleCtaChange('followUp1', cta)} />
+              </TabsContent>
+              <TabsContent value="followUp2">
+                <EmailCard title="Follow-Up #2" emailData={generatedEmails.followUp2} onCopy={copyToClipboard} onCtaChange={(cta) => handleCtaChange('followUp2', cta)} />
+              </TabsContent>
+              <TabsContent value="breakup">
+                <EmailCard title="Break-up Email" emailData={generatedEmails.breakup} onCopy={copyToClipboard} onCtaChange={(cta) => handleCtaChange('breakup', cta)} />
+              </TabsContent>
+            </Tabs>
+
+            {/* Export Options */}
+            <div className="mt-8 pt-6 border-t border-gray-200">
+              <h3 className="text-2xl font-bold text-gray-800 mb-4 flex items-center">
+                <Download size={24} className="mr-3 text-blue-600" />
+                Export Options
+              </h3>
+              <div className="flex flex-wrap gap-4">
+                <button
+                  onClick={downloadTxt}
+                  className="flex-1 min-w-[150px] bg-gray-700 hover:bg-gray-800 text-white font-bold py-3 px-4 rounded-lg transition duration-300 flex items-center justify-center shadow-md"
+                >
+                  <FileText size={20} className="mr-2" /> Export to .TXT
+                </button>
+                <button
+                  onClick={downloadCsv}
+                  className="flex-1 min-w-[150px] bg-teal-600 hover:bg-teal-700 text-white font-bold py-3 px-4 rounded-lg transition duration-300 flex items-center justify-center shadow-md"
+                >
+                  <FileSpreadsheet size={20} className="mr-2" /> Export to .CSV
+                </button>
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <button
+                        className="flex-1 min-w-[150px] bg-orange-500 hover:bg-orange-600 text-white font-bold py-3 px-4 rounded-lg transition duration-300 flex items-center justify-center opacity-70 cursor-not-allowed shadow-md"
+                        disabled
+                      >
+                        <Zap size={20} className="mr-2" /> Zapier Webhook (Soon!)
+                      </button>
+                    </TooltipTrigger>
+                    <TooltipContent className="bg-gray-800 text-white text-xs p-2 rounded-md shadow-lg z-50">
+                      Direct Zapier integration is a future enhancement.
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {currentPage === 'bestPractices' && (
+          <div className="bg-white p-8 rounded-lg shadow-xl border border-gray-200">
+            <h2 className="text-3xl font-bold text-gray-800 mb-6 flex items-center">
+              <CheckSquare size={28} className="mr-3 text-blue-600" />
+              Cold Email Best Practices
+            </h2>
+            <Accordion type="single" collapsible className="w-full">
+              <AccordionItem value="item-1" className="border-b border-gray-200">
+                <AccordionTrigger className="flex justify-between items-center w-full py-4 text-left font-semibold text-lg text-gray-700 hover:text-indigo-600 transition duration-200">
+                  Optimal Send Times & Cadence
+                  <ChevronDown size={20} className="accordion-chevron transition-transform duration-200" />
+                </AccordionTrigger>
+                <AccordionContent className="overflow-hidden transition-all duration-300 data-[state=closed]:animate-accordion-up data-[state=open]:animate-accordion-down">
+                  <ul className="list-disc list-inside text-gray-600 pb-4 pl-4">
+                    <li><strong>Best Days:</strong> Tuesday, Wednesday, Thursday. Avoid Mondays (inbox overload) and Fridays (winding down).</li>
+                    <li><strong>Best Times:</strong> 9 AM - 11 AM and 1 PM - 4 PM (prospects are settled but not yet leaving).</li>
+                    <li><strong>Cadence:</strong>
+                      <ul className="list-circle list-inside ml-4">
+                        <li>Initial Email: Immediate</li>
+                        <li>Follow-Up #1: 1-2 business days later (e.g., if initial on Mon, FU1 on Wed)</li>
+                        <li>Follow-Up #2: 3-5 business days after FU1 (e.g., if FU1 on Wed, FU2 next Mon/Tue)</li>
+                        <li>Break-up Email: 7-10 business days after FU2 (last touch, no reply expected)</li>
+                      </ul>
+                    </li>
+                    <li><strong>Persona-Specific:</strong> For busy executives, early mornings (7-8 AM) or late evenings (5-6 PM) can sometimes work as they check emails outside peak hours.</li>
+                    <li><strong>Time Zones:</strong> Always consider your prospect's time zone. Send emails during their optimal hours, not yours.</li>
+                    <li><strong>Consistency:</strong> Maintain a consistent sending schedule for your campaigns to build predictability and improve deliverability.</li>
+                    <li><strong>Automated vs. Manual:</strong> For very high-value prospects, consider manual follow-ups to allow for more personalized responses based on their engagement.</li>
+                  </ul>
+                </AccordionContent>
+              </AccordionItem>
+
+              <AccordionItem value="item-3" className="border-b border-gray-200"> {/* Moved to be above compliance */}
+                <AccordionTrigger className="flex justify-between items-center w-full py-4 text-left font-semibold text-lg text-gray-700 hover:text-indigo-600 transition duration-200">
+                  Call to Action (CTA) Recommendations
+                  <ChevronDown size={20} className="accordion-chevron transition-transform duration-200" />
+                </AccordionTrigger>
+                <AccordionContent className="overflow-hidden transition-all duration-300 data-[state=closed]:animate-accordion-up data-[state=open]:animate-accordion-down">
+                  <ul className="list-disc list-inside text-gray-600 pb-4 pl-4">
+                    <li><strong>Single, Clear CTA:</strong> Focus on one primary action per email. Too many options confuse the prospect.</li>
+                    <li><strong>Low-Commitment CTAs:</strong> For initial emails, aim for a low-friction "micro-commitment" rather than a full demo.
+                      <ul className="list-circle list-inside ml-4">
+                        <li>"Would you be open to a brief 15-minute chat next week?"</li>
+                        <li>"Are you free for a quick 10-minute call to discuss this further?"</li>
+                        <li>"Does this sound like something worth exploring?" (Reply-based)</li>
+                      </ul>
+                    </li>
+                    <li><strong>Calendar Link:</strong> If using, ensure it's easy to access and pre-populates meeting details. Tools like Calendly or Chili Piper are great.</li>
+                    <li><strong>Reply-Based CTAs:</strong> Often perform better in cold outreach as they require less effort.
+                      <ul className="list-circle list-inside ml-4">
+                        <li>"Simply reply 'Yes' if you'd like to learn more."</li>
+                        <li>"What are your thoughts on [Pain Point]?"</li>
+                      </ul>
+                    </li>
+                    <li><strong>Value-Driven CTAs:</strong> Frame the CTA around the benefit to the prospect.
+                      <ul className="list-circle list-inside ml-4">
+                        <li>"Ready to boost your [Outcome]?"</li>
+                        <li>"Let's explore how [Your Offer] can solve [Pain Point]."</li>
+                      </ul>
+                    </li>
+                    <li><strong>Personalized CTAs:</strong> Whenever possible, tailor the CTA to the prospect's specific situation or a recent trigger.</li>
+                    <li><strong>A/B Test CTAs:</strong> Always test different CTA variations to see which ones resonate best with your audience.</li>
+                    <li><strong>Clarity is King:</strong> Avoid jargon or ambiguous language. The prospect should immediately understand what you want them to do.</li>
+                    <li><strong>Mobile-Friendly:</strong> Ensure your CTA is easily clickable on mobile devices.</li>
+                  </ul>
+                </AccordionContent>
+              </AccordionItem>
+
+              <AccordionItem value="item-2" className="border-b border-gray-200"> {/* Moved to be at the bottom */}
+                <AccordionTrigger className="flex justify-between items-center w-full py-4 text-left font-semibold text-lg text-gray-700 hover:text-indigo-600 transition duration-200">
+                  GDPR / Compliance Reminder
+                  <ChevronDown size={20} className="accordion-chevron transition-transform duration-200" />
+                </AccordionTrigger>
+                <AccordionContent className="overflow-hidden transition-all duration-300 data-[state=closed]:animate-accordion-up data-[state=open]:animate-accordion-down">
+                  <div className="text-gray-600 pb-4 pl-4">
+                    <p className="mb-2">Always ensure your cold email outreach complies with relevant data privacy regulations like GDPR (Europe) and CCPA (California).</p>
+                    <ul className="list-disc list-inside ml-4">
+                      <li><strong>Legitimate Interest:</strong> Ensure you have a legitimate interest in contacting the prospect and that your offer is relevant to their professional role.</li>
+                      <li><strong>Transparency:</strong> Clearly identify yourself and your company.</li>
+                      <li><strong>Opt-Out:</strong> Provide a clear and easy way for recipients to opt-out of future communications (e.g., an unsubscribe link).</li>
+                      <li><strong>Data Sourcing:</strong> Be transparent about where you obtained their contact information if asked.</li>
+                      <li><strong>Record Keeping:</strong> Maintain records of consent or legitimate interest assessments.</li>
+                      <li><strong>Data Minimization:</strong> Only collect and process data that is necessary for your outreach.</li>
+                      <li><strong>Jurisdiction:</strong> Be aware of the specific regulations in the regions you are targeting. Compliance requirements can vary significantly.</li>
+                    </ul>
+                    <p className="mt-2 text-sm text-red-500 font-medium">Disclaimer: This is not legal advice. Consult a legal professional for specific compliance guidance.</p>
+                  </div>
+                </AccordionContent>
+              </AccordionItem>
+            </Accordion>
+          </div>
+        )}
+
+        {currentPage === 'swipeFile' && (
+          <div className="bg-white p-8 rounded-lg shadow-xl border border-gray-200">
+            <h2 className="text-3xl font-bold text-gray-800 mb-6 flex items-center">
+              <GalleryVertical size={28} className="mr-3 text-blue-600" />
+              Swipe File: Inspiration & Examples
+            </h2>
+            <p className="text-gray-600 mb-6">
+              Browse proven subject lines and email body examples. Click "Use This" to copy content and pre-fill your personalization inputs.
+            </p>
+
+            {swipeFileContent.map((category, catIndex) => (
+              <div key={catIndex} className="mb-8">
+                <h3 className="text-2xl font-bold text-gray-800 mb-4 border-b pb-2">{category.category}</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {category.examples.map((example, exIndex) => (
+                    <div key={exIndex} className="bg-gray-50 p-5 rounded-lg border border-gray-200 shadow-sm">
+                      <h4 className="text-lg font-semibold text-gray-700 mb-2">{example.title}</h4>
+                      <div className="bg-white p-3 rounded-md border border-gray-100 text-gray-700 text-sm whitespace-pre-wrap mb-3">
+                        {example.content}
+                      </div>
+                      <button
+                        onClick={() => applySwipeFileContent(example.content, category.category === 'Subject Lines' ? 'subject' : 'body')}
+                        className="w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-lg transition duration-200 flex items-center justify-center text-sm"
+                      >
+                        <ClipboardCopy size={16} className="mr-2" /> Use This
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* Save Sequence Modal */}
+      <Dialog open={showSaveModal} onOpenChange={setShowSaveModal}>
+        <DialogContent className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50 p-4">
+          <div className="bg-white p-8 rounded-lg shadow-2xl max-w-md w-full">
+            <div className="mb-6">
+              <DialogTitle className="text-2xl font-bold text-gray-800 mb-2">Save Current Sequence</DialogTitle>
+              <DialogDescription className="text-gray-600">
+                Give your generated email sequence a name to save it for later.
+              </DialogDescription>
+            </div>
+            <InputField
+              label="Sequence Name"
+              value={newSequenceName}
+              onChange={setNewSequenceName}
+              placeholder="e.g., SaaS CMO Outreach Q3"
+            />
+            <div className="flex justify-end space-x-4 mt-6">
+              <button
+                onClick={() => setShowSaveModal(false)}
+                className="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded-lg transition duration-200"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={saveCurrentSequence}
+                className="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg transition duration-200"
+                disabled={!newSequenceName.trim()}
+              >
+                Save
+              </button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Load Sequence Modal */}
+      <Dialog open={showLoadModal} onOpenChange={setShowLoadModal}>
+        <DialogContent className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50 p-4">
+          <div className="bg-white p-8 rounded-lg shadow-2xl max-w-lg w-full">
+            <div className="mb-6">
+              <DialogTitle className="text-2xl font-bold text-gray-800 mb-2">Load Saved Sequence</DialogTitle>
+              <DialogDescription className="text-gray-600">
+                Select a previously saved email sequence to load its details and generated emails.
+              </DialogDescription>
+            </div>
+            {loadingSavedSequences ? (
+              <div className="text-center py-8 text-gray-600 flex items-center justify-center">
+                <svg className="animate-spin h-5 w-5 text-indigo-500 mr-3" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                Loading saved sequences...
+              </div>
+            ) : savedSequences.length === 0 ? (
+              <p className="text-center text-gray-500 py-8">No saved sequences found.</p>
+            ) : (
+              <ul className="space-y-3 max-h-80 overflow-y-auto pr-2">
+                {savedSequences.map((seq) => (
+                  <li
+                    key={seq.id}
+                    className="flex items-center justify-between p-4 bg-gray-50 rounded-lg border border-gray-200 hover:bg-gray-100 cursor-pointer transition duration-200"
+                    onClick={() => loadSequence(seq)}
+                  >
+                    <span className="font-medium text-gray-700">{seq.name}</span>
+                    <span className="text-sm text-gray-500">
+                      {seq.timestamp ? new Date(seq.timestamp.seconds * 1000).toLocaleDateString() : 'N/A'}
+                    </span>
+                    <ChevronRight size={18} className="text-gray-500" />
+                  </li>
+                ))}
+              </ul>
+            )}
+            <div className="flex justify-end mt-6">
+              <button
+                onClick={() => setShowLoadModal(false)}
+                className="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded-lg transition duration-200"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+    </div>
+  );
+};
+
+export default App;

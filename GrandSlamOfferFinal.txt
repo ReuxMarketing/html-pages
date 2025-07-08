@@ -1,0 +1,860 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Grand Slam Offer Builder</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script> <!-- Added html2canvas library -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Chosen Palette: Warm Neutral (Slate, Zinc, Stone) with Amber accent -->
+    <!-- Application Structure Plan: A multi-step, wizard-style SPA with enhanced visual progression. This structure was chosen to guide the user through Hormozi's linear framework in manageable, visually distinct chunks, reducing overwhelm and enhancing engagement. The flow progresses from defining the market to building the value stack, setting terms, and finally viewing a comprehensive comprehensive summary dashboard. Navigation is handled by prominent 'Next'/'Previous' buttons and a robust, clickable step indicator, making the creation process intuitive. The final dashboard provides a powerful visual summary, contrasting the stacked value against the price, which is the core takeaway of the methodology. -->
+    <!-- Visualization & Content Choices: The primary visualization is a dynamic Chart.js bar chart on the Value Stack and Summary pages. Goal: Compare/Organize. It shows the perceived value of the core offer vs. bonuses, and total value vs. price. Interaction: The chart updates in real-time as the user adds/edits items and their values, providing immediate feedback and making the abstract concept of 'value stacking' tangible. The Value Equation section uses structured HTML/CSS to visually represent the formula, turning inputs into a more engaging, diagram-like element. Justification: These choices directly support the application's goal of being an active creation tool, not just a passive form, by making the data and concepts interactive, easy to understand, and visually appealing. Library/Method: Chart.js (Canvas). -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .step-indicator {
+            width: 48px; /* Increased size */
+            height: 48px; /* Increased size */
+            border-radius: 9999px;
+            background-color: #e5e7eb;
+            color: #1f2937;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease-in-out;
+        }
+        .step-indicator.active {
+            background-color: #f59e0b; /* amber-500 */
+            color: #fff;
+            box-shadow: 0 0 0 4px rgba(251, 191, 36, 0.3);
+        }
+        .step-indicator.completed {
+            background-color: #22c55e; /* green-500 */
+            color: #fff;
+        }
+
+        .step-line {
+            height: 6px !important; /* make the line thicker */
+            background-color: #e2e8f0; /* fallback */
+            border-radius: 9999px;
+            transition: all 0.3s ease-in-out;
+        }
+        .step-line.completed {
+            background-color: #22c55e !important; /* green-500 */
+        }
+
+        .step-label {
+            @apply text-xs md:text-sm font-semibold mt-2 transition-colors duration-300 ease-in-out;
+        }
+        .step-indicator.active + .step-label {
+            @apply text-stone-900 font-bold;
+        }
+        .step-indicator.completed + .step-label {
+            @apply text-stone-700;
+        }
+        .step-indicator:not(.active):not(.completed) + .step-label {
+            @apply text-stone-500;
+        }
+
+        .input-field {
+            @apply w-full px-4 py-2 bg-white border border-stone-300 rounded-lg shadow-sm focus:ring-amber-500 focus:border-amber-500;
+            transition: border-color 0.3s, background-color 0.3s; /* Added transition */
+        }
+        .textarea-field {
+             @apply w-full px-4 py-3 bg-white border border-stone-300 rounded-lg shadow-sm focus:ring-amber-500 focus:border-amber-500; /* Base for textarea, specific heights applied via h-xx classes */
+            resize: vertical; /* Allow manual resizing */
+            transition: border-color 0.3s, background-color 0.3s; /* Added transition */
+        }
+        .label-text {
+            @apply block text-sm font-medium text-stone-700 mb-1;
+        }
+        .section-card {
+            @apply bg-white p-6 md:p-8 rounded-xl shadow-lg border border-stone-200;
+        }
+        .btn-primary {
+            @apply px-8 py-3 bg-amber-500 text-white font-semibold rounded-lg shadow-md hover:bg-amber-600 focus:outline-none focus:ring-2 focus:ring-amber-400 focus:ring-opacity-75 transition-all duration-200 text-lg;
+        }
+        .btn-secondary {
+            @apply px-8 py-3 bg-stone-200 text-stone-700 font-semibold rounded-lg hover:bg-stone-300 focus:outline-none focus:ring-2 focus:ring-stone-400 focus:ring-opacity-75 transition-all duration-200 text-lg;
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 800px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 450px; /* Increased height */
+            max-height: 70vh; /* Increased max-height */
+        }
+        @media (min-width: 768px) {
+            .chart-container {
+                height: 550px; /* Increased height for larger screens */
+            }
+        }
+        .ai-output-box {
+            @apply bg-stone-100 p-4 rounded-lg border border-stone-200 mt-4 text-stone-700 text-base;
+        }
+        .loading-spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #f59e0b;
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            animation: spin 1s linear infinite;
+            margin-left: 8px;
+            display: inline-block;
+            vertical-align: middle;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        /* Watermark Styles */
+        .watermark-left,
+        .watermark-right {
+            position: fixed;
+            z-index: 0;
+            opacity: 0.06; /* Increased opacity */
+            font-size: 2rem; /* Reduced font size */
+            font-weight: bold;
+            transform: rotate(0deg); /* No rotation */
+            pointer-events: none;
+            user-select: none;
+            color: #000;
+        }
+
+        .watermark-left {
+            top: 20px;
+            left: 20px;
+        }
+
+        .watermark-right {
+            top: 20px; /* Changed from bottom to top */
+            right: 20px;
+        }
+
+        /* Modal/Overlay for Error Message */
+        .error-modal-overlay {
+            position: fixed;
+            inset: 0;
+            background-color: rgba(0, 0, 0, 0.5); /* Semi-transparent black overlay */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000; /* High z-index to overlay everything */
+            transition: opacity 0.3s ease-in-out;
+        }
+
+        .error-modal-content {
+            background-color: #fff;
+            padding: 2rem;
+            border-radius: 0.75rem;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            text-align: center;
+            max-width: 400px;
+            width: 90%;
+        }
+    </style>
+</head>
+<body class="bg-stone-50 text-stone-800">
+
+    <!-- Watermarks -->
+    <div class="watermark-left">ReuxMarketing</div>
+    <div class="watermark-right">ReuxForge</div>
+
+    <div id="app" class="container mx-auto px-4 py-12 md:py-16 max-w-5xl">
+        
+        <header class="text-center mb-12">
+            <h1 class="text-3xl md:text-5xl font-extrabold text-stone-900 leading-tight">Craft Your Grand Slam Offer</h1>
+            <p class="mt-4 text-lg md:text-xl text-stone-600 max-w-2xl mx-auto">Transform your product or service into an irresistible offer, step-by-step, using Alex Hormozi's proven framework.</p>
+        </header>
+
+        <nav id="step-navigation" class="mb-16 w-full">
+            <div class="flex items-center justify-center relative">
+                <div class="flex items-center flex-col cursor-pointer" data-step="1">
+                    <div class="step-indicator">1</div>
+                    <span class="step-label">Market</span>
+                </div>
+                <div class="step-line flex-auto h-2 mx-2" data-step-line="1"></div>
+                <div class="flex items-center flex-col cursor-pointer" data-step="2">
+                    <div class="step-indicator">2</div>
+                    <span class="step-label">Value</span>
+                </div>
+                <div class="step-line flex-auto h-2 mx-2" data-step-line="2"></div>
+                <div class="flex items-center flex-col cursor-pointer" data-step="3">
+                    <div class="step-indicator">3</div>
+                    <span class="step-label">Stack</span>
+                </div>
+                <div class="step-line flex-auto h-2 mx-2" data-step-line="3"></div>
+                <div class="flex items-center flex-col cursor-pointer" data-step="4">
+                    <div class="step-indicator">4</div>
+                    <span class="step-label">Terms</span>
+                </div>
+                 <div class="step-line flex-auto h-2 mx-2" data-step-line="4"></div>
+                <div class="flex items-center flex-col cursor-pointer" data-step="5">
+                    <div class="step-indicator">5</div>
+                    <span class="step-label">Summary</span>
+                </div>
+            </div>
+        </nav>
+
+        <main id="app-content">
+            <!-- Step 1: Market Identification -->
+            <section id="step-1" class="app-step mb-16">
+                <div class="section-card">
+                    <h2 class="text-2xl md:text-3xl font-bold text-stone-800 mb-4">1. Identify Your Starving Crowd</h2>
+                    <p class="text-stone-600 mb-8">A powerful offer is wasted on the wrong audience. Define your ideal market with precision.</p>
+                    <div class="space-y-10">
+                        <!-- Custom Offer Name Input - Moved to top of section 1 -->
+                        <div class="space-y-2">
+                          <label for="offer-name" class="label-text text-lg">Your Grand Slam Offer Name</label>
+                          <p class="text-xs text-stone-500 mb-2">Give your offer a powerful, memorable name now — it will appear on the final summary.</p>
+                          <input
+                            type="text"
+                            id="offer-name"
+                            class="input-field text-base w-full max-w-3xl"
+                            placeholder="e.g., The Client Magnet Formula"
+                          >
+                        </div>
+                        <div class="space-y-2">
+                            <label for="market-niche" class="label-text">Target Market/Niche</label>
+                            <p class="text-xs text-stone-500 mb-2">Who is the specific type of person or business you're trying to serve?</p>
+                            <textarea id="market-niche" class="textarea-field h-28 w-full max-w-3xl" placeholder="e.g., First-time gym owners struggling with client acquisition"></textarea>
+                        </div>
+                        <div class="space-y-2">
+                            <label for="market-pain" class="label-text">Their Massive Pain Point</label>
+                            <p class="text-xs text-stone-500 mb-2">What’s the major problem they’re desperate to solve?</p>
+                            <textarea id="market-pain" class="textarea-field h-28 w-full max-w-3xl" placeholder="e.g., Can't consistently get new members, leading to low revenue"></textarea>
+                        </div>
+                        <div class="space-y-2">
+                            <label for="market-power" class="label-text">Purchasing Power</label>
+                            <p class="text-xs text-stone-500 mb-2">Do they have money? Can they actually afford your solution?</p>
+                            <textarea id="market-power" class="textarea-field h-24 w-full max-w-3xl" placeholder="e.g., Established enough to invest $2k-$10k in growth solutions"></textarea>
+                        </div>
+                        <div class="space-y-2">
+                            <label for="market-targeting" class="label-text">Ease of Targeting</label>
+                            <p class="text-xs text-stone-500 mb-2">How easy is it to find and reach them with ads, cold outreach, etc.?</p>
+                            <textarea id="market-targeting" class="textarea-field h-24 w-full max-w-3xl" placeholder="e.g., Active on Facebook groups, forums, and trade shows"></textarea>
+                        </div>
+                        <div class="space-y-2">
+                            <label for="market-growth" class="label-text">Market Growth Potential</label>
+                            <p class="text-xs text-stone-500 mb-2">Is this market expanding over time or shrinking?</p>
+                            <textarea id="market-growth" class="textarea-field h-24 w-full max-w-3xl" placeholder="e.g., Growing industry due to increased health awareness post-pandemic"></textarea>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Step 2: Value Equation -->
+            <section id="step-2" class="app-step hidden mb-16">
+                <div class="section-card">
+                    <h2 class="text-2xl md:text-3xl font-bold text-stone-800 mb-4">2. Maximize Perceived Value</h2>
+                    <p class="text-stone-600 mb-8">Hormozi's Value Equation: `(Dream Outcome * Perceived Likelihood) / (Time Delay * Effort & Sacrifice)`. Fill in each part to amplify your offer's appeal.</p>
+                     <div class="space-y-8">
+                        <div>
+                            <label for="dream-outcome" class="label-text">Dream Outcome (The Destination)</label>
+                            <p class="text-xs text-stone-500 mb-2">What is the ultimate, ideal future state your customer desperately wants to achieve?</p>
+                            <textarea id="dream-outcome" class="textarea-field w-full max-w-3xl" placeholder=""></textarea>
+                        </div>
+                        <div>
+                            <label for="likelihood" class="label-text">Perceived Likelihood of Achievement (Their Belief)</label>
+                             <p class="text-xs text-stone-500 mb-2">How can you make them believe they *will* succeed? (e.g., testimonials, case studies, your own track record, a strong guarantee)</p>
+                            <textarea id="likelihood" class="textarea-field w-full max-w-3xl" placeholder=""></textarea>
+                        </div>
+                        <div>
+                            <label for="time-delay" class="label-text">Time Delay (Speed to Results)</label>
+                             <p class="text-xs text-stone-500 mb-2">How quickly will they see tangible results? (The faster, the more valuable)</p>
+                            <textarea id="time-delay" class="textarea-field w-full max-w-3xl" placeholder=""></textarea>
+                        </div>
+                         <div>
+                            <label for="effort" class="label-text">Effort & Sacrifice (Ease of Implementation)</label>
+                             <p class="text-xs text-stone-500 mb-2">How can you make it incredibly easy for them? (e.g., done-for-you services, simple templates, minimal time commitment)</p>
+                            <textarea id="effort" class="textarea-field w-full max-w-3xl" placeholder=""></textarea>
+                        </div>
+                        <!-- Removed AI value proposition enhancement button and output -->
+                    </div>
+                </div>
+            </section>
+
+            <!-- Step 3: Value Stack Construction -->
+            <section id="step-3" class="app-step hidden mb-16">
+                <div class="section-card">
+                    <h2 class="text-2xl md:text-3xl font-bold text-stone-800 mb-4">3. Build Your Irresistible Value Stack</h2>
+                    <p class="text-stone-600 mb-8">List your core offering and all high-value bonuses. Assign a perceived value to each component to create an undeniable offer.</p>
+                    
+                    <div id="value-stack-items" class="space-y-6">
+                        <!-- Core Offer -->
+                        <div class="p-6 border border-amber-300 rounded-xl bg-amber-50/50 shadow-sm">
+                             <h3 class="font-bold text-xl text-amber-800 mb-3">Core Product/Service</h3>
+                             <div class="grid grid-cols-1 md:grid-cols-12 gap-4">
+                                <div class="md:col-span-4">
+                                    <label class="label-text">Component Name</label>
+                                    <input type="text" class="input-field offer-item-name" placeholder="" data-id="0">
+                                </div>
+                                <div class="md:col-span-5">
+                                    <label class="label-text">Why it helps / Description</label>
+                                    <input type="text" class="input-field offer-item-desc" placeholder="">
+                                </div>
+                                <div class="md:col-span-3">
+                                    <label class="label-text">Value ($)</label>
+                                    <input type="number" class="input-field offer-item-value" placeholder="" data-id="0">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <button id="add-bonus-btn" class="mt-6 btn-secondary flex items-center justify-center">
+                        <span class="text-2xl mr-2">+</span> Add Another Bonus
+                    </button>
+                    
+                    <div class="mt-10 border-t pt-10">
+                         <h3 class="text-xl md:text-2xl font-bold text-center text-stone-800 mb-6">Your Value Stack Breakdown</h3>
+                         <div class="chart-container">
+                            <canvas id="valueStackChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Step 4: Guarantee & Pricing -->
+            <section id="step-4" class="app-step hidden mb-16">
+                <div class="section-card">
+                    <h2 class="text-2xl md:text-3xl font-bold text-stone-800 mb-4">4. Set Your Terms & Price</h2>
+                    <p class="text-stone-600 mb-8">Eliminate risk for your customer and clearly define the investment.</p>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                        <!-- Left Column: Guarantee & Urgency -->
+                        <div class="space-y-6">
+                            <div>
+                                <label for="guarantee" class="label-text">Your Bold Guarantee & Risk Reversal</label>
+                                <p class="text-xs text-stone-500 mb-2">What promise can you make that eliminates all fear of failure?</p>
+                                <textarea id="guarantee" class="textarea-field" placeholder=""></textarea>
+                            </div>
+                             <div>
+                                <label for="urgency" class="label-text">Urgency & Scarcity (If Applicable & Ethical)</label>
+                                <p class="text-xs text-stone-500 mb-2">Why must they act now? (e.g., limited spots, bonus expires, price increase)</p>
+                                <input type="text" id="urgency" class="input-field" placeholder="">
+                            </div>
+                        </div>
+
+                        <!-- Right Column: Pricing -->
+                        <div class="bg-stone-100 p-6 rounded-xl border border-stone-200 shadow-sm flex flex-col justify-between">
+                            <div>
+                                <h3 class="text-xl font-bold text-stone-800 mb-4">Pricing Details</h3>
+                                 <div class="space-y-4">
+                                    <div>
+                                        <label class="label-text text-lg">Total Perceived Value</label>
+                                        <div id="total-value-display" class="text-4xl font-extrabold text-green-600">$0</div>
+                                        <p class="text-sm text-stone-500">This is the sum of all components in your Value Stack.</p>
+                                    </div>
+                                     <div>
+                                        <label for="offer-price" class="label-text text-lg">Your Offer Price</label>
+                                        <input type="number" id="offer-price" class="input-field text-3xl font-bold text-amber-700" placeholder="">
+                                        <p class="text-sm text-stone-500">What is the actual investment for your client?</p>
+                                    </div>
+                                    <div>
+                                        <label for="payment-terms" class="label-text text-lg">Payment Terms</label>
+                                        <input type="text" id="payment-terms" class="input-field" placeholder="">
+                                        <p class="text-sm text-stone-500">How can clients pay for your offer?</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+            
+            <!-- Step 5: Summary -->
+            <section id="step-5" class="app-step hidden mb-16">
+                 <div class="section-card text-center">
+                    <h2 class="text-2xl md:text-3xl font-bold text-stone-800 mb-4">5. Your Grand Slam Offer!</h2>
+                    <p class="text-stone-600 mb-8">Congratulations! Here's the complete, irresistible offer you've built. Use this to craft your marketing and sales messages.</p>
+
+                    <!-- Content to be captured by screenshot -->
+                    <div id="summary-capture">
+                        <div id="summary-name" class="bg-amber-500 text-white p-6 rounded-xl text-3xl md:text-4xl font-bold shadow-lg mb-10 leading-tight">
+                            Your Awesome Offer Name Here!
+                        </div>
+                        
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-8 text-left">
+                            <div id="summary-stack-list" class="space-y-4 bg-stone-50 p-6 rounded-lg border border-stone-200 shadow-sm">
+                               <h3 class="text-xl font-bold text-stone-800 border-b pb-3 mb-4">What You Get:</h3>
+                               <!-- Dynamically populated -->
+                            </div>
+                            <div class="space-y-4 bg-stone-50 p-6 rounded-lg border border-stone-200 shadow-sm">
+                                <h3 class="text-xl font-bold text-stone-800 border-b pb-3 mb-4">The Deal & Terms:</h3>
+                                <div class="py-2">
+                                    <p class="label-text text-base font-semibold">Guarantee</p>
+                                    <p id="summary-guarantee" class="text-stone-700">Your guarantee here.</p>
+                                </div>
+                                <div class="py-2">
+                                    <p class="label-text text-base font-semibold">Urgency/Scarcity</p>
+                                    <p id="summary-urgency" class="text-stone-700">Urgency/scarcity here.</p>
+                                </div>
+                                <div class="py-2">
+                                    <p class="label-text text-base font-semibold">Payment Terms</p>
+                                    <p id="summary-payment-terms" class="text-stone-700">Payment terms here.</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mt-10 border-t pt-10">
+                             <h3 class="text-xl md:text-2xl font-bold text-center text-stone-800 mb-6">Value vs. Price Comparison</h3>
+                             <div class="chart-container">
+                                <canvas id="summaryChart"></canvas>
+                            </div>
+                        </div>
+                    </div> <!-- End #summary-capture -->
+
+                    <!-- Export button lives *outside* the capture zone -->
+                    <div class="text-center mt-12">
+                      <button id="export-summary-btn" class="btn-primary">📥 Export Image</button>
+                      <p class="text-sm text-stone-500 mt-2">Click to download your Grand Slam Offer as a clean image.</p>
+                    </div>
+                 </div>
+            </section>
+        </main>
+
+        <footer id="navigation-buttons" class="mt-12 flex justify-between items-center">
+            <button id="prev-btn" class="btn-secondary" style="display: none;">← Previous Step</button>
+            <div id="spacer" class="flex-grow"></div>
+            <button id="next-btn" class="btn-primary">Next Step →</button>
+        </footer>
+
+    </div>
+
+    <!-- Error Modal Overlay -->
+    <div id="error-modal-overlay" class="error-modal-overlay hidden">
+        <div class="error-modal-content">
+            <p class="text-red-600 font-semibold text-lg mb-4">⚠️ Please complete all required fields before continuing.</p>
+            <p class="text-sm text-stone-600">Fields that need your attention are highlighted in red.</p>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const state = {
+                currentStep: 1,
+                offerData: {
+                    market: {},
+                    valueEquation: {},
+                    valueStack: [
+                        { id: 0, name: '', description: '', value: 0, isBonus: false }
+                    ],
+                    terms: {
+                        guarantee: '',
+                        urgency: '',
+                        price: 0,
+                        paymentTerms: ''
+                    },
+                    name: '' // Added for custom offer name
+                }
+            };
+            
+            const totalSteps = 5;
+            let valueStackChart;
+            let summaryChart;
+
+            const nextBtn = document.getElementById('next-btn');
+            const prevBtn = document.getElementById('prev-btn');
+            const errorModalOverlay = document.getElementById('error-modal-overlay');
+            
+            function updateStepIndicator() {
+                const indicators = document.querySelectorAll('.step-indicator');
+                const labels = document.querySelectorAll('.step-label');
+                const lines = document.querySelectorAll('.step-line');
+
+                indicators.forEach((indicator, index) => {
+                    const stepNum = index + 1;
+                    indicator.classList.remove('active', 'completed');
+                    if (stepNum < state.currentStep) {
+                        indicator.classList.add('completed');
+                    } else if (stepNum === state.currentStep) {
+                        indicator.classList.add('active');
+                    }
+                });
+
+                labels.forEach((label, index) => {
+                    const stepNum = index + 1;
+                    label.classList.remove('text-stone-900', 'font-bold', 'text-stone-700', 'text-stone-500');
+                    if (stepNum === state.currentStep) {
+                        label.classList.add('text-stone-900', 'font-bold');
+                    } else if (stepNum < state.currentStep) {
+                        label.classList.add('text-stone-700');
+                    } else {
+                        label.classList.add('text-stone-500');
+                    }
+                });
+
+                lines.forEach((line, index) => {
+                    const stepNum = index + 1;
+                    line.classList.remove('completed');
+                     if (stepNum < state.currentStep) {
+                        line.classList.add('completed');
+                    }
+                });
+            }
+
+            function navigateToStep(step) {
+                document.querySelectorAll('.app-step').forEach(s => s.classList.add('hidden'));
+                const targetStep = document.getElementById(`step-${step}`);
+                if(targetStep) targetStep.classList.remove('hidden');
+
+                state.currentStep = step;
+
+                prevBtn.style.display = step > 1 ? 'inline-block' : 'none';
+                nextBtn.textContent = step === totalSteps ? 'Finish & View Summary' : 'Next Step →';
+                
+                if (step === totalSteps) {
+                    nextBtn.style.display = 'none';
+                    populateSummary();
+                } else {
+                    nextBtn.style.display = 'inline-block';
+                }
+
+                if (step === 3 && !valueStackChart) {
+                    initValueStackChart();
+                }
+
+                updateStepIndicator();
+                window.scrollTo(0, 0);
+            }
+            
+            function collectInputs() {
+                // Step 1: Market
+                state.offerData.market.niche = document.getElementById('market-niche').value;
+                state.offerData.market.pain = document.getElementById('market-pain').value;
+                state.offerData.market.power = document.getElementById('market-power').value;
+                state.offerData.market.targeting = document.getElementById('market-targeting').value;
+                state.offerData.market.growth = document.getElementById('market-growth').value;
+                state.offerData.name = document.getElementById('offer-name').value; // Capture custom offer name
+
+                // Step 2: Value Equation
+                state.offerData.valueEquation.dreamOutcome = document.getElementById('dream-outcome').value;
+                state.offerData.valueEquation.likelihood = document.getElementById('likelihood').value;
+                state.offerData.valueEquation.timeDelay = document.getElementById('time-delay').value;
+                state.offerData.valueEquation.effort = document.getElementById('effort').value;
+
+                // Step 3: Value Stack
+                const items = document.querySelectorAll('#value-stack-items > div');
+                state.offerData.valueStack = Array.from(items).map((item, index) => {
+                    const name = item.querySelector('.offer-item-name').value;
+                    const desc = item.querySelector('.offer-item-desc').value;
+                    const value = parseFloat(item.querySelector('.offer-item-value').value) || 0;
+                    return { id: index, name, description: desc, value, isBonus: index > 0 };
+                });
+
+                // Step 4: Terms
+                state.offerData.terms.guarantee = document.getElementById('guarantee').value;
+                state.offerData.terms.urgency = document.getElementById('urgency').value;
+                state.offerData.terms.price = parseFloat(document.getElementById('offer-price').value) || 0;
+                state.offerData.terms.paymentTerms = document.getElementById('payment-terms').value;
+
+                updateValueStackChart();
+                updateTotalValueDisplay();
+            }
+
+            nextBtn.addEventListener('click', () => {
+                collectInputs();
+                
+                const currentSection = document.querySelector(`#step-${state.currentStep}`);
+                const requiredInputs = currentSection.querySelectorAll('input:not([type="number"]), textarea'); // Exclude number inputs from required check
+                const numberInputs = currentSection.querySelectorAll('input[type="number"]');
+                
+                // Reset error highlights
+                requiredInputs.forEach(el => el.classList.remove('border-red-700', 'bg-red-200'));
+                numberInputs.forEach(el => el.classList.remove('border-red-700', 'bg-red-200'));
+
+                let hasError = false;
+
+                // Mark empty required fields
+                requiredInputs.forEach(el => {
+                    if (el.value.trim() === '') {
+                        el.classList.add('border-red-700', 'bg-red-200');
+                        hasError = true;
+                    }
+                });
+
+                // Mark empty number fields
+                numberInputs.forEach(el => {
+                    if (el.value.trim() === '') {
+                        el.classList.add('border-red-700', 'bg-red-200');
+                        hasError = true;
+                    }
+                });
+
+                // If any field is missing, show error modal
+                if (hasError) {
+                    errorModalOverlay.classList.remove('hidden');
+                    // Auto-hide after 2 seconds
+                    setTimeout(() => {
+                        errorModalOverlay.classList.add('hidden');
+                    }, 2000); // Changed to 2000ms (2 seconds)
+
+                    return; // Prevent moving forward
+                } else {
+                    errorModalOverlay.classList.add('hidden');
+                }
+
+                // Move forward if everything is filled
+                if (state.currentStep < totalSteps) {
+                    navigateToStep(state.currentStep + 1);
+                }
+            });
+
+            prevBtn.addEventListener('click', () => {
+                collectInputs();
+                if (state.currentStep > 1) {
+                    navigateToStep(state.currentStep - 1);
+                }
+            });
+
+            document.querySelectorAll('#step-navigation .flex.items-center').forEach(el => {
+                el.addEventListener('click', (e) => {
+                    const step = parseInt(e.currentTarget.dataset.step);
+                    if (step < state.currentStep) {
+                        collectInputs();
+                        navigateToStep(step);
+                    }
+                });
+            });
+
+            // Value Stack Logic
+            const addBonusBtn = document.getElementById('add-bonus-btn');
+            const valueStackItemsContainer = document.getElementById('value-stack-items');
+            let bonusCounter = 1;
+
+            addBonusBtn.addEventListener('click', () => {
+                const newBonusEl = document.createElement('div');
+                newBonusEl.className = 'p-6 border border-stone-300 rounded-xl bg-white relative shadow-sm';
+                newBonusEl.innerHTML = `
+                    <button class="absolute top-3 right-3 text-stone-400 hover:text-red-500 font-bold text-2xl" data-remove-id="${bonusCounter}">&times;</button>
+                    <h3 class="font-bold text-xl text-stone-800 mb-3">Bonus #${bonusCounter}</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-12 gap-4">
+                        <div class="md:col-span-4">
+                            <label class="label-text">Bonus Name</label>
+                            <input type="text" class="input-field offer-item-name" placeholder="" data-id="${bonusCounter}">
+                        </div>
+                        <div class="md:col-span-5">
+                            <label class="label-text">Why it helps / Description</label>
+                            <input type="text" class="input-field offer-item-desc" placeholder="">
+                        </div>
+                        <div class="md:col-span-3">
+                            <label class="label-text">Value ($)</label>
+                            <input type="number" class="input-field offer-item-value" placeholder="" data-id="${bonusCounter}">
+                        </div>
+                    </div>
+                `;
+                valueStackItemsContainer.appendChild(newBonusEl);
+                bonusCounter++; // Increment after appending
+                addInputListeners();
+            });
+            
+            valueStackItemsContainer.addEventListener('click', (e) => {
+                if(e.target.dataset.removeId) {
+                    e.target.closest('.border').remove();
+                    collectInputs();
+                }
+            });
+
+            function addInputListeners() {
+                 document.querySelectorAll('input, textarea').forEach(input => {
+                    input.removeEventListener('input', collectInputs); // Prevent duplicates
+                    input.addEventListener('input', collectInputs);
+                });
+            }
+
+            function getTotalValue() {
+                return state.offerData.valueStack.reduce((sum, item) => sum + item.value, 0);
+            }
+            
+            function updateTotalValueDisplay() {
+                const totalValue = getTotalValue();
+                document.getElementById('total-value-display').textContent = `$${totalValue.toLocaleString()}`;
+            }
+
+            function initValueStackChart() {
+                const ctx = document.getElementById('valueStackChart').getContext('2d');
+                const chartData = getChartData();
+                valueStackChart = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: chartData.labels,
+                        datasets: [{
+                            label: 'Perceived Value',
+                            data: chartData.data,
+                            backgroundColor: 'rgba(245, 158, 11, 0.7)',
+                            borderColor: 'rgba(245, 158, 11, 1)',
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        indexAxis: 'y',
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: { display: false },
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        return `Value: $${context.raw.toLocaleString()}`;
+                                    }
+                                }
+                            }
+                        },
+                        scales: {
+                            x: {
+                                beginAtZero: true,
+                                stacked: false,
+                                title: {
+                                    display: true,
+                                    text: 'Amount ($)'
+                                }
+                            },
+                            y: { stacked: false }
+                        }
+                    }
+                });
+            }
+
+            function getChartData() {
+                const labels = state.offerData.valueStack.map(item => item.name || (item.isBonus ? `Bonus ${item.id}` : 'Core Offer'));
+                const data = state.offerData.valueStack.map(item => item.value);
+                const colors = state.offerData.valueStack.map((item, index) => index === 0 ? 'rgba(245, 158, 11, 0.7)' : 'rgba(74, 222, 128, 0.7)'); // Amber for core, Green for bonuses
+                const borderColors = state.offerData.valueStack.map((item, index) => index === 0 ? 'rgba(245, 158, 11, 1)' : 'rgba(74, 222, 128, 1)');
+                return { labels, data, colors, borderColors };
+            }
+
+            function updateValueStackChart() {
+                if (!valueStackChart) return;
+                const chartData = getChartData();
+                valueStackChart.data.labels = chartData.labels;
+                valueStackChart.data.datasets[0].data = chartData.data;
+                valueStackChart.data.datasets[0].backgroundColor = chartData.colors;
+                valueStackChart.data.datasets[0].borderColor = chartData.borderColors;
+                valueStackChart.update();
+            }
+
+            function populateSummary() {
+                // Use custom offer name if provided, otherwise fallback
+                let generatedName = state.offerData.name?.trim() || 'Your Grand Slam Offer Name Here!';
+                document.getElementById('summary-name').textContent = generatedName;
+
+                // Stack List
+                const stackListEl = document.getElementById('summary-stack-list');
+                stackListEl.innerHTML = `<h3 class="text-xl font-bold text-stone-800 border-b pb-3 mb-4">What You Get:</h3>`;
+                state.offerData.valueStack.forEach(item => {
+                    if (item.name) {
+                        const itemEl = document.createElement('div');
+                        itemEl.className = `flex justify-between items-center py-2 ${item.isBonus ? '' : 'font-bold'}`;
+                        itemEl.innerHTML = `
+                            <span class="flex items-center">${item.isBonus ? '<span class="text-green-500 mr-2">✔</span>' : '<span class="text-amber-500 mr-2">⭐</span>'} ${item.name}</span>
+                            <span class="text-sm font-semibold text-green-700 bg-green-100 px-3 py-1 rounded-full">$${item.value.toLocaleString()} Value</span>
+                        `;
+                        stackListEl.appendChild(itemEl);
+                    }
+                });
+                 const totalValueEl = document.createElement('div');
+                 totalValueEl.className = 'flex justify-between items-center pt-4 mt-4 border-t-2 border-stone-300 font-bold text-xl text-stone-800';
+                 totalValueEl.innerHTML = `
+                    <span>Total Perceived Value</span>
+                    <span>$${getTotalValue().toLocaleString()}</span>
+                 `;
+                 stackListEl.appendChild(totalValueEl);
+
+
+                // Terms
+                document.getElementById('summary-guarantee').textContent = state.offerData.terms.guarantee || 'No specific guarantee entered.';
+                document.getElementById('summary-urgency').textContent = state.offerData.terms.urgency || 'No specific urgency/scarcity entered.';
+                document.getElementById('summary-payment-terms').textContent = state.offerData.terms.paymentTerms || 'No specific payment terms entered.';
+
+                // Summary Chart
+                initSummaryChart();
+            }
+            
+            function initSummaryChart() {
+                const ctx = document.getElementById('summaryChart').getContext('2d');
+                const totalValue = getTotalValue();
+                const price = state.offerData.terms.price;
+
+                if (summaryChart) {
+                    summaryChart.destroy();
+                }
+
+                summaryChart = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: ['Your Offer'],
+                        datasets: [
+                            {
+                                label: 'Total Perceived Value',
+                                data: [totalValue],
+                                backgroundColor: 'rgba(74, 222, 128, 0.7)',
+                                borderColor: 'rgba(74, 222, 128, 1)',
+                                borderWidth: 1
+                            },
+                            {
+                                label: 'Your Price',
+                                data: [price],
+                                backgroundColor: 'rgba(245, 158, 11, 0.7)',
+                                borderColor: 'rgba(245, 158, 11, 1)',
+                                borderWidth: 1
+                            }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: { position: 'top', labels: { boxWidth: 20 } },
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        return `${context.dataset.label}: $${context.raw.toLocaleString()}`;
+                                    }
+                                }
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                stacked: false,
+                                title: {
+                                    display: true,
+                                    text: 'Amount ($)'
+                                }
+                            },
+                            x: {
+                                stacked: false
+                            }
+                        }
+                    }
+                });
+            }
+
+            // Initial setup
+            navigateToStep(1);
+            addInputListeners();
+
+            // Export Summary Button Logic
+            document.getElementById('export-summary-btn').addEventListener('click', () => {
+              const target = document.getElementById('summary-capture'); // Target the specific div for capture
+              html2canvas(target, {
+                scrollY: -window.scrollY, // Correctly handle scroll position
+                useCORS: true // Enable cross-origin image loading if any (though we don't have images here)
+              }).then(canvas => {
+                const link = document.createElement('a');
+                link.download = 'grand-slam-offer-summary.png';
+                link.href = canvas.toDataURL();
+                link.click();
+              });
+            });
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,2145 @@
+import React, { useState, useEffect, useRef, useCallback } from 'react';
+
+// Disclaimer Modal Component
+const DisclaimerModal = ({ onClose }) => {
+    return (
+        <div className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-[1000]">
+            <div className="bg-white dark:bg-gray-800 p-8 rounded-lg shadow-2xl max-w-md text-center m-4">
+                <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">Important Note</h2>
+                <p className="text-lg text-gray-700 dark:text-gray-300 mb-6">
+                    This editor is primarily for <strong>design & layout visualization</strong> – it is not intended to be a fully functional platform for live funnels.
+                </p>
+                <p className="text-lg text-gray-700 dark:text-gray-300 mb-8">
+                    You can <strong>export the production-ready HTML/CSS/JS code</strong> to use on your live pages, giving you full control and flexibility.
+                </p>
+                <button
+                    onClick={onClose}
+                    className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-8 rounded-full transition duration-300 ease-in-out shadow-lg"
+                >
+                    Got It!
+                </button>
+            </div>
+        </div>
+    );
+};
+
+
+// Main App Component
+const App = () => {
+    // State to hold all funnel blocks on the canvas
+    const [funnelBlocks, setFunnelBlocks] = useState([]);
+    // State to track the currently selected block for editing
+    const [selectedBlockId, setSelectedBlockId] = useState(null);
+    // State for undo/redo history
+    const [history, setHistory] = useState([[]]);
+    const [historyIndex, setHistoryIndex] = useState(0);
+    // State for global styles (e.g., primary color, font)
+    const [globalStyles, setGlobalStyles] = useState({
+        primaryColor: '#4F46E5', // Tailwind indigo-600
+        fontFamily: 'Inter',
+        darkMode: false,
+    });
+    // State to control the visibility of the export modal
+    const [showExportModal, setShowExportModal] = useState(false);
+    // State to hold the generated code for export
+    const [generatedCode, setGeneratedCode] = useState({ html: '', css: '', js: '' });
+    // Ref for the canvas to handle drag-and-drop
+    const canvasRef = useRef(null);
+    // State for disclaimer modal visibility
+    const [showDisclaimerModal, setShowDisclaimerModal] = useState(true);
+    // State for image saving loading
+    const [isSavingImage, setIsSavingImage] = useState(false);
+
+    // --- Dynamic loading of html2canvas library ---
+    useEffect(() => {
+        // Only load if not already present
+        if (typeof window.html2canvas === 'undefined') {
+            const script = document.createElement('script');
+            script.src = "https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js";
+            script.async = true;
+            document.body.appendChild(script);
+            // Optional: Add an onload handler if you need to know when it's ready
+            // script.onload = () => console.log('html2canvas loaded');
+        }
+    }, []); // Empty dependency array ensures this runs once on mount
+
+
+    // --- History Management (Undo/Redo) ---
+    // Function to add a new state to history
+    const addHistoryEntry = useCallback((newBlocks) => {
+        const newHistory = history.slice(0, historyIndex + 1);
+        setHistory([...newHistory, newBlocks]);
+        setHistoryIndex(newHistory.length);
+    }, [history, historyIndex]);
+
+    // Undo function
+    const handleUndo = () => {
+        if (historyIndex > 0) {
+            setHistoryIndex(historyIndex - 1);
+            setFunnelBlocks(history[historyIndex - 1]);
+        }
+    };
+
+    // Redo function
+    const handleRedo = () => {
+        if (historyIndex < history.length - 1) {
+            setHistoryIndex(historyIndex + 1);
+            setFunnelBlocks(history[historyIndex + 1]);
+        }
+    };
+
+    // --- Local Storage Auto-save/Load ---
+    useEffect(() => {
+        // Load from localStorage on initial mount
+        const savedBlocks = localStorage.getItem('funnelBlocks');
+        const savedGlobalStyles = localStorage.getItem('globalStyles');
+        if (savedBlocks) {
+            const parsedBlocks = JSON.parse(savedBlocks);
+            setFunnelBlocks(parsedBlocks);
+            addHistoryEntry(parsedBlocks); // Add loaded state to history
+        }
+        if (savedGlobalStyles) {
+            setGlobalStyles(JSON.parse(savedGlobalStyles));
+        }
+    }, []); // Empty dependency array means this runs once on mount
+
+    useEffect(() => {
+        // Auto-save to localStorage whenever funnelBlocks or globalStyles change
+        localStorage.setItem('funnelBlocks', JSON.stringify(funnelBlocks));
+        localStorage.setItem('globalStyles', JSON.stringify(globalStyles));
+    }, [funnelBlocks, globalStyles]);
+
+    // --- Block Management Functions ---
+
+    // Adds a new block to the canvas
+    const addBlock = (type) => {
+        const newBlock = createNewBlock(type);
+        const updatedBlocks = [...funnelBlocks, newBlock];
+        setFunnelBlocks(updatedBlocks);
+        addHistoryEntry(updatedBlocks); // Add to history
+        setSelectedBlockId(newBlock.id); // Select the new block for editing
+    };
+
+    // Creates a new block object with default properties based on type
+    const createNewBlock = (type) => {
+        const id = `block-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+        const defaultStyles = "py-12 px-6 rounded-lg shadow-md mb-8";
+        const primaryColorClass = `bg-[${globalStyles.primaryColor}]`; // Use direct color for dynamic background
+
+        switch (type) {
+            case 'hero':
+                return {
+                    id, type,
+                    content: {
+                        headline: 'Your Irresistible Offer Headline',
+                        subtext: 'A compelling subtext that explains the value proposition and hooks your audience.',
+                        ctaText: 'Get Started Now',
+                        ctaLink: '#',
+                        imageUrl: 'https://placehold.co/800x400/4F46E5/FFFFFF?text=Hero+Image',
+                    },
+                    styles: {
+                        container: `${defaultStyles} text-center bg-white dark:bg-gray-800 text-gray-900 dark:text-white`,
+                        headline: 'text-5xl font-bold mb-4',
+                        subtext: 'text-xl mb-8 text-gray-700 dark:text-gray-300',
+                        ctaButton: `bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-8 rounded-full transition duration-300 ease-in-out`,
+                        image: 'mx-auto rounded-lg shadow-lg mb-8 max-w-full h-auto',
+                    },
+                    editableFields: ['headline', 'subtext', 'ctaText', 'ctaLink', 'imageUrl'],
+                };
+            case 'lead-form':
+                return {
+                    id, type,
+                    content: {
+                        title: 'Unlock Your Free Guide!',
+                        description: 'Enter your details below to get instant access to our exclusive content.',
+                        formFields: [
+                            { id: `field-${Date.now()}-1`, name: 'name', type: 'text', placeholder: 'Your Name', required: true },
+                            { id: `field-${Date.now()}-2`, name: 'email', type: 'email', placeholder: 'Your Email', required: true },
+                        ],
+                        ctaText: 'Download Now',
+                        webhookUrl: 'https://example.com/your-webhook-url',
+                        successMessage: 'Thank you! Your guide is on its way.',
+                    },
+                    styles: {
+                        container: `${defaultStyles} bg-white dark:bg-gray-800 text-gray-900 dark:text-white max-w-lg mx-auto`,
+                        title: 'text-3xl font-bold mb-4 text-center',
+                        description: 'text-lg mb-6 text-center text-gray-700 dark:text-gray-300',
+                        input: 'w-full p-3 mb-4 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:bg-gray-700 dark:text-white',
+                        ctaButton: `w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-6 rounded-md transition duration-300 ease-in-out`,
+                    },
+                    editableFields: ['title', 'description', 'ctaText', 'webhookUrl', 'successMessage', 'formFields'],
+                };
+            case 'tripwire':
+                return {
+                    id, type,
+                    content: {
+                        headline: 'Limited-Time Offer: Get 70% Off Today!',
+                        description: 'This exclusive offer is available for a short period only. Don\'t miss out!',
+                        price: '19',
+                        originalPrice: '67',
+                        ctaText: 'Claim Your Discount',
+                        ctaLink: '#',
+                        imageUrl: 'https://placehold.co/400x300/4F46E5/FFFFFF?text=Product+Image',
+                    },
+                    styles: {
+                        container: `${defaultStyles} bg-yellow-50 dark:bg-yellow-900 text-gray-900 dark:text-white text-center`,
+                        headline: 'text-4xl font-bold mb-4 text-red-600 dark:text-red-400',
+                        description: 'text-lg mb-6 text-gray-700 dark:text-gray-300',
+                        price: 'text-6xl font-extrabold text-indigo-600 dark:text-indigo-400 mb-2',
+                        originalPrice: 'text-xl line-through text-gray-500 dark:text-gray-400 mb-6',
+                        ctaButton: `bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-8 rounded-full transition duration-300 ease-in-out`,
+                        image: 'mx-auto rounded-lg shadow-lg mb-8 max-w-xs h-auto',
+                    },
+                    editableFields: ['headline', 'description', 'price', 'originalPrice', 'ctaText', 'ctaLink', 'imageUrl'],
+                };
+            case 'social-proof':
+                return {
+                    id, type,
+                    content: {
+                        title: 'What Our Customers Say',
+                        testimonials: [
+                            { id: `test-${Date.now()}-1`, quote: 'This product changed my business! Highly recommend.', author: 'Jane Doe, CEO' },
+                            { id: `test-${Date.now()}-2`, quote: 'Incredible value and amazing support. A must-have!', author: 'John Smith, Entrepreneur' },
+                        ],
+                        logos: [
+                            { id: `logo-${Date.now()}-1`, url: 'https://placehold.co/100x50/F3F4F6/6B7280?text=Logo1' },
+                            { id: `logo-${Date.now()}-2`, url: 'https://placehold.co/100x50/F3F4F6/6B7280?text=Logo2' },
+                            { id: `logo-${Date.now()}-3`, url: 'https://placehold.co/100x50/F3F4F6/6B7280?text=Logo3' },
+                        ],
+                    },
+                    styles: {
+                        container: `${defaultStyles} bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-white text-center`,
+                        title: 'text-4xl font-bold mb-8',
+                        testimonialQuote: 'text-xl italic mb-2 text-gray-700 dark:text-gray-300',
+                        testimonialAuthor: 'text-lg font-semibold mb-6 text-gray-600 dark:text-gray-400',
+                        logoContainer: 'flex justify-center items-center flex-wrap gap-8 mt-8',
+                        logo: 'max-h-12 w-auto',
+                    },
+                    editableFields: ['title', 'testimonials', 'logos'],
+                };
+            case 'countdown':
+                return {
+                    id, type,
+                    content: {
+                        title: 'Offer Expires In:',
+                        endTime: Date.now() + (7 * 24 * 60 * 60 * 1000), // 7 days from now
+                    },
+                    styles: {
+                        container: `${defaultStyles} bg-red-600 dark:bg-red-800 text-white text-center`,
+                        title: 'text-3xl font-bold mb-6',
+                        timer: 'text-6xl font-extrabold',
+                    },
+                    editableFields: ['title', 'endTime'],
+                };
+            case 'checkout-form':
+                return {
+                    id, type,
+                    content: {
+                        title: 'Complete Your Order',
+                        description: 'Securely checkout below to get instant access.',
+                        items: [
+                            { id: `item-${Date.now()}-1`, name: 'Product A', price: 97, quantity: 1, isBump: false },
+                            { id: `item-${Date.now()}-2`, name: 'Order Bump: Add On', price: 27, quantity: 1, isBump: true },
+                        ],
+                        ctaText: 'Process Payment',
+                        currency: '$',
+                        webhookUrl: 'https://example.com/your-checkout-webhook',
+                        paymentMethods: ['Visa', 'Mastercard', 'Amex'],
+                    },
+                    styles: {
+                        container: `${defaultStyles} bg-white dark:bg-gray-800 text-gray-900 dark:text-white max-w-xl mx-auto`,
+                        title: 'text-3xl font-bold mb-4 text-center',
+                        description: 'text-lg mb-6 text-center text-gray-700 dark:text-gray-300',
+                        input: 'w-full p-3 mb-4 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:bg-gray-700 dark:text-white',
+                        ctaButton: `w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-6 rounded-md transition duration-300 ease-in-out`,
+                        itemRow: 'flex justify-between items-center py-2 border-b border-gray-200 dark:border-gray-700',
+                        totalRow: 'flex justify-between items-center py-4 font-bold text-xl',
+                    },
+                    editableFields: ['title', 'description', 'ctaText', 'currency', 'webhookUrl', 'items'],
+                };
+            case 'pricing-table':
+                return {
+                    id, type,
+                    content: {
+                        title: 'Choose Your Plan',
+                        plans: [
+                            { id: `plan-${Date.now()}-1`, name: 'Basic', price: 29, features: ['Feature 1', 'Feature 2'], ctaText: 'Select Basic', highlighted: false },
+                            { id: `plan-${Date.now()}-2`, name: 'Pro', price: 49, features: ['All Basic Features', 'Feature 3', 'Feature 4'], ctaText: 'Go Pro', highlighted: true },
+                            { id: `plan-${Date.now()}-3`, name: 'Premium', price: 99, features: ['All Pro Features', 'Feature 5', 'Priority Support'], ctaText: 'Get Premium', highlighted: false },
+                        ],
+                        currency: '$',
+                    },
+                    styles: {
+                        container: `${defaultStyles} bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-center`,
+                        title: 'text-4xl font-bold mb-8',
+                        planCard: 'flex flex-col border border-gray-200 dark:border-gray-700 rounded-lg p-6 shadow-lg transition duration-300 ease-in-out hover:shadow-xl',
+                        highlightedCard: 'border-indigo-600 dark:border-indigo-400 scale-105',
+                        planName: 'text-2xl font-bold mb-2',
+                        planPrice: 'text-5xl font-extrabold text-indigo-600 dark:text-indigo-400 mb-4',
+                        featureList: 'text-left mb-6 flex-grow',
+                        featureItem: 'flex items-center mb-2 text-gray-700 dark:text-gray-300',
+                        ctaButton: `w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-6 rounded-md transition duration-300 ease-in-out`,
+                    },
+                    editableFields: ['title', 'currency', 'plans'],
+                };
+            case 'video-block':
+                return {
+                    id, type,
+                    content: {
+                        title: 'Watch Our Explainer Video',
+                        videoUrl: 'https://www.youtube.com/embed/dQw4w9WgXcQ', // Example YouTube embed
+                    },
+                    styles: {
+                        container: `${defaultStyles} bg-gray-900 dark:bg-gray-700 text-white text-center`,
+                        title: 'text-3xl font-bold mb-6',
+                        videoWrapper: 'relative w-full h-0 pb-[56.25%] rounded-lg overflow-hidden shadow-xl', // 16:9 aspect ratio
+                    },
+                    editableFields: ['title', 'videoUrl'],
+                };
+            case 'trust-seals':
+                return {
+                    id, type,
+                    content: {
+                        title: 'Trusted by Thousands',
+                        seals: [
+                            { id: `seal-${Date.now()}-1`, url: 'https://placehold.co/120x60/D1FAE5/065F46?text=Secure' },
+                            { id: `seal-${Date.now()}-2`, url: 'https://placehold.co/120x60/DBEAFE/1E40AF?text=Guarantee' },
+                            { id: `seal-${Date.now()}-3`, url: 'https://placehold.co/120x60/FFFBEB/92400E?text=Certified' },
+                        ],
+                    },
+                    styles: {
+                        container: `${defaultStyles} bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-center`,
+                        title: 'text-3xl font-bold mb-8',
+                        sealContainer: 'flex justify-center items-center flex-wrap gap-8',
+                        sealImage: 'max-h-20 w-auto',
+                    },
+                    editableFields: ['title', 'seals'],
+                };
+            default:
+                return { id, type, content: { text: `New ${type} Block` }, styles: defaultStyles, editableFields: ['text'] };
+        }
+    };
+
+    // Updates a specific block's content or styles
+    const updateBlock = (id, newContent, newStyles = null) => {
+        const updatedBlocks = funnelBlocks.map(block =>
+            block.id === id
+                ? { ...block, content: { ...block.content, ...newContent }, styles: newStyles ? { ...block.styles, ...newStyles } : block.styles }
+                : block
+        );
+        setFunnelBlocks(updatedBlocks);
+        addHistoryEntry(updatedBlocks); // Add to history
+    };
+
+    // Deletes a block from the canvas
+    const deleteBlock = (id) => {
+        const updatedBlocks = funnelBlocks.filter(block => block.id !== id);
+        setFunnelBlocks(updatedBlocks);
+        addHistoryEntry(updatedBlocks); // Add to history
+        if (selectedBlockId === id) {
+            setSelectedBlockId(null);
+        }
+    };
+
+    // Reorders blocks on the canvas
+    const moveBlock = (dragId, hoverId) => {
+        const dragIndex = funnelBlocks.findIndex(block => block.id === dragId);
+        const hoverIndex = funnelBlocks.findIndex(block => block.id === hoverId);
+
+        if (dragIndex === -1 || hoverIndex === -1) return;
+
+        const updatedBlocks = [...funnelBlocks];
+        const [draggedBlock] = updatedBlocks.splice(dragIndex, 1);
+        updatedBlocks.splice(hoverIndex, 0, draggedBlock);
+
+        setFunnelBlocks(updatedBlocks);
+        // Do NOT add to history here, as drag-and-drop reordering can create many intermediate states.
+        // History should be added when the drag operation completes, or for significant changes.
+        // For simplicity in this example, we'll let the next significant change trigger history.
+    };
+
+    // --- Drag and Drop Handlers for Canvas ---
+
+    // Handles dropping a new block from the sidebar onto the canvas
+    const handleDrop = (e) => {
+        e.preventDefault();
+        const blockType = e.dataTransfer.getData('text/plain');
+        if (blockType) {
+            addBlock(blockType);
+        }
+    };
+
+    // Allows dropping on the canvas
+    const handleDragOver = (e) => {
+        e.preventDefault();
+        // Add visual feedback if needed
+    };
+
+    // --- Template Loading ---
+    const loadTemplate = (templateType) => {
+        let templateBlocks = [];
+        switch (templateType) {
+            case 'lead-magnet':
+                templateBlocks = [
+                    createNewBlock('hero'),
+                    createNewBlock('lead-form'),
+                    { ...createNewBlock('social-proof'), content: { ...createNewBlock('social-proof').content, title: 'Trusted by Marketers Worldwide' } },
+                    { ...createNewBlock('trust-seals'), content: { ...createNewBlock('trust-seals').content, title: 'Your Data is Secure' } },
+                ];
+                break;
+            case 'tripwire':
+                templateBlocks = [
+                    { ...createNewBlock('hero'), content: { ...createNewBlock('hero').content, headline: 'Your Exclusive Tripwire Offer!' } },
+                    createNewBlock('tripwire'),
+                    createNewBlock('countdown'),
+                    { ...createNewBlock('social-proof'), content: { ...createNewBlock('social-proof').content, title: 'Hear From Happy Customers' } },
+                ];
+                break;
+            case 'webinar':
+                templateBlocks = [
+                    { ...createNewBlock('hero'), content: { ...createNewBlock('hero').content, headline: 'Join Our Free Live Webinar!' } },
+                    createNewBlock('video-block'),
+                    { ...createNewBlock('lead-form'), content: { ...createNewBlock('lead-form').content, title: 'Register for the Webinar' } },
+                    { ...createNewBlock('social-proof'), content: { ...createNewBlock('social-proof').content, title: 'What Attendees Say' } },
+                ];
+                break;
+            case 'product-launch':
+                templateBlocks = [
+                    { ...createNewBlock('hero'), content: { ...createNewBlock('hero').content, headline: 'Introducing Our Revolutionary New Product!' } },
+                    createNewBlock('video-block'),
+                    createNewBlock('pricing-table'),
+                    createNewBlock('checkout-form'),
+                    { ...createNewBlock('social-proof'), content: { ...createNewBlock('social-proof').content, title: 'Early Bird Testimonials' } },
+                ];
+                break;
+            case 'application':
+                templateBlocks = [
+                    { ...createNewBlock('hero'), content: { ...createNewBlock('hero').content, headline: 'Apply for Our Exclusive High-Ticket Program' } },
+                    { ...createNewBlock('video-block'), content: { ...createNewBlock('video-block').content, title: 'Watch Our Program Overview' } },
+                    {
+                        ...createNewBlock('lead-form'),
+                        content: {
+                            ...createNewBlock('lead-form').content,
+                            title: 'Apply Now',
+                            description: 'Fill out the application below to see if you qualify.',
+                            formFields: [
+                                { id: `field-${Date.now()}-1`, name: 'name', type: 'text', placeholder: 'Your Name', required: true },
+                                { id: `field-${Date.now()}-2`, name: 'email', type: 'email', placeholder: 'Your Email', required: true },
+                                { id: `field-${Date.now()}-3`, name: 'phone', type: 'tel', placeholder: 'Your Phone Number', required: true },
+                                { id: `field-${Date.now()}-4`, name: 'experience', type: 'textarea', placeholder: 'Tell us about your experience...', required: false },
+                            ],
+                            ctaText: 'Submit Application',
+                        }
+                    },
+                    { ...createNewBlock('social-proof'), content: { ...createNewBlock('social-proof').content, title: 'Success Stories' } },
+                ];
+                break;
+            default:
+                templateBlocks = [];
+        }
+        setFunnelBlocks(templateBlocks);
+        addHistoryEntry(templateBlocks); // Add to history
+        setSelectedBlockId(null); // Clear selection after loading template
+    };
+
+    // --- Code Generation ---
+    const generateCode = () => {
+        let htmlContent = '';
+        let jsContent = '';
+        let cssContent = ''; // For custom CSS if needed, though Tailwind handles most
+
+        // Generate HTML for each block
+        funnelBlocks.forEach(block => {
+            const blockIdClass = `block-${block.id}`; // Unique class for block-specific styling/JS
+            const baseClasses = block.styles.container || '';
+
+            switch (block.type) {
+                case 'hero':
+                    htmlContent += `
+                    <section id="${block.id}" class="${baseClasses} ${blockIdClass} font-${globalStyles.fontFamily.toLowerCase()}">
+                        <div class="max-w-4xl mx-auto">
+                            <img src="${block.content.imageUrl}" alt="Hero Image" class="${block.styles.image}" onerror="this.onerror=null;this.src='https://placehold.co/800x400/4F46E5/FFFFFF?text=Hero+Image';">
+                            <h1 class="${block.styles.headline}">${block.content.headline}</h1>
+                            <p class="${block.styles.subtext}">${block.content.subtext}</p>
+                            <a href="${block.content.ctaLink}" class="${block.styles.ctaButton}">${block.content.ctaText}</a>
+                        </div>
+                    </section>
+                    `;
+                    break;
+                case 'lead-form':
+                    jsContent += `
+                    // Form submission handler for ${block.id}
+                    document.getElementById('${block.id}-form').addEventListener('submit', async function(e) {
+                        e.preventDefault();
+                        const form = e.target;
+                        const formData = new FormData(form);
+                        const data = Object.fromEntries(formData.entries());
+                        const submitButton = form.querySelector('button[type="submit"]');
+                        const messageDiv = form.querySelector('.form-message');
+
+                        submitButton.disabled = true;
+                        messageDiv.textContent = 'Submitting...';
+                        messageDiv.className = 'form-message text-center mt-4 text-gray-600 dark:text-gray-400';
+
+                        try {
+                            const response = await fetch('${block.content.webhookUrl}', {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                    'Accept': 'application/json' // Important for some webhooks
+                                },
+                                body: JSON.stringify(data)
+                            });
+
+                            if (response.ok) {
+                                messageDiv.textContent = '${block.content.successMessage}';
+                                messageDiv.className = 'form-message text-center mt-4 text-green-600 dark:text-green-400';
+                                form.reset();
+                            } else {
+                                const errorData = await response.json();
+                                messageDiv.textContent = 'Error: ' + (errorData.message || 'Something went wrong.');
+                                messageDiv.className = 'form-message text-center mt-4 text-red-600 dark:text-red-400';
+                            }
+                        } catch (error) {
+                            messageDiv.textContent = 'Network error: ' + error.message;
+                            messageDiv.className = 'form-message text-center mt-4 text-red-600 dark:text-red-400';
+                        } finally {
+                            submitButton.disabled = false;
+                        }
+                    });
+                    `;
+                    htmlContent += `
+                    <section id="${block.id}" class="${baseClasses} ${blockIdClass} font-${globalStyles.fontFamily.toLowerCase()}">
+                        <div class="max-w-lg mx-auto">
+                            <h2 class="${block.styles.title}">${block.content.title}</h2>
+                            <p class="${block.styles.description}">${block.content.description}</p>
+                            <form id="${block.id}-form" class="space-y-4">
+                                ${block.content.formFields.map(field => `
+                                    <input type="${field.type}" name="${field.name}" placeholder="${field.placeholder}" ${field.required ? 'required' : ''}
+                                        class="${block.styles.input}" aria-label="${field.placeholder}">
+                                `).join('')}
+                                <button type="submit" class="${block.styles.ctaButton}">${block.content.ctaText}</button>
+                                <div class="form-message"></div>
+                            </form>
+                        </div>
+                    </section>
+                    `;
+                    break;
+                case 'tripwire':
+                    htmlContent += `
+                    <section id="${block.id}" class="${baseClasses} ${blockIdClass} font-${globalStyles.fontFamily.toLowerCase()}">
+                        <div class="max-w-2xl mx-auto">
+                            <img src="${block.content.imageUrl}" alt="Product Image" class="${block.styles.image}" onerror="this.onerror=null;this.src='https://placehold.co/400x300/4F46E5/FFFFFF?text=Product+Image';">
+                            <h2 class="${block.styles.headline}">${block.content.headline}</h2>
+                            <p class="${block.styles.subtext}">${block.content.subtext}</p>
+                            <div class="flex justify-center items-baseline mb-6">
+                                <span class="${block.styles.price}">${block.content.currency || '$'}${block.content.price}</span>
+                                <span class="${block.styles.originalPrice} ml-4">${block.content.currency || '$'}${block.content.originalPrice}</span>
+                            </div>
+                            <a href="${block.content.ctaLink}" class="${block.styles.ctaButton}">${block.content.ctaText}</a>
+                        </div>
+                    </section>
+                    `;
+                    break;
+                case 'social-proof':
+                    htmlContent += `
+                    <section id="${block.id}" class="${baseClasses} ${blockIdClass} font-${globalStyles.fontFamily.toLowerCase()}">
+                        <div class="max-w-4xl mx-auto">
+                            <h2 class="${block.styles.title}">${block.content.title}</h2>
+                            <div class="grid md:grid-cols-2 gap-8 mb-8">
+                                ${block.content.testimonials.map(t => `
+                                    <div class="bg-white dark:bg-gray-700 p-6 rounded-lg shadow-md">
+                                        <p class="${block.styles.testimonialQuote}">"${t.quote}"</p>
+                                        <p class="${block.styles.testimonialAuthor}">- ${t.author}</p>
+                                    </div>
+                                `).join('')}
+                            </div>
+                            <div class="${block.styles.logoContainer}">
+                                ${block.content.logos.map(logo => `
+                                    <img src="${logo.url}" alt="Client Logo" class="${block.styles.logo}" onerror="this.onerror=null;this.src='https://placehold.co/100x50/F3F4F6/6B7280?text=Logo';">
+                                `).join('')}
+                            </div>
+                        </div>
+                    </section>
+                    `;
+                    break;
+                case 'countdown':
+                    jsContent += `
+                    // Countdown timer for ${block.id}
+                    function startCountdown_${block.id}() {
+                        const endTime = ${block.content.endTime}; // Unix timestamp
+                        const timerElement = document.getElementById('${block.id}-timer');
+
+                        if (!timerElement) return;
+
+                        const updateTimer = () => {
+                            const now = new Date().getTime();
+                            const distance = endTime - now;
+
+                            if (distance < 0) {
+                                clearInterval(interval);
+                                timerElement.innerHTML = "EXPIRED";
+                                return;
+                            }
+
+                            const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+                            const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                            const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+                            const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+                            timerElement.innerHTML = \`\${days}d \${hours}h \${minutes}m \${seconds}s\`;
+                        };
+
+                        updateTimer(); // Initial call
+                        const interval = setInterval(updateTimer, 1000);
+                    }
+                    document.addEventListener('DOMContentLoaded', startCountdown_${block.id});
+                    `;
+                    htmlContent += `
+                    <section id="${block.id}" class="${baseClasses} ${blockIdClass} font-${globalStyles.fontFamily.toLowerCase()}">
+                        <div class="max-w-2xl mx-auto">
+                            <h2 class="${block.styles.title}">${block.content.title}</h2>
+                            <div id="${block.id}-timer" class="${block.styles.timer}"></div>
+                        </div>
+                    </section>
+                    `;
+                    break;
+                case 'checkout-form':
+                    const subtotal = block.content.items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+                    htmlContent += `
+                    <section id="${block.id}" class="${baseClasses} ${blockIdClass} font-${globalStyles.fontFamily.toLowerCase()}">
+                        <div class="max-w-xl mx-auto">
+                            <h2 class="${block.styles.title}">${block.content.title}</h2>
+                            <p class="${block.styles.description}">${block.content.description}</p>
+                            <form id="${block.id}-checkout-form" class="space-y-4">
+                                <div class="bg-gray-50 dark:bg-gray-700 p-6 rounded-lg mb-6">
+                                    <h3 class="text-xl font-semibold mb-4">Your Order</h3>
+                                    ${block.content.items.map(item => `
+                                        <div class="${block.styles.itemRow}">
+                                            <span>${item.name} ${item.isBump ? '(Order Bump)' : ''}</span>
+                                            <span>${block.content.currency}${item.price.toFixed(2)} x ${item.quantity}</span>
+                                        </div>
+                                    `).join('')}
+                                    <div class="${block.styles.totalRow}">
+                                        <span>Total:</span>
+                                        <span>${block.content.currency}${subtotal.toFixed(2)}</span>
+                                    </div>
+                                </div>
+
+                                <h3 class="text-xl font-semibold mb-4">Payment Information</h3>
+                                <input type="text" name="cardName" placeholder="Name on Card" required class="${block.styles.input}" aria-label="Name on Card">
+                                <input type="text" name="cardNumber" placeholder="Card Number" required class="${block.styles.input}" pattern="[0-9]{13,16}" title="Credit card number (13-16 digits)" aria-label="Card Number">
+                                <div class="flex gap-4">
+                                    <input type="text" name="expiryDate" placeholder="MM/YY" required class="${block.styles.input} w-1/2" pattern="(0[1-9]|1[0-2])\\/[0-9]{2}" title="MM/YY" aria-label="Expiry Date">
+                                    <input type="text" name="cvc" placeholder="CVC" required class="${block.styles.input} w-1/2" pattern="[0-9]{3,4}" title="CVC (3 or 4 digits)" aria-label="CVC">
+                                </div>
+                                <input type="email" name="billingEmail" placeholder="Billing Email" required class="${block.styles.input}" aria-label="Billing Email">
+
+                                <button type="submit" class="${block.styles.ctaButton}">${block.content.ctaText}</button>
+                                <div class="form-message"></div>
+                            </form>
+                        </div>
+                    </section>
+                    `;
+                    jsContent += `
+                    // Checkout form submission handler for ${block.id}
+                    document.getElementById('${block.id}-checkout-form').addEventListener('submit', async function(e) {
+                        e.preventDefault();
+                        const form = e.target;
+                        const formData = new FormData(form);
+                        const data = Object.fromEntries(formData.entries());
+                        const submitButton = form.querySelector('button[type="submit"]');
+                        const messageDiv = form.querySelector('.form-message');
+
+                        submitButton.disabled = true;
+                        messageDiv.textContent = 'Processing payment...';
+                        messageDiv.className = 'form-message text-center mt-4 text-gray-600 dark:text-gray-400';
+
+                        try {
+                            const response = await fetch('${block.content.webhookUrl}', { // Placeholder webhook
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                    'Accept': 'application/json'
+                                },
+                                body: JSON.stringify(data)
+                            });
+
+                            if (response.ok) {
+                                messageDiv.textContent = 'Payment successful! Redirecting...';
+                                messageDiv.className = 'form-message text-center mt-4 text-green-600 dark:text-green-400';
+                                form.reset();
+                            } else {
+                                const errorData = await response.json();
+                                messageDiv.textContent = 'Payment failed: ' + (errorData.message || 'Please check your details.');
+                                messageDiv.className = 'form-message text-center mt-4 text-red-600 dark:text-red-400';
+                            }
+                        } catch (error) {
+                            messageDiv.textContent = 'Network error during payment: ' + error.message;
+                            messageDiv.className = 'form-message text-center mt-4 text-red-600 dark:text-red-400';
+                        } finally {
+                            submitButton.disabled = false;
+                        }
+                    });
+                    `;
+                    break;
+                case 'pricing-table':
+                    htmlContent += `
+                    <section id="${block.id}" class="${baseClasses} ${blockIdClass} font-${globalStyles.fontFamily.toLowerCase()}">
+                        <div class="max-w-5xl mx-auto">
+                            <h2 class="${block.styles.title}">${block.content.title}</h2>
+                            <div class="grid md:grid-cols-${block.content.plans.length} gap-8">
+                                ${block.content.plans.map(plan => `
+                                    <div class="${block.styles.planCard} ${plan.highlighted ? block.styles.highlightedCard : ''} bg-white dark:bg-gray-700">
+                                        <h3 class="${block.styles.planName}">${plan.name}</h3>
+                                        <div class="${block.styles.planPrice}">${block.content.currency}${plan.price}</div>
+                                        <ul class="${block.styles.featureList}">
+                                            ${plan.features.map(feature => `
+                                                <li class="${block.styles.featureItem}">
+                                                    <svg class="w-5 h-5 text-green-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                                                    ${feature}
+                                                </li>
+                                            `).join('')}
+                                        </ul>
+                                        <a href="#" class="${block.styles.ctaButton} mt-auto">${plan.ctaText}</a>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </div>
+                    </section>
+                    `;
+                    break;
+                case 'video-block':
+                    htmlContent += `
+                    <section id="${block.id}" class="${baseClasses} ${blockIdClass} font-${globalStyles.fontFamily.toLowerCase()}">
+                        <div class="max-w-4xl mx-auto">
+                            <h2 class="${block.styles.title}">${block.content.title}</h2>
+                            <div class="${block.styles.videoWrapper}">
+                                <iframe class="absolute top-0 left-0 w-full h-full" src="${block.content.videoUrl}" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+                            </div>
+                        </div>
+                    </section>
+                    `;
+                    break;
+                case 'trust-seals':
+                    htmlContent += `
+                    <section id="${block.id}" class="${baseClasses} ${blockIdClass} font-${globalStyles.fontFamily.toLowerCase()}">
+                        <div class="max-w-4xl mx-auto">
+                            <h2 class="${block.styles.title}">${block.content.title}</h2>
+                            <div class="${block.styles.sealContainer}">
+                                ${block.content.seals.map(seal => `
+                                    <img src="${seal.url}" alt="Trust Seal" class="${block.styles.sealImage}" onerror="this.onerror=null;this.src='https://placehold.co/120x60/D1FAE5/065F46?text=Seal';">
+                                `).join('')}
+                            </div>
+                        </div>
+                    </section>
+                    `;
+                    break;
+                default:
+                    // Fallback for unknown block types
+                    htmlContent += `<section id="${block.id}" class="${baseClasses} ${blockIdClass} font-${globalStyles.fontFamily.toLowerCase()}"><p>${block.content.text}</p></section>`;
+            }
+        });
+
+        // Construct the full HTML page
+        const fullHtml = `<!DOCTYPE html>
+<html lang="en" class="${globalStyles.darkMode ? 'dark' : ''}">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Your Funnel Page</title>
+    <!-- SEO Meta Tags -->
+    <meta name="description" content="A high-converting funnel page built with FunnelForge.">
+    <meta name="keywords" content="funnel, marketing, lead generation, sales, landing page">
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://yourwebsite.com/your-funnel">
+    <meta property="og:title" content="Your Funnel Page Title">
+    <meta property="og:description" content="A high-converting funnel page built with FunnelForge.">
+    <meta property="og:image" content="https://placehold.co/1200x630/4F46E5/FFFFFF?text=Funnel+Preview">
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:url" content="https://yourwebsite.com/your-funnel">
+    <meta property="twitter:title" content="Your Funnel Page Title">
+    <meta property="twitter:description" content="A high-converting funnel page built with FunnelForge.">
+    <meta property="twitter:image" content="https://placehold.co/1200x630/4F46E5/FFFFFF?text=Funnel+Preview">
+
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '${globalStyles.primaryColor}', // Custom primary color
+                    },
+                    fontFamily: {
+                        inter: ['Inter', 'sans-serif'],
+                        // Add other Google Fonts here if needed
+                    },
+                }
+            }
+        }
+    </script>
+    <!-- Google Fonts CDN -->
+    <link href="https://fonts.googleapis.com/css2?family=${globalStyles.fontFamily.replace(/ /g, '+')}:wght@400;700;800&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: '${globalStyles.fontFamily}', sans-serif;
+            margin: 0;
+            background-color: #f8fafc; /* Tailwind slate-50 */
+            color: #1e293b; /* Tailwind slate-800 */
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+        .dark body {
+            background-color: #1e293b; /* Tailwind slate-800 */
+            color: #f8fafc; /* Tailwind slate-50 */
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 1rem;
+        }
+        /* Custom styles for dynamic primary color */
+        .bg-indigo-600 { background-color: var(--primary-color, #4F46E5); }
+        .hover\\:bg-indigo-700:hover { background-color: var(--primary-dark-color, #4338CA); }
+        .text-indigo-600 { color: var(--primary-color, #4F46E5); }
+        .border-indigo-600 { border-color: var(--primary-color, #4F46E5); }
+        .focus\\:ring-indigo-500:focus { --tw-ring-color: var(--primary-color, #4F46E5); }
+
+        /* Dark mode adjustments for dynamic colors */
+        .dark .bg-indigo-600 { background-color: var(--primary-dark-color, #6366F1); } /* Lighter for dark mode */
+        .dark .hover\\:bg-indigo-700:hover { background-color: var(--primary-color, #4F46E5); }
+        .dark .text-indigo-600 { color: var(--primary-dark-color, #6366F1); }
+        .dark .border-indigo-600 { border-color: var(--primary-dark-color, #6366F1); }
+        .dark .focus\\:ring-indigo-500:focus { --tw-ring-color: var(--primary-dark-color, #6366F1); }
+        ${cssContent} /* Any custom CSS from blocks */
+    </style>
+    <!-- html2canvas CDN script moved to head -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+</head>
+<body class="${globalStyles.darkMode ? 'dark' : ''}" style="--primary-color: ${globalStyles.primaryColor}; --primary-dark-color: ${globalStyles.primaryColor};">
+    ${htmlContent}
+    <script>
+        // Inline JavaScript for dynamic functionality (forms, countdowns)
+        ${jsContent}
+    </script>
+</body>
+</html>
+        `;
+
+        setGeneratedCode({ html: fullHtml, css: cssContent, js: jsContent });
+        setShowExportModal(true);
+    };
+
+    // --- Component for individual Funnel Blocks ---
+    const FunnelBlock = ({ block, onSelect, onDelete, onMove, isSelected, updateBlock }) => { // Added updateBlock prop
+        const blockRef = useRef(null);
+        const [isDragging, setIsDragging] = useState(false);
+
+        // Drag start handler for reordering
+        const handleDragStart = (e) => {
+            e.stopPropagation(); // Prevent canvas drag start
+            setIsDragging(true);
+            e.dataTransfer.setData('text/plain', block.id);
+            e.dataTransfer.effectAllowed = 'move';
+        };
+
+        // Drag over handler for reordering
+        const handleDragOver = (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            e.dataTransfer.dropEffect = 'move';
+        };
+
+        // Drop handler for reordering
+        const handleDrop = (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            const dragId = e.dataTransfer.getData('text/plain');
+            if (dragId && dragId !== block.id) {
+                onMove(dragId, block.id);
+            }
+            setIsDragging(false);
+        };
+
+        // Drag end handler
+        const handleDragEnd = () => {
+            setIsDragging(false);
+            // Do NOT add to history here, as drag-and-drop reordering can create many intermediate states.
+            // History should be added when the drag operation completes, or for significant changes.
+            // For simplicity in this example, we'll let the next significant change trigger history.
+        };
+
+        // Render content based on block type
+        const renderBlockContent = () => {
+            const baseClasses = block.styles.container || '';
+            const primaryColorClass = `bg-[${globalStyles.primaryColor}]`; // Use direct color for dynamic background
+
+            // Helper for editable text content
+            const EditableText = ({ field, className, tagName = 'p' }) => {
+                const Tag = tagName;
+                return (
+                    <Tag
+                        contentEditable={true}
+                        suppressContentEditableWarning={true}
+                        onBlur={(e) => updateBlock(block.id, { [field]: e.target.textContent })}
+                        className={`${className} focus:outline-none focus:ring-2 focus:ring-indigo-500 rounded-md p-1 -m-1 transition-all duration-100`}
+                    >
+                        {block.content[field]}
+                    </Tag>
+                );
+            };
+
+            switch (block.type) {
+                case 'hero':
+                    return (
+                        <div className={`${baseClasses} ${isSelected ? 'border-2 border-indigo-500' : ''} relative`}>
+                            <img
+                                src={block.content.imageUrl}
+                                alt="Hero"
+                                className={`${block.styles.image}`}
+                                onClick={(e) => e.stopPropagation()} // Prevent block re-selection on image click
+                            />
+                            <EditableText field="headline" className={`${block.styles.headline}`} tagName="h1" />
+                            <EditableText field="subtext" className={`${block.styles.subtext}`} />
+                            <a href={block.content.ctaLink} className={`${block.styles.ctaButton}`} onClick={(e) => e.preventDefault()}>
+                                <EditableText field="ctaText" className="inline-block" tagName="span" />
+                            </a>
+                        </div>
+                    );
+                case 'lead-form':
+                    return (
+                        <div className={`${baseClasses} ${isSelected ? 'border-2 border-indigo-500' : ''} relative`}>
+                            <EditableText field="title" className={`${block.styles.title}`} tagName="h2" />
+                            <EditableText field="description" className={`${block.styles.description}`} />
+                            <form className="space-y-4" onSubmit={(e) => e.preventDefault()}>
+                                {block.content.formFields.map((field, index) => (
+                                    <input
+                                        key={field.id} // Use field.id for unique key
+                                        type={field.type}
+                                        placeholder={field.placeholder}
+                                        required={field.required}
+                                        className={`${block.styles.input}`}
+                                        disabled // Disable in editor for visual only
+                                        onClick={(e) => e.stopPropagation()} // Prevent block re-selection on input click
+                                    />
+                                ))}
+                                <button type="submit" className={`${block.styles.ctaButton}`} disabled onClick={(e) => e.stopPropagation()}>
+                                    <EditableText field="ctaText" className="inline-block" tagName="span" />
+                                </button>
+                                <div className="form-message text-center mt-4 text-gray-600 dark:text-gray-400">
+                                    (Form will submit to webhook on live page)
+                                </div>
+                            </form>
+                        </div>
+                    );
+                case 'tripwire':
+                    return (
+                        <div className={`${baseClasses} ${isSelected ? 'border-2 border-indigo-500' : ''} relative`}>
+                            <img
+                                src={block.content.imageUrl}
+                                alt="Product Image"
+                                className={`${block.styles.image}`}
+                                onClick={(e) => e.stopPropagation()} // Prevent block re-selection on image click
+                            />
+                            <EditableText field="headline" className={`${block.styles.headline}`} tagName="h2" />
+                            <EditableText field="description" className={`${block.styles.description}`} />
+                            <div className="flex justify-center items-baseline mb-6">
+                                <span className={`${block.styles.price}`}>
+                                    {block.content.currency || '$'}
+                                    <EditableText field="price" className="inline-block" tagName="span" />
+                                </span>
+                                <span className={`${block.styles.originalPrice} ml-4`}>
+                                    {block.content.currency || '$'}
+                                    <EditableText field="originalPrice" className="inline-block" tagName="span" />
+                                </span>
+                            </div>
+                            <a href={block.content.ctaLink} className={`${block.styles.ctaButton}`} onClick={(e) => e.preventDefault()}>
+                                <EditableText field="ctaText" className="inline-block" tagName="span" />
+                            </a>
+                        </div>
+                    );
+                case 'social-proof':
+                    return (
+                        <div className={`${baseClasses} ${isSelected ? 'border-2 border-indigo-500' : ''} relative`}>
+                            <EditableText field="title" className={`${block.styles.title}`} tagName="h2" />
+                            <div className="grid md:grid-cols-2 gap-8 mb-8">
+                                {block.content.testimonials.map((t, index) => (
+                                    <div key={t.id} className="bg-white dark:bg-gray-700 p-6 rounded-lg shadow-md">
+                                        <p className={`${block.styles.testimonialQuote}`} contentEditable={true} suppressContentEditableWarning={true} onBlur={(e) => {
+                                            const newTestimonials = [...block.content.testimonials];
+                                            newTestimonials[index].quote = e.target.textContent;
+                                            updateBlock(block.id, { testimonials: newTestimonials });
+                                        }}>
+                                            "{t.quote}"
+                                        </p>
+                                        <p className={`${block.styles.testimonialAuthor}`} contentEditable={true} suppressContentEditableWarning={true} onBlur={(e) => {
+                                            const newTestimonials = [...block.content.testimonials];
+                                            newTestimonials[index].author = e.target.textContent;
+                                            updateBlock(block.id, { testimonials: newTestimonials });
+                                        }}>
+                                            - {t.author}
+                                        </p>
+                                    </div>
+                                ))}
+                            </div>
+                            <div className={`${block.styles.logoContainer}`}>
+                                {block.content.logos.map((logo, index) => (
+                                    <img key={logo.id} src={logo.url} alt="Client Logo" className={`${block.styles.logo}`} onClick={(e) => e.stopPropagation()} />
+                                ))}
+                            </div>
+                        </div>
+                    );
+                case 'countdown':
+                    // Countdown logic for editor preview
+                    const calculateTimeLeft = () => {
+                        const difference = block.content.endTime - Date.now();
+                        let timeLeft = {};
+
+                        if (difference > 0) {
+                            timeLeft = {
+                                days: Math.floor(difference / (1000 * 60 * 60 * 24)),
+                                hours: Math.floor((difference / (1000 * 60 * 60)) % 24),
+                                minutes: Math.floor((difference / 1000 / 60) % 60),
+                                seconds: Math.floor((difference / 1000) % 60),
+                            };
+                        } else {
+                            timeLeft = { days: 0, hours: 0, minutes: 0, seconds: 0 };
+                        }
+                        return timeLeft;
+                    };
+
+                    const [timeLeft, setTimeLeft] = useState(calculateTimeLeft());
+
+                    useEffect(() => {
+                        const timer = setTimeout(() => {
+                            setTimeLeft(calculateTimeLeft());
+                        }, 1000);
+                        return () => clearTimeout(timer);
+                    });
+
+                    const timerComponents = [];
+                    Object.keys(timeLeft).forEach((interval) => {
+                        if (!timeLeft[interval]) return;
+                        timerComponents.push(
+                            <span key={interval}>
+                                {timeLeft[interval]}{interval[0]}
+                            </span>
+                        );
+                    });
+
+                    return (
+                        <div className={`${baseClasses} ${isSelected ? 'border-2 border-indigo-500' : ''} relative`}>
+                            <EditableText field="title" className={`${block.styles.title}`} tagName="h2" />
+                            <div className={`${block.styles.timer}`}>
+                                {timerComponents.length ? timerComponents : <span>Time\'s Up!</span>}
+                            </div>
+                        </div>
+                    );
+                case 'checkout-form':
+                    const subtotal = block.content.items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+                    return (
+                        <div className={`${baseClasses} ${isSelected ? 'border-2 border-indigo-500' : ''} relative`}>
+                            <EditableText field="title" className={`${block.styles.title}`} tagName="h2" />
+                            <EditableText field="description" className={`${block.styles.description}`} />
+                            <form className="space-y-4" onSubmit={(e) => e.preventDefault()}>
+                                <div className="bg-gray-50 dark:bg-gray-700 p-6 rounded-lg mb-6">
+                                    <h3 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white">Your Order</h3>
+                                    {block.content.items.map((item, index) => (
+                                        <div key={item.id} className={`${block.styles.itemRow}`}>
+                                            <span>${item.name} ${item.isBump ? '(Order Bump)' : ''}</span>
+                                            <span>${block.content.currency}{item.price.toFixed(2)} x {item.quantity}</span>
+                                        </div>
+                                    ))}
+                                    <div className={`${block.styles.totalRow}`}>
+                                        <span>Total:</span>
+                                        <span>${block.content.currency}{subtotal.toFixed(2)}</span>
+                                    </div>
+                                </div>
+
+                                <h3 className="text-xl font-semibold mb-4">Payment Information</h3>
+                                <input type="text" placeholder="Name on Card" className={`${block.styles.input}`} disabled onClick={(e) => e.stopPropagation()} />
+                                <input type="text" placeholder="Card Number" className={`${block.styles.input}`} disabled onClick={(e) => e.stopPropagation()} />
+                                <div className="flex gap-4">
+                                    <input type="text" placeholder="MM/YY" className={`${block.styles.input} w-1/2`} disabled onClick={(e) => e.stopPropagation()} />
+                                    <input type="text" placeholder="CVC" className={`${block.styles.input} w-1/2`} disabled onClick={(e) => e.stopPropagation()} />
+                                </div>
+                                <input type="email" placeholder="Billing Email" className={`${block.styles.input}`} disabled onClick={(e) => e.stopPropagation()} />
+
+                                <button type="submit" className={`${block.styles.ctaButton}`} disabled onClick={(e) => e.preventDefault()}>
+                                    <EditableText field="ctaText" className="inline-block" tagName="span" />
+                                </button>
+                                <div className="form-message text-center mt-4 text-gray-600 dark:text-gray-400">
+                                    (Checkout form is for visual only in editor)
+                                </div>
+                            </form>
+                        </div>
+                    );
+                case 'pricing-table':
+                    return (
+                        <div className={`${baseClasses} ${isSelected ? 'border-2 border-indigo-500' : ''} relative`}>
+                            <EditableText field="title" className={`${block.styles.title}`} tagName="h2" />
+                            <div className="grid md:grid-cols-3 gap-8">
+                                {block.content.plans.map((plan, index) => (
+                                    <div key={plan.id} className={`${block.styles.planCard} ${plan.highlighted ? block.styles.highlightedCard : ''} bg-white dark:bg-gray-700`}>
+                                        <h3 className={`${block.styles.planName}`} contentEditable={true} suppressContentEditableWarning={true} onBlur={(e) => {
+                                            const newPlans = [...block.content.plans];
+                                            newPlans[index].name = e.target.textContent;
+                                            updateBlock(block.id, { plans: newPlans });
+                                        }}>
+                                            {plan.name}
+                                        </h3>
+                                        <div className={`${block.styles.planPrice}`} contentEditable={true} suppressContentEditableWarning={true} onBlur={(e) => {
+                                            const newPlans = [...block.content.plans];
+                                            newPlans[index].price = parseFloat(e.target.textContent.replace(/[^0-9.]/g, '')) || 0;
+                                            updateBlock(block.id, { plans: newPlans });
+                                        }}>
+                                            {block.content.currency}{plan.price}
+                                        </div>
+                                        <ul className={`${block.styles.featureList}`}>
+                                            {plan.features.map((feature, fIndex) => (
+                                                <li key={fIndex} className={`${block.styles.featureItem}`} contentEditable={true} suppressContentEditableWarning={true} onBlur={(e) => {
+                                                    const newPlans = [...block.content.plans];
+                                                    newPlans[index].features[fIndex] = e.target.textContent;
+                                                    updateBlock(block.id, { plans: newPlans });
+                                                }}>
+                                                    <svg className="w-5 h-5 text-green-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                                                    {feature}
+                                                </li>
+                                            ))}
+                                        </ul>
+                                        <button className={`${block.styles.ctaButton} mt-auto`} disabled onClick={(e) => e.preventDefault()}>
+                                            <span contentEditable={true} suppressContentEditableWarning={true} onBlur={(e) => {
+                                                const newPlans = [...block.content.plans];
+                                                newPlans[index].ctaText = e.target.textContent;
+                                                updateBlock(block.id, { plans: newPlans });
+                                            }}>
+                                                {plan.ctaText}
+                                            </span>
+                                        </button>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    );
+                case 'video-block':
+                    return (
+                        <div className={`${baseClasses} ${isSelected ? 'border-2 border-indigo-500' : ''} relative`}>
+                            <EditableText field="title" className={`${block.styles.title}`} tagName="h2" />
+                            <div className={`${block.styles.videoWrapper}`}>
+                                <iframe
+                                    className="absolute top-0 left-0 w-full h-full"
+                                    src={block.content.videoUrl}
+                                    frameBorder="0"
+                                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                    allowFullScreen
+                                    title="Embedded Video"
+                                    onClick={(e) => e.stopPropagation()} // Prevent block re-selection on video click
+                                ></iframe>
+                            </div>
+                        </div>
+                    );
+                case 'trust-seals':
+                    return (
+                        <div className={`${baseClasses} ${isSelected ? 'border-2 border-indigo-500' : ''} relative`}>
+                            <EditableText field="title" className={`${block.styles.title}`} tagName="h2" />
+                            <div className={`${block.styles.sealContainer}`}>
+                                {block.content.seals.map((seal, index) => (
+                                    <img key={seal.id} src={seal.url} alt="Trust Seal" className={`${block.styles.sealImage}`} onClick={(e) => e.stopPropagation()} />
+                                ))}
+                            </div>
+                        </div>
+                    );
+                default:
+                    return (
+                        <div className={`${baseClasses} ${isSelected ? 'border-2 border-indigo-500' : ''} relative`}>
+                            <EditableText field="text" className="text-lg" />
+                        </div>
+                    );
+            }
+        };
+
+        return (
+            <div
+                ref={blockRef}
+                className={`relative group cursor-grab ${isDragging ? 'opacity-50' : ''}`}
+                onClick={(e) => { e.stopPropagation(); onSelect(block.id); }} // Select block on click
+                draggable="true"
+                onDragStart={handleDragStart}
+                onDragOver={handleDragOver}
+                onDrop={handleDrop}
+                onDragEnd={handleDragEnd}
+            >
+                {/* Floating Toolbar for selected blocks */}
+                {isSelected && (
+                    <div className="floating-toolbar absolute -top-3 right-0 flex space-x-1 z-10">
+                        <button
+                            onClick={(e) => { e.stopPropagation(); onSelect(block.id); }} // Re-select to ensure editor is focused
+                            className="bg-blue-500 text-white rounded-full p-1 w-7 h-7 flex items-center justify-center text-sm shadow-lg hover:bg-blue-600 transition-colors"
+                            title="Edit Block"
+                        >
+                            ✎
+                        </button>
+                        <button
+                            onClick={(e) => { e.stopPropagation(); onDelete(block.id); }}
+                            className="bg-red-500 text-white rounded-full p-1 w-7 h-7 flex items-center justify-center text-sm shadow-lg hover:bg-red-600 transition-colors"
+                            title="Delete Block"
+                        >
+                            ✕
+                        </button>
+                    </div>
+                )}
+                {renderBlockContent()}
+            </div>
+        );
+    };
+
+    // --- Header Component ---
+    const Header = ({ onNewFunnel, onSave, onLoad, onExport, onUndo, onRedo, onToggleDarkMode, darkMode, canUndo, canRedo, onSaveImage, isSavingImage }) => (
+        <header className="bg-white dark:bg-gray-800 shadow-md p-4 flex justify-between items-center fixed top-0 left-0 w-full z-20">
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">FunnelForge - ReuxForge</h1> {/* Changed name here */}
+            <nav className="flex space-x-4">
+                <button onClick={onNewFunnel} className="bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 px-4 py-2 rounded-md hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors">New Funnel</button>
+                <button onClick={onSave} className="bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 px-4 py-2 rounded-md hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors">Save</button>
+                <button onClick={onLoad} className="bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 px-4 py-2 rounded-md hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors">Load</button>
+                <button onClick={onUndo} disabled={!canUndo} className="bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 px-4 py-2 rounded-md hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors disabled:opacity-50">Undo</button>
+                <button onClick={onRedo} disabled={!canRedo} className="bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 px-4 py-2 rounded-md hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors disabled:opacity-50">Redo</button>
+                <button onClick={onExport} className="bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700 transition-colors">Export Code</button>
+                <button onClick={onSaveImage} disabled={isSavingImage} className="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700 transition-colors disabled:opacity-50">
+                    {isSavingImage ? 'Saving...' : 'Save Image'}
+                </button>
+                <button onClick={onToggleDarkMode} className="bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 px-4 py-2 rounded-md hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors">
+                    {darkMode ? 'Light Mode' : 'Dark Mode'}
+                </button>
+            </nav>
+        </header>
+    );
+
+    // --- Sidebar Component ---
+    const Sidebar = ({ onBlockDragStart, onSelectTemplate }) => {
+        const blockTypes = [
+            { type: 'hero', name: 'Hero Section' },
+            { type: 'lead-form', name: 'Lead Capture Form' },
+            { type: 'tripwire', name: 'Tripwire Offer' },
+            { type: 'social-proof', name: 'Social Proof' },
+            { type: 'countdown', name: 'Countdown Timer' },
+            { type: 'checkout-form', name: 'Checkout Form' },
+            { type: 'pricing-table', name: 'Pricing Table' },
+            { type: 'video-block', name: 'Video/GIF/Image' },
+            { type: 'trust-seals', name: 'Trust Seals' },
+        ];
+
+        const templates = [
+            { type: 'lead-magnet', name: 'Lead Magnet Funnel' },
+            { type: 'tripwire', name: 'Tripwire Funnel' },
+            { type: 'webinar', name: 'Webinar Funnel' },
+            { type: 'product-launch', name: 'Product Launch Funnel' },
+            { type: 'application', name: 'Application Funnel' },
+        ];
+
+        return (
+            <aside className="w-64 bg-gray-50 dark:bg-gray-900 p-6 shadow-lg overflow-y-auto fixed top-16 left-0 bottom-0 z-10 flex flex-col"> {/* Added flex-col */}
+                <h2 className="text-xl font-bold mb-6 text-gray-900 dark:text-white">Templates</h2>
+                <div className="space-y-3 mb-8">
+                    {templates.map(template => (
+                        <button
+                            key={template.type}
+                            onClick={() => onSelectTemplate(template.type)}
+                            className="w-full text-left bg-indigo-100 dark:bg-indigo-900 text-indigo-800 dark:text-indigo-200 px-4 py-2 rounded-md hover:bg-indigo-200 dark:hover:bg-indigo-800 transition-colors"
+                        >
+                            {template.name}
+                        </button>
+                    ))}
+                </div>
+
+                <h2 className="text-xl font-bold mb-4 text-gray-900 dark:text-white">Funnel Blocks</h2> {/* Reduced mb-6 to mb-4 */}
+                <div className="space-y-3 flex-grow"> {/* Added flex-grow */}
+                    {blockTypes.map(block => (
+                        <div
+                            key={block.type}
+                            className="bg-white dark:bg-gray-800 p-3 rounded-md shadow-sm cursor-grab hover:shadow-md transition-shadow text-gray-900 dark:text-white"
+                            draggable="true"
+                            onDragStart={(e) => onBlockDragStart(e, block.type)}
+                        >
+                            {block.name}
+                        </div>
+                    ))}
+                </div>
+
+                {/* Watermarks at the bottom of the sidebar */}
+                {/* Adjusted mt-8 to mt-4 and opacity to 80% */}
+                <div className="mt-4 text-center space-y-1 pt-4 border-t border-gray-200 dark:border-gray-700">
+                    <p className="text-sm font-extrabold text-gray-300 opacity-80">ReuxMarketing</p>
+                </div>
+            </aside>
+        );
+    };
+
+    // --- Controls Panel Component ---
+    const ControlsPanel = ({ selectedBlock, onUpdateBlock, onUpdateGlobalStyles, globalStyles }) => {
+        if (!selectedBlock) {
+            return (
+                <aside className="w-80 bg-gray-50 dark:bg-gray-900 p-6 shadow-lg overflow-y-auto fixed top-16 right-0 bottom-0 z-10">
+                    <h2 className="text-xl font-bold mb-6 text-gray-900 dark:text-white">Global Styles</h2>
+                    <div className="mb-4">
+                        <label htmlFor="primaryColor" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Primary Color</label>
+                        <input
+                            type="color"
+                            id="primaryColor"
+                            value={globalStyles.primaryColor}
+                            onChange={(e) => onUpdateGlobalStyles({ primaryColor: e.target.value })}
+                            className="w-full h-10 rounded-md border border-gray-300 dark:border-gray-600 cursor-pointer"
+                        />
+                    </div>
+                    <div className="mb-4">
+                        <label htmlFor="fontFamily" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Font Family (Google Fonts)</label>
+                        <select
+                            id="fontFamily"
+                            value={globalStyles.fontFamily}
+                            onChange={(e) => onUpdateGlobalStyles({ fontFamily: e.target.value })}
+                            className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                        >
+                            <option value="Inter">Inter</option>
+                            <option value="Roboto">Roboto</option>
+                            <option value="Open Sans">Open Sans</option>
+                            <option value="Lato">Lato</option>
+                            <option value="Montserrat">Montserrat</option>
+                            <option value="Oswald">Oswald</option>
+                        </select>
+                    </div>
+                    <p className="text-gray-600 dark:text-gray-400 text-sm mt-6">Select a block on the canvas to edit its content and specific styles.</p>
+                </aside>
+            );
+        }
+
+        const handleContentChange = (field, value) => {
+            onUpdateBlock(selectedBlock.id, { [field]: value });
+        };
+
+        const handleStyleChange = (field, value) => {
+            onUpdateBlock(selectedBlock.id, null, { [field]: value });
+        };
+
+        // Helper to generate unique IDs for new items/fields
+        const generateUniqueId = () => `item-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+
+        return (
+            <aside className="w-80 bg-gray-50 dark:bg-gray-900 p-6 shadow-lg overflow-y-auto fixed top-16 right-0 bottom-0 z-10">
+                <h2 className="text-xl font-bold mb-6 text-gray-900 dark:text-white">Edit Block: {selectedBlock.type.replace('-', ' ').toUpperCase()}</h2>
+
+                {/* General Content Fields */}
+                <div className="mb-6 pb-4 border-b border-gray-200 dark:border-gray-700">
+                    <h3 className="text-lg font-semibold mb-4 text-gray-900 dark:text-white">Content</h3>
+                    {selectedBlock.editableFields.includes('headline') && (
+                        <div className="mb-4">
+                            <label htmlFor="headline" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Headline</label>
+                            <input type="text" id="headline" value={selectedBlock.content.headline || ''} onChange={(e) => handleContentChange('headline', e.target.value)} className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white" />
+                        </div>
+                    )}
+                    {selectedBlock.editableFields.includes('subtext') && (
+                        <div className="mb-4">
+                            <label htmlFor="subtext" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Subtext</label>
+                            <textarea id="subtext" value={selectedBlock.content.subtext || ''} onChange={(e) => handleContentChange('subtext', e.target.value)} className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white"></textarea>
+                        </div>
+                    )}
+                    {selectedBlock.editableFields.includes('ctaText') && (
+                        <div className="mb-4">
+                            <label htmlFor="ctaText" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">CTA Button Text</label>
+                            <input type="text" id="ctaText" value={selectedBlock.content.ctaText || ''} onChange={(e) => handleContentChange('ctaText', e.target.value)} className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white" />
+                        </div>
+                    )}
+                    {selectedBlock.editableFields.includes('ctaLink') && (
+                        <div className="mb-4">
+                            <label htmlFor="ctaLink" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">CTA Button Link</label>
+                            <input type="text" id="ctaLink" value={selectedBlock.content.ctaLink || ''} onChange={(e) => handleContentChange('ctaLink', e.target.value)} className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white" />
+                        </div>
+                    )}
+                    {selectedBlock.editableFields.includes('imageUrl') && (
+                        <div className="mb-4">
+                            <label htmlFor="imageUrl" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Image URL</label>
+                            <input type="text" id="imageUrl" value={selectedBlock.content.imageUrl || ''} onChange={(e) => handleContentChange('imageUrl', e.target.value)} className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white" />
+                            {selectedBlock.content.imageUrl && (
+                                <img src={selectedBlock.content.imageUrl} alt="Preview" className="mt-2 max-w-full h-auto rounded-md shadow-sm" style={{ maxHeight: '100px' }} />
+                            )}
+                        </div>
+                    )}
+                    {selectedBlock.editableFields.includes('title') && (
+                        <div className="mb-4">
+                            <label htmlFor="title" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Title</label>
+                            <input type="text" id="title" value={selectedBlock.content.title || ''} onChange={(e) => handleContentChange('title', e.target.value)} className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white" />
+                        </div>
+                    )}
+                    {selectedBlock.editableFields.includes('description') && (
+                        <div className="mb-4">
+                            <label htmlFor="description" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Description</label>
+                            <textarea id="description" value={selectedBlock.content.description || ''} onChange={(e) => handleContentChange('description', e.target.value)} className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white"></textarea>
+                        </div>
+                    )}
+                    {selectedBlock.editableFields.includes('webhookUrl') && (
+                        <div className="mb-4">
+                            <label htmlFor="webhookUrl" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Webhook URL</label>
+                            <input type="text" id="webhookUrl" value={selectedBlock.content.webhookUrl || ''} onChange={(e) => handleContentChange('webhookUrl', e.target.value)} className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white" />
+                        </div>
+                    )}
+                    {selectedBlock.editableFields.includes('successMessage') && (
+                        <div className="mb-4">
+                            <label htmlFor="successMessage" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Success Message</label>
+                            <input type="text" id="successMessage" value={selectedBlock.content.successMessage || ''} onChange={(e) => handleContentChange('successMessage', e.target.value)} className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white" />
+                        </div>
+                    )}
+                    {selectedBlock.editableFields.includes('price') && (
+                        <div className="mb-4">
+                            <label htmlFor="price" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Price (Number only)</label>
+                            <input type="number" id="price" value={selectedBlock.content.price || ''} onChange={(e) => handleContentChange('price', e.target.value)} className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white" />
+                        </div>
+                    )}
+                    {selectedBlock.editableFields.includes('originalPrice') && (
+                        <div className="mb-4">
+                            <label htmlFor="originalPrice" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Original Price (Number only)</label>
+                            <input type="number" id="originalPrice" value={selectedBlock.content.originalPrice || ''} onChange={(e) => handleContentChange('originalPrice', e.target.value)} className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white" />
+                        </div>
+                    )}
+                    {selectedBlock.editableFields.includes('endTime') && (
+                        <div className="mb-4">
+                            <label htmlFor="endTime" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Countdown End Time (Date & Time)</label>
+                            <input
+                                type="datetime-local"
+                                id="endTime"
+                                value={new Date(selectedBlock.content.endTime).toISOString().slice(0, 16)} // Format for datetime-local input
+                                onChange={(e) => handleContentChange('endTime', new Date(e.target.value).getTime())}
+                                className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                            />
+                        </div>
+                    )}
+                    {selectedBlock.editableFields.includes('currency') && (
+                        <div className="mb-4">
+                            <label htmlFor="currency" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Currency Symbol</label>
+                            <input type="text" id="currency" value={selectedBlock.content.currency || ''} onChange={(e) => handleContentChange('currency', e.target.value)} className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white" />
+                        </div>
+                    )}
+                    {selectedBlock.editableFields.includes('videoUrl') && (
+                        <div className="mb-4">
+                            <label htmlFor="videoUrl" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Video Embed URL (YouTube/Vimeo)</label>
+                            <input type="text" id="videoUrl" value={selectedBlock.content.videoUrl || ''} onChange={(e) => handleContentChange('videoUrl', e.target.value)} className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white" />
+                            {selectedBlock.content.videoUrl && (
+                                <div className="mt-2 relative w-full h-0 pb-[56.25%] rounded-md overflow-hidden shadow-sm">
+                                    <iframe
+                                        className="absolute top-0 left-0 w-full h-full"
+                                        src={selectedBlock.content.videoUrl}
+                                        frameBorder="0"
+                                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                        allowFullScreen
+                                        title="Embedded Video Preview"
+                                    ></iframe>
+                                </div>
+                            )}
+                        </div>
+                    )}
+                </div>
+
+                {/* Dynamic Content Fields (Arrays) */}
+                {selectedBlock.editableFields.includes('formFields') && (
+                    <div className="mb-6 pb-4 border-b border-gray-200 dark:border-gray-700">
+                        <h3 className="text-lg font-semibold mb-4 text-gray-900 dark:text-white">Form Fields</h3>
+                        {selectedBlock.content.formFields.map((field, index) => (
+                            <div key={field.id} className="bg-gray-100 dark:bg-gray-700 p-3 rounded-md mb-3 relative">
+                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Field {index + 1}</label>
+                                <input
+                                    type="text"
+                                    placeholder="Name (e.g., email)"
+                                    value={field.name}
+                                    onChange={(e) => {
+                                        const newFields = [...selectedBlock.content.formFields];
+                                        newFields[index].name = e.target.value;
+                                        handleContentChange('formFields', newFields);
+                                    }}
+                                    className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm mb-2"
+                                />
+                                <input
+                                    type="text"
+                                    placeholder="Type (e.g., text, email)"
+                                    value={field.type}
+                                    onChange={(e) => {
+                                        const newFields = [...selectedBlock.content.formFields];
+                                        newFields[index].type = e.target.value;
+                                        handleContentChange('formFields', newFields);
+                                    }}
+                                    className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm mb-2"
+                                />
+                                <input
+                                    type="text"
+                                    placeholder="Placeholder"
+                                    value={field.placeholder}
+                                    onChange={(e) => {
+                                        const newFields = [...selectedBlock.content.formFields];
+                                        newFields[index].placeholder = e.target.value;
+                                        handleContentChange('formFields', newFields);
+                                    }}
+                                    className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm mb-2"
+                                />
+                                <label className="flex items-center text-sm text-gray-700 dark:text-gray-300">
+                                    <input
+                                        type="checkbox"
+                                        checked={field.required}
+                                        onChange={(e) => {
+                                            const newFields = [...selectedBlock.content.formFields];
+                                            newFields[index].required = e.target.checked;
+                                            handleContentChange('formFields', newFields);
+                                        }}
+                                        className="mr-2"
+                                    />
+                                    Required
+                                </label>
+                                <button
+                                    onClick={() => {
+                                        const newFields = selectedBlock.content.formFields.filter((_, i) => i !== index);
+                                        handleContentChange('formFields', newFields);
+                                    }}
+                                    className="absolute top-2 right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs hover:bg-red-600"
+                                >
+                                    ✕
+                                </button>
+                            </div>
+                        ))}
+                        <button
+                            onClick={() => {
+                                const newFields = [...selectedBlock.content.formFields, { id: generateUniqueId(), name: '', type: 'text', placeholder: '', required: false }];
+                                handleContentChange('formFields', newFields);
+                            }}
+                            className="w-full bg-blue-500 text-white py-2 px-3 rounded-md hover:bg-blue-600 transition-colors mt-4"
+                        >
+                            Add Field
+                        </button>
+                    </div>
+                )}
+
+                {selectedBlock.editableFields.includes('testimonials') && (
+                    <div className="mb-6 pb-4 border-b border-gray-200 dark:border-gray-700">
+                        <h3 className="text-lg font-semibold mb-4 text-gray-900 dark:text-white">Testimonials</h3>
+                        {selectedBlock.content.testimonials.map((test, index) => (
+                            <div key={test.id} className="bg-gray-100 dark:bg-gray-700 p-3 rounded-md mb-3 relative">
+                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Testimonial {index + 1}</label>
+                                <textarea
+                                    placeholder="Quote"
+                                    value={test.quote}
+                                    onChange={(e) => {
+                                        const newTests = [...selectedBlock.content.testimonials];
+                                        newTests[index].quote = e.target.value;
+                                        handleContentChange('testimonials', newTests);
+                                    }}
+                                    className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm mb-2"
+                                />
+                                <input
+                                    type="text"
+                                    placeholder="Author"
+                                    value={test.author}
+                                    onChange={(e) => {
+                                        const newTests = [...selectedBlock.content.testimonials];
+                                        newTests[index].author = e.target.value;
+                                        handleContentChange('testimonials', newTests);
+                                    }}
+                                    className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm mb-2"
+                                />
+                                <button
+                                    onClick={() => {
+                                        const newTests = selectedBlock.content.testimonials.filter((_, i) => i !== index);
+                                        handleContentChange('testimonials', newTests);
+                                    }}
+                                    className="absolute top-2 right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs hover:bg-red-600"
+                                >
+                                    ✕
+                                </button>
+                            </div>
+                        ))}
+                        <button
+                            onClick={() => {
+                                const newTests = [...selectedBlock.content.testimonials, { id: generateUniqueId(), quote: '', author: '' }];
+                                handleContentChange('testimonials', newTests);
+                            }}
+                            className="w-full bg-blue-500 text-white py-2 px-3 rounded-md hover:bg-blue-600 transition-colors mt-4"
+                        >
+                            Add Testimonial
+                        </button>
+                    </div>
+                )}
+
+                {selectedBlock.editableFields.includes('logos') && (
+                    <div className="mb-6 pb-4 border-b border-gray-200 dark:border-gray-700">
+                        <h3 className="text-lg font-semibold mb-4 text-gray-900 dark:text-white">Logos</h3>
+                        {selectedBlock.content.logos.map((logo, index) => (
+                            <div key={logo.id} className="bg-gray-100 dark:bg-gray-700 p-3 rounded-md mb-3 relative flex items-center">
+                                <img src={logo.url} alt="Logo Preview" className="w-12 h-12 object-contain mr-3 rounded-sm" onError={(e) => e.target.src = 'https://placehold.co/50x50/F3F4F6/6B7280?text=Logo'} />
+                                <input
+                                    type="text"
+                                    placeholder="Logo URL"
+                                    value={logo.url}
+                                    onChange={(e) => {
+                                        const newLogos = [...selectedBlock.content.logos];
+                                        newLogos[index].url = e.target.value;
+                                        handleContentChange('logos', newLogos);
+                                    }}
+                                    className="flex-grow p-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm"
+                                />
+                                <button
+                                    onClick={() => {
+                                        const newLogos = selectedBlock.content.logos.filter((_, i) => i !== index);
+                                        handleContentChange('logos', newLogos);
+                                    }}
+                                    className="ml-3 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs hover:bg-red-600"
+                                >
+                                    ✕
+                                </button>
+                            </div>
+                        ))}
+                        <button
+                            onClick={() => {
+                                const newLogos = [...selectedBlock.content.logos, { id: generateUniqueId(), url: 'https://placehold.co/100x50/F3F4F6/6B7280?text=NewLogo' }];
+                                handleContentChange('logos', newLogos);
+                            }}
+                            className="w-full bg-blue-500 text-white py-2 px-3 rounded-md hover:bg-blue-600 transition-colors mt-4"
+                        >
+                            Add Logo
+                        </button>
+                    </div>
+                )}
+
+                {selectedBlock.editableFields.includes('items') && (
+                    <div className="mb-6 pb-4 border-b border-gray-200 dark:border-gray-700">
+                        <h3 className="text-lg font-semibold mb-4 text-gray-900 dark:text-white">Order Items</h3>
+                        {selectedBlock.content.items.map((item, index) => (
+                            <div key={item.id} className="bg-gray-100 dark:bg-gray-700 p-3 rounded-md mb-3 relative">
+                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Item {index + 1}</label>
+                                <input
+                                    type="text"
+                                    placeholder="Item Name"
+                                    value={item.name}
+                                    onChange={(e) => {
+                                        const newItems = [...selectedBlock.content.items];
+                                        newItems[index].name = e.target.value;
+                                        handleContentChange('items', newItems);
+                                    }}
+                                    className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm mb-2"
+                                />
+                                <div className="flex gap-2 mb-2">
+                                    <input
+                                        type="number"
+                                        placeholder="Price"
+                                        value={item.price}
+                                        onChange={(e) => {
+                                            const newItems = [...selectedBlock.content.items];
+                                            newItems[index].price = parseFloat(e.target.value) || 0;
+                                            handleContentChange('items', newItems);
+                                        }}
+                                        className="w-1/2 p-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm"
+                                    />
+                                    <input
+                                        type="number"
+                                        placeholder="Quantity"
+                                        value={item.quantity}
+                                        onChange={(e) => {
+                                            const newItems = [...selectedBlock.content.items];
+                                            newItems[index].quantity = parseInt(e.target.value) || 1;
+                                            handleContentChange('items', newItems);
+                                        }}
+                                        className="w-1/2 p-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm"
+                                    />
+                                </div>
+                                <label className="flex items-center text-sm text-gray-700 dark:text-gray-300">
+                                    <input
+                                        type="checkbox"
+                                        checked={item.isBump}
+                                        onChange={(e) => {
+                                            const newItems = [...selectedBlock.content.items];
+                                            newItems[index].isBump = e.target.checked;
+                                            handleContentChange('items', newItems);
+                                        }}
+                                        className="mr-2"
+                                    />
+                                    Is Order Bump
+                                </label>
+                                <button
+                                    onClick={() => {
+                                        const newItems = selectedBlock.content.items.filter((_, i) => i !== index);
+                                        handleContentChange('items', newItems);
+                                    }}
+                                    className="absolute top-2 right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs hover:bg-red-600"
+                                >
+                                    ✕
+                                </button>
+                            </div>
+                        ))}
+                        <button
+                            onClick={() => {
+                                const newItems = [...selectedBlock.content.items, { id: generateUniqueId(), name: 'New Item', price: 0, quantity: 1, isBump: false }];
+                                handleContentChange('items', newItems);
+                            }}
+                            className="w-full bg-blue-500 text-white py-2 px-3 rounded-md hover:bg-blue-600 transition-colors mt-4"
+                        >
+                            Add Item
+                        </button>
+                    </div>
+                )}
+
+                {selectedBlock.editableFields.includes('plans') && (
+                    <div className="mb-6 pb-4 border-b border-gray-200 dark:border-gray-700">
+                        <h3 className="text-lg font-semibold mb-4 text-gray-900 dark:text-white">Pricing Plans</h3>
+                        {selectedBlock.content.plans.map((plan, planIndex) => (
+                            <div key={plan.id} className="bg-gray-100 dark:bg-gray-700 p-3 rounded-md mb-4 relative">
+                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Plan {planIndex + 1}</label>
+                                <input
+                                    type="text"
+                                    placeholder="Plan Name"
+                                    value={plan.name}
+                                    onChange={(e) => {
+                                        const newPlans = [...selectedBlock.content.plans];
+                                        newPlans[planIndex].name = e.target.value;
+                                        handleContentChange('plans', newPlans);
+                                    }}
+                                    className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm mb-2"
+                                />
+                                <input
+                                    type="number"
+                                    placeholder="Price"
+                                    value={plan.price}
+                                    onChange={(e) => {
+                                        const newPlans = [...selectedBlock.content.plans];
+                                        newPlans[planIndex].price = parseFloat(e.target.value) || 0;
+                                        handleContentChange('plans', newPlans);
+                                    }}
+                                    className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm mb-2"
+                                />
+                                <input
+                                    type="text"
+                                    placeholder="CTA Text"
+                                    value={plan.ctaText}
+                                    onChange={(e) => {
+                                        const newPlans = [...selectedBlock.content.plans];
+                                        newPlans[planIndex].ctaText = e.target.value;
+                                        handleContentChange('plans', newPlans);
+                                    }}
+                                    className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm mb-2"
+                                />
+                                <label className="flex items-center text-sm text-gray-700 dark:text-gray-300 mb-2">
+                                    <input
+                                        type="checkbox"
+                                        checked={plan.highlighted}
+                                        onChange={(e) => {
+                                            const newPlans = [...selectedBlock.content.plans];
+                                            newPlans[planIndex].highlighted = e.target.checked;
+                                            handleContentChange('plans', newPlans);
+                                        }}
+                                        className="mr-2"
+                                    />
+                                    Highlight Plan
+                                </label>
+
+                                <h4 className="text-md font-medium text-gray-700 dark:text-gray-300 mb-2">Features:</h4>
+                                {plan.features.map((feature, featureIndex) => (
+                                    <div key={featureIndex} className="flex items-center mb-1">
+                                        <input
+                                            type="text"
+                                            value={feature}
+                                            onChange={(e) => {
+                                                const newPlans = [...selectedBlock.content.plans];
+                                                newPlans[planIndex].features[featureIndex] = e.target.value;
+                                                handleContentChange('plans', newPlans);
+                                            }}
+                                            className="flex-grow p-1 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm"
+                                        />
+                                        <button
+                                            onClick={() => {
+                                                const newPlans = [...selectedBlock.content.plans];
+                                                newPlans[planIndex].features = newPlans[planIndex].features.filter((_, i) => i !== featureIndex);
+                                                handleContentChange('plans', newPlans);
+                                            }}
+                                            className="ml-2 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs hover:bg-red-600"
+                                >
+                                            ✕
+                                        </button>
+                                    </div>
+                                ))}
+                                <button
+                                    onClick={() => {
+                                        const newPlans = [...selectedBlock.content.plans];
+                                        newPlans[planIndex].features.push('New Feature');
+                                        handleContentChange('plans', newPlans);
+                                    }}
+                                    className="w-full bg-green-500 text-white py-1 px-2 rounded-md hover:bg-green-600 transition-colors text-sm mt-2"
+                                >
+                                    Add Feature
+                                </button>
+                                <button
+                                    onClick={() => {
+                                        const newPlans = selectedBlock.content.plans.filter((_, i) => i !== planIndex);
+                                        handleContentChange('plans', newPlans);
+                                    }}
+                                    className="absolute top-2 right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs hover:bg-red-600"
+                                >
+                                    ✕
+                                </button>
+                            </div>
+                        ))}
+                        <button
+                            onClick={() => {
+                                const newPlans = [...selectedBlock.content.plans, { id: generateUniqueId(), name: 'New Plan', price: 0, features: [], ctaText: 'Get Plan', highlighted: false }];
+                                handleContentChange('plans', newPlans);
+                            }}
+                            className="w-full bg-blue-500 text-white py-2 px-3 rounded-md hover:bg-blue-600 transition-colors mt-4"
+                        >
+                            Add Plan
+                        </button>
+                    </div>
+                )}
+
+                {selectedBlock.editableFields.includes('seals') && (
+                    <div className="mb-6 pb-4 border-b border-gray-200 dark:border-gray-700">
+                        <h3 className="text-lg font-semibold mb-4 text-gray-900 dark:text-white">Trust Seals</h3>
+                        {selectedBlock.content.seals.map((seal, index) => (
+                            <div key={seal.id} className="bg-gray-100 dark:bg-gray-700 p-3 rounded-md mb-3 relative">
+                                <img src={seal.url} alt="Seal Preview" className="w-16 h-12 object-contain mr-3 rounded-sm" onError={(e) => e.target.src = 'https://placehold.co/60x40/D1FAE5/065F46?text=Seal'} />
+                                <input
+                                    type="text"
+                                    placeholder="Seal Image URL"
+                                    value={seal.url}
+                                    onChange={(e) => {
+                                        const newSeals = [...selectedBlock.content.seals];
+                                        newSeals[index].url = e.target.value;
+                                        handleContentChange('seals', newSeals);
+                                    }}
+                                    className="flex-grow p-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm"
+                                />
+                                <button
+                                    onClick={() => {
+                                        const newSeals = selectedBlock.content.seals.filter((_, i) => i !== index);
+                                        handleContentChange('seals', newSeals);
+                                    }}
+                                    className="ml-3 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs hover:bg-red-600"
+                                >
+                                    ✕
+                                </button>
+                            </div>
+                        ))}
+                        <button
+                            onClick={() => {
+                                const newSeals = [...selectedBlock.content.seals, { id: generateUniqueId(), url: 'https://placehold.co/120x60/D1FAE5/065F46?text=NewSeal' }];
+                                handleContentChange('seals', newSeals);
+                            }}
+                            className="w-full bg-blue-500 text-white py-2 px-3 rounded-md hover:bg-blue-600 transition-colors mt-4"
+                        >
+                            Add Seal
+                        </button>
+                    </div>
+                )}
+
+
+                {/* Block Styles Section */}
+                <div className="mt-6 pt-6 border-t border-gray-200 dark:border-gray-700">
+                    <h3 className="text-lg font-semibold mb-4 text-gray-900 dark:text-white">Block Styles</h3>
+                    <div className="mb-4">
+                        <label htmlFor="containerBg" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Background Color Class (e.g., bg-white, bg-blue-100)</label>
+                        {/* Fixed: Moved comment to a separate line to resolve compilation error */}
+                        <input
+                            type="text"
+                            id="containerBg"
+                            value={selectedBlock.styles?.container?.match(/bg-[a-zA-Z0-9-]+/)?.[0] || ''}
+                            onChange={(e) => {
+                                const currentClasses = selectedBlock.styles?.container?.split(' ') || []; // Added optional chaining
+                                const newClasses = currentClasses.filter(cls => !cls.startsWith('bg-'));
+                                newClasses.push(e.target.value);
+                                handleStyleChange('container', newClasses.join(' '));
+                            }}
+                            className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                            placeholder="e.g., bg-white"
+                        />
+                        <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Use Tailwind CSS background classes (e.g., `bg-blue-100`, `bg-gray-800`).</p>
+                    </div>
+                    {/* Add more style controls as needed */}
+                </div>
+            </aside>
+        );
+    };
+
+    // --- Export Modal Component ---
+    const ExportModal = ({ code, onClose }) => {
+        const [activeTab, setActiveTab] = useState('html');
+
+        const copyToClipboard = (text) => {
+            // Using document.execCommand('copy') for better iframe compatibility
+            const textarea = document.createElement('textarea');
+            textarea.value = text;
+            document.body.appendChild(textarea);
+            textarea.select();
+            try {
+                document.execCommand('copy');
+                // Using a custom modal/toast instead of alert for better UX
+                const messageBox = document.createElement('div');
+                messageBox.textContent = 'Code copied to clipboard!';
+                messageBox.className = 'fixed bottom-5 left-1/2 -translate-x-1/2 bg-green-500 text-white px-4 py-2 rounded-md shadow-lg z-[1000]';
+                document.body.appendChild(messageBox);
+                setTimeout(() => {
+                    document.body.removeChild(messageBox);
+                }, 2000);
+            } catch (err) {
+                console.error('Failed to copy: ', err);
+                const messageBox = document.createElement('div');
+                messageBox.textContent = 'Failed to copy code. Please copy manually.';
+                messageBox.className = 'fixed bottom-5 left-1/2 -translate-x-1/2 bg-red-500 text-white px-4 py-2 rounded-md shadow-lg z-[1000]';
+                document.body.appendChild(messageBox);
+                setTimeout(() => {
+                    document.body.removeChild(messageBox);
+                }, 3000);
+            }
+            document.body.removeChild(textarea);
+        };
+
+        const downloadFile = (content, filename, type) => {
+            const blob = new Blob([content], { type: type });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        };
+
+        return (
+            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+                <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-w-4xl max-h-[90vh] flex flex-col">
+                    <div className="flex justify-between items-center p-4 border-b border-gray-200 dark:border-gray-700">
+                        <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Export Funnel Code</h2>
+                        <button onClick={onClose} className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 text-2xl leading-none">&times;</button>
+                    </div>
+                    <div className="p-4 flex-grow overflow-hidden">
+                        <div className="flex mb-4 border-b border-gray-200 dark:border-gray-700">
+                            <button
+                                className={`px-4 py-2 text-lg font-medium ${activeTab === 'html' ? 'border-b-2 border-indigo-600 text-indigo-600 dark:text-indigo-400' : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'}`}
+                                onClick={() => setActiveTab('html')}
+                            >
+                                HTML
+                            </button>
+                            <button
+                                className={`px-4 py-2 text-lg font-medium ${activeTab === 'css' ? 'border-b-2 border-indigo-600 text-indigo-600 dark:text-indigo-400' : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'}`}
+                                onClick={() => setActiveTab('css')}
+                            >
+                                CSS (Inline)
+                            </button>
+                            <button
+                                className={`px-4 py-2 text-lg font-medium ${activeTab === 'js' ? 'border-b-2 border-indigo-600 text-indigo-600 dark:text-indigo-400' : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'}`}
+                                onClick={() => setActiveTab('js')}
+                            >
+                                JavaScript (Inline)
+                            </button>
+                        </div>
+                        <pre className="bg-gray-100 dark:bg-gray-900 p-4 rounded-md overflow-auto text-sm text-gray-800 dark:text-gray-200 h-[calc(90vh-200px)]">
+                            <code>
+                                {activeTab === 'html' && code.html}
+                                {activeTab === 'css' && code.css}
+                                {activeTab === 'js' && code.js}
+                            </code>
+                        </pre>
+                    </div>
+                    <div className="p-4 border-t border-gray-200 dark:border-gray-700 flex justify-end space-x-3">
+                        <button
+                            onClick={() => copyToClipboard(code[activeTab])}
+                            className="bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 px-4 py-2 rounded-md hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors"
+                        >
+                            Copy {activeTab.toUpperCase()}
+                        </button>
+                        <button
+                            onClick={() => downloadFile(code.html, 'funnel.html', 'text/html')}
+                            className="bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700 transition-colors"
+                        >
+                            Download HTML
+                        </button>
+                    </div>
+                </div>
+            </div>
+        );
+    };
+
+    // --- Main App Render ---
+    const handleSaveImage = async () => {
+        if (!canvasRef.current) {
+            console.error("Canvas ref is not available.");
+            return;
+        }
+
+        setIsSavingImage(true);
+        // Temporarily hide sidebars and header to capture only the main content
+        const sidebarLeft = document.querySelector('aside:first-of-type');
+        const sidebarRight = document.querySelector('aside:last-of-type');
+        const header = document.querySelector('header');
+
+        const originalSidebarLeftDisplay = sidebarLeft ? sidebarLeft.style.display : '';
+        const originalSidebarRightDisplay = sidebarRight ? sidebarRight.style.display : '';
+        const originalHeaderDisplay = header ? header.style.display : '';
+
+        if (sidebarLeft) sidebarLeft.style.display = 'none';
+        if (sidebarRight) sidebarRight.style.display = 'none';
+        if (header) header.style.display = 'none';
+
+        // Also temporarily hide the floating edit/delete buttons on blocks
+        const floatingToolbars = document.querySelectorAll('.floating-toolbar');
+        floatingToolbars.forEach(toolbar => toolbar.style.display = 'none');
+
+
+        try {
+            // Use window.html2canvas as it's loaded via CDN
+            // Ensure html2canvas is available on the window object
+            if (typeof window.html2canvas === 'undefined') {
+                throw new Error("html2canvas library is not loaded. Please ensure the CDN script is correctly included in the main HTML file.");
+            }
+
+            const canvas = await window.html2canvas(canvasRef.current, {
+                useCORS: true, // Important for images loaded from external URLs
+                allowTaint: true, // Allow images from other origins (might not work in all browsers due to security)
+                scrollX: -window.scrollX, // Adjust for current scroll position
+                scrollY: -window.scrollY,
+                windowWidth: document.documentElement.offsetWidth,
+                windowHeight: document.documentElement.offsetHeight,
+                scale: 2, // Increase scale for higher resolution
+            });
+
+            const image = canvas.toDataURL('image/png');
+            const link = document.createElement('a');
+            link.href = image;
+            link.download = 'funnel-design.png';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+
+            // Show success message
+            const messageBox = document.createElement('div');
+            messageBox.textContent = 'Funnel image saved successfully!';
+            messageBox.className = 'fixed bottom-5 left-1/2 -translate-x-1/2 bg-green-500 text-white px-4 py-2 rounded-md shadow-lg z-[1000]';
+            document.body.appendChild(messageBox);
+            setTimeout(() => {
+                document.body.removeChild(messageBox);
+            }, 2000);
+
+        } catch (error) {
+            console.error("Error saving image:", error);
+            const messageBox = document.createElement('div');
+            messageBox.textContent = 'Failed to save image. Please try again.';
+            messageBox.className = 'fixed bottom-5 left-1/2 -translate-x-1/2 bg-red-500 text-white px-4 py-2 rounded-md shadow-lg z-[1000]';
+            document.body.appendChild(messageBox);
+            setTimeout(() => {
+                document.body.removeChild(messageBox);
+            }, 3000);
+        } finally {
+            setIsSavingImage(false);
+            // Restore original display styles
+            if (sidebarLeft) sidebarLeft.style.display = originalSidebarLeftDisplay;
+            if (sidebarRight) sidebarRight.style.display = originalSidebarRightDisplay;
+            if (header) header.style.display = originalHeaderDisplay;
+            floatingToolbars.forEach(toolbar => toolbar.style.display = ''); // Restore display
+        }
+    };
+
+
+    return (
+        <div className={`min-h-screen flex flex-col ${globalStyles.darkMode ? 'dark bg-gray-900 text-white' : 'bg-gray-100 text-gray-900'}`}>
+            <Header
+                onNewFunnel={() => {
+                    // Using a custom modal/toast instead of alert for better UX
+                    const messageBox = document.createElement('div');
+                    messageBox.textContent = 'Starting a new funnel. All unsaved changes will be lost.';
+                    messageBox.className = 'fixed bottom-5 left-1/2 -translate-x-1/2 bg-yellow-500 text-white px-4 py-2 rounded-md shadow-lg z-[1000]';
+                    document.body.appendChild(messageBox);
+                    setTimeout(() => {
+                        document.body.removeChild(messageBox);
+                        setFunnelBlocks([]);
+                        setHistory([[]]);
+                        setHistoryIndex(0);
+                        setSelectedBlockId(null);
+                    }, 2000); // Show message for 2 seconds before resetting
+                }}
+                onSave={() => {
+                    // Using a custom modal/toast instead of alert for better UX
+                    const messageBox = document.createElement('div');
+                    messageBox.textContent = 'Design auto-saved to your browser. Export HTML for permanent save.';
+                    messageBox.className = 'fixed bottom-5 left-1/2 -translate-x-1/2 bg-blue-500 text-white px-4 py-2 rounded-md shadow-lg z-[1000]';
+                    document.body.appendChild(messageBox);
+                    setTimeout(() => {
+                        document.body.removeChild(messageBox);
+                    }, 3000);
+                }}
+                onLoad={() => {
+                    const messageBox = document.createElement('div');
+                    messageBox.textContent = 'Design auto-loaded from your browser on page load.';
+                    messageBox.className = 'fixed bottom-5 left-1/2 -translate-x-1/2 bg-blue-500 text-white px-4 py-2 rounded-md shadow-lg z-[1000]';
+                    document.body.appendChild(messageBox);
+                    setTimeout(() => {
+                        document.body.removeChild(messageBox);
+                    }, 3000);
+                }}
+                onExport={generateCode}
+                onUndo={handleUndo}
+                onRedo={handleRedo}
+                onToggleDarkMode={() => setGlobalStyles(prev => ({ ...prev, darkMode: !prev.darkMode }))}
+                darkMode={globalStyles.darkMode}
+                canUndo={historyIndex > 0}
+                canRedo={historyIndex < history.length - 1}
+                onSaveImage={handleSaveImage}
+                isSavingImage={isSavingImage}
+            />
+            <div className="flex flex-grow pt-16"> {/* Padding top for fixed header */}
+                <Sidebar
+                    onBlockDragStart={(e, type) => e.dataTransfer.setData('text/plain', type)}
+                    onSelectTemplate={loadTemplate}
+                />
+                <main
+                    ref={canvasRef}
+                    className="flex-grow p-8 ml-64 mr-80 overflow-y-auto min-h-[calc(100vh-64px)] relative" // Added relative for watermark positioning
+                    onDrop={handleDrop} // Keep onDrop for adding new blocks
+                    onDragOver={handleDragOver} // Keep onDragOver for adding new blocks
+                    onClick={(e) => {
+                        // Only deselect if the click target is the main canvas background, not a child block
+                        if (e.target === canvasRef.current) {
+                            setSelectedBlockId(null);
+                        }
+                    }}
+                >
+                    {funnelBlocks.length === 0 && (
+                        <div className="text-center text-gray-500 dark:text-gray-400 mt-20">
+                            <p className="text-2xl mb-4">Drag and drop blocks from the left sidebar to start building your funnel!</p>
+                            <p className="text-xl">Or select a template above to get started quickly.</p>
+                        </div>
+                    )}
+                    {funnelBlocks.map((block) => (
+                        <FunnelBlock
+                            key={block.id}
+                            block={block}
+                            onSelect={setSelectedBlockId}
+                            onDelete={deleteBlock}
+                            onMove={moveBlock}
+                            isSelected={selectedBlockId === block.id}
+                            updateBlock={updateBlock} // Pass updateBlock to FunnelBlock
+                        />
+                    ))}
+                </main>
+                <ControlsPanel
+                    selectedBlock={funnelBlocks.find(block => block.id === selectedBlockId)}
+                    onUpdateBlock={updateBlock}
+                    onUpdateGlobalStyles={(newStyles) => setGlobalStyles(prev => ({ ...prev, ...newStyles }))}
+                    globalStyles={globalStyles}
+                />
+            </div>
+            {showExportModal && (
+                <ExportModal
+                    code={generatedCode}
+                    onClose={() => setShowExportModal(false)}
+                />
+            )}
+            {showDisclaimerModal && (
+                <DisclaimerModal onClose={() => setShowDisclaimerModal(false)} />
+            )}
+        </div>
+    );
+};
+
+export default App;
