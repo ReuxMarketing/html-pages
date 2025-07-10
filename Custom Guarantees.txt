@@ -1,0 +1,736 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Guarantee Optimizer Tool — ReuxMarketing</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap" rel="stylesheet">
+    
+    <style>
+        /* === ReuxMarketing Official Style Guide === */
+
+        /* --- Core Variables & Body --- */
+        :root {
+            --bg-main: #0a0a0a;
+            --bg-card: #1a1a1a;
+            --text-primary: #f0f0f0;
+            --text-secondary: #c7c7c7; /* For less emphasis */
+            --accent-gold: #FFD700;
+            --accent-green: #22c55e;
+            --border-color: #444;
+            --nav-blur-bg: rgba(10, 10, 10, 0.8);
+            --font-main: 'Inter', sans-serif;
+        }
+        body {
+            font-family: var(--font-main);
+            background-color: var(--bg-main);
+            color: var(--text-primary);
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        /* --- Reusable Components --- */
+        .gold-text { color: var(--accent-gold); }
+        .cta-btn {
+            background-color: var(--accent-green);
+            color: #0a0a0a; /* Dark text for contrast on green button */
+            font-weight: 700;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(34, 197, 94, 0.2);
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            text-decoration: none;
+        }
+        .cta-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(34, 197, 94, 0.3);
+        }
+        .input-field {
+            background-color: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 0.5rem;
+            padding: 0.75rem 1rem;
+            color: var(--text-primary);
+            transition: border-color 0.3s ease;
+            width: 100%;
+        }
+        .input-field:focus {
+            outline: none;
+            border-color: var(--accent-gold);
+        }
+        .card {
+            background-color: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 0.75rem;
+            overflow: hidden;
+        }
+
+        /* --- Main Header --- */
+        .main-header {
+            text-align: center;
+            padding: 2.5rem 1rem;
+            border-bottom: 1px solid #2a2a2a;
+        }
+        .main-header .brand-logo {
+            font-weight: 900;
+            font-size: 2.5rem;
+            color: var(--text-primary);
+            margin-bottom: 0.5rem;
+        }
+        .main-header .tool-title {
+            font-size: 1.25rem;
+            color: var(--text-secondary);
+        }
+
+        /* --- Cross-Tool Navigation Menu --- */
+        #tool-navigator {
+            position: sticky;
+            top: 0;
+            z-index: 50;
+            background-color: var(--nav-blur-bg);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            padding: 0.75rem 1rem;
+            border-bottom: 1px solid #2a2a2a;
+        }
+        #tool-navigator .nav-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .nav-cta-link {
+            color: var(--accent-gold);
+            font-weight: 700;
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+        .nav-cta-link:hover {
+            color: var(--text-primary);
+        }
+        .nav-tools-btn {
+            background-color: transparent;
+            border: 2px solid var(--border-color);
+            color: var(--text-secondary);
+            font-weight: 600;
+            font-size: 0.9rem;
+            padding: 0.4rem 1rem;
+            border-radius: 0.5rem;
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+        .nav-tools-btn:hover {
+            border-color: var(--accent-gold);
+            background-color: rgba(255, 215, 0, 0.1);
+            color: var(--accent-gold);
+        }
+
+        /* --- Footer --- */
+        .main-footer {
+            text-align: center;
+            padding: 2rem 1rem;
+            margin-top: 3rem;
+            border-top: 1px solid #2a2a2a;
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        /* Page-specific styles and overrides */
+        .step {
+            display: none;
+        }
+        .step.active {
+            display: block;
+            animation: fadeIn 0.5s ease-in-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(15px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        /* Custom Toast Notification */
+        #toast {
+            position: fixed;
+            bottom: -100px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: var(--bg-card);
+            color: var(--text-primary);
+            padding: 12px 24px;
+            border-radius: 8px;
+            z-index: 100;
+            transition: bottom 0.5s ease-in-out;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+        #toast.show {
+            bottom: 30px;
+        }
+        /* Custom modal styles */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.8); /* Darker overlay */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 50;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s, visibility 0.3s;
+        }
+        .modal-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+        .modal-content {
+            background: var(--bg-card);
+            color: var(--text-primary);
+            padding: 2rem;
+            border-radius: 1rem;
+            width: 90%;
+            max-width: 400px;
+            text-align: center;
+            transform: scale(0.95);
+            transition: transform 0.3s;
+            border: 1px solid var(--border-color); /* Add border to modal */
+        }
+        .modal-overlay.active .modal-content {
+            transform: scale(1);
+        }
+
+        /* Specific overrides for the tool's elements */
+        .progress-container-sticky {
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            background-color: var(--bg-main); /* Match main background */
+            padding-top: 1rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid #2a2a2a;
+            margin-bottom: 2rem;
+        }
+
+        .progress-bar-bg {
+            background-color: #2a2a2a; /* Darker background for progress bar */
+        }
+
+        .progress-bar-fill {
+            background-color: var(--accent-gold); /* Gold for progress fill */
+        }
+
+        .risk-checkbox-label {
+            border: 2px solid var(--border-color);
+            background-color: var(--bg-card);
+            color: var(--text-primary);
+        }
+        .risk-checkbox-label:hover {
+            border-color: var(--accent-gold);
+            background-color: rgba(255, 215, 0, 0.1); /* Light gold hover */
+        }
+        .risk-checkbox-label.has-[:checked] {
+            border-color: var(--accent-gold);
+            background-color: rgba(255, 215, 0, 0.2); /* More prominent gold when checked */
+        }
+        .risk-checkbox-label input[type="checkbox"] {
+            accent-color: var(--accent-gold); /* Gold checkbox */
+        }
+        
+        .live-preview-card {
+            background-color: var(--bg-card);
+            border: 1px solid var(--border-color);
+        }
+
+        .live-preview-item {
+            background-color: #111; /* Slightly lighter than card background */
+            border: 1px solid #2a2a2a;
+            color: var(--text-secondary);
+        }
+        .live-preview-item .font-bold {
+            color: var(--accent-gold); /* Gold for badge text */
+        }
+
+        .output-card {
+            background-color: var(--bg-card);
+            border: 2px solid var(--border-color);
+            color: var(--text-primary);
+        }
+        .output-card:hover {
+            border-color: var(--accent-gold);
+        }
+        .output-card .badge-text {
+            background-color: rgba(255, 215, 0, 0.2); /* Goldish background for badges */
+            color: var(--accent-gold);
+        }
+        .output-card textarea {
+            background-color: #111; /* Darker background for textarea */
+            border: 1px solid #2a2a2a;
+            color: var(--text-primary);
+        }
+        .output-card .copy-btn {
+            background-color: rgba(255, 215, 0, 0.1);
+            color: var(--accent-gold);
+        }
+        .output-card .copy-btn:hover {
+            background-color: rgba(255, 215, 0, 0.2);
+        }
+        .start-over-link {
+            color: var(--text-secondary);
+        }
+        .start-over-link:hover {
+            color: var(--accent-gold);
+        }
+    </style>
+</head>
+<body class="bg-black">
+
+    <header class="main-header">
+        <div class="brand-logo">Reux<span class="gold-text">Marketing</span></div>
+        <p class="tool-title">Skyrocket Conversions With Custom Guarantees Backed By Buyer Psychology</p>
+    </header>
+
+    <nav id="tool-navigator">
+        <div class="nav-container">
+            <a href="tools.html" class="nav-tools-btn">Back to Tools</a>
+            <a href="index.html" class="nav-cta-link">Explore The Marketing With Me &rarr;</a>
+        </div>
+    </nav>
+
+    <main class="max-w-4xl mx-auto px-4 py-12">
+        <div class="w-full max-w-3xl mx-auto card my-4 md:my-8 p-6 md:p-10">
+            <div class="text-center mb-6">
+                <h1 class="text-3xl md:text-4xl font-extrabold text-primary">Skyrocket Conversions With Custom Guarantees Backed By Buyer Psychology</h1>
+                <p class="text-lg text-secondary mt-3">Turn fence-sitters into buyers with high-impact, risk-reversing guarantees.</p>
+            </div>
+
+            <!-- Progress Bar & Sticky Header -->
+            <div id="progress-container" class="progress-container-sticky">
+                <div id="progress-label" class="text-center text-sm font-medium text-secondary mb-2">Step 1 of 4: Describe Your Offer & End Result</div>
+                <div class="w-full progress-bar-bg rounded-full h-3">
+                    <div id="progress-bar" class="progress-bar-fill h-3 rounded-full transition-all duration-500" style="width: 25%"></div>
+                </div>
+            </div>
+
+            <form id="guarantee-form">
+                <!-- Step 1: Product & Benefit -->
+                <div id="step-1" class="step active">
+                    <h3 class="text-xl font-bold mb-4 text-primary">Step 1: Describe Your Offer & End Result</h3>
+                    <div class="mb-6">
+                        <label for="product-type" class="block text-md font-semibold text-secondary mb-2">What do you sell?</label>
+                        <input type="text" id="product-type" placeholder="e.g., The 'Client Acquisition' course" class="input-field">
+                        <p class="text-xs text-secondary mt-2">This will be used in your guarantees. Keep it clear and outcome-focused.</p>
+                    </div>
+                    <div>
+                        <label for="primary-benefit" class="block text-md font-semibold text-secondary mb-2">What is the #1 outcome customers get?</label>
+                        <select id="primary-benefit" class="input-field">
+                            <option>Book More Calls</option>
+                            <option>Increase Revenue</option>
+                            <option>Lose Weight</option>
+                            <option>Automate Tasks</option>
+                            <option>Grow Their Audience</option>
+                            <option>Learn a New Skill</option>
+                        </select>
+                    </div>
+                    <div class="flex justify-end mt-8">
+                        <button type="button" onclick="nextStep(2)" class="cta-btn">Next</button>
+                    </div>
+                </div>
+
+                <!-- Step 2: Refund Rate -->
+                <div id="step-2" class="step">
+                    <h3 class="text-xl font-bold mb-4 text-primary">Step 2: Tell Us Your Refund Risk</h3>
+                    <label for="refund-rate" class="block text-md font-semibold text-secondary mb-2">What’s your average refund rate?</label>
+                    <div class="flex items-center space-x-4 flex-wrap">
+                        <input type="range" id="refund-rate" min="0" max="100" value="5" class="w-full md:w-auto flex-grow h-3 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-gold">
+                        <span id="refund-rate-value" class="font-bold gold-text text-2xl w-16 text-center min-w-[80px]">5%</span>
+                    </div>
+                    <p class="text-sm text-secondary mt-3 text-center">Industry Avg: 8-15% for info-products, &lt;5% for mature SaaS.</p>
+                    <div class="flex justify-between mt-8">
+                        <button type="button" onclick="prevStep(1)" class="cta-btn bg-gray-700 text-white hover:bg-gray-800">Back</button>
+                        <button type="button" onclick="nextStep(3)" class="cta-btn">Next</button>
+                    </div>
+                </div>
+
+                <!-- Step 3: Risk Reversal Type & Live Preview -->
+                <div id="step-3" class="step">
+                    <h3 class="text-xl font-bold mb-4 text-primary">Step 3: Pick the Guarantee Styles You're Willing to Offer</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-3" id="risk-type-container">
+                        <!-- Checkboxes are inserted here by JS -->
+                    </div>
+                    
+                    <div class="mt-8 live-preview-card rounded-lg p-4 border" id="live-preview-container" style="display: none;">
+                        <h4 class="font-bold text-lg mb-4 text-primary">Live Preview:</h4>
+                        <div id="aggressiveness-meter" class="text-lg font-bold mb-4"></div>
+                        <div id="live-preview-output" class="space-y-3"></div>
+                    </div>
+
+                    <div class="flex justify-between mt-8">
+                        <button type="button" onclick="prevStep(2)" class="cta-btn bg-gray-700 text-white hover:bg-gray-800">Back</button>
+                        <button type="button" id="generate-button" onclick="finalizeGuarantees()" class="cta-btn disabled:opacity-50 disabled:cursor-not-allowed" disabled>Generate Guarantees</button>
+                    </div>
+                </div>
+
+                <!-- Step 4: Final Output -->
+                <div id="step-4" class="step">
+                    <h3 class="text-2xl font-bold text-center mb-6 text-primary">Copy Your High-Converting Guarantees</h3>
+                    <div id="output-container" class="space-y-6">
+                        <!-- Guarantees will be injected here -->
+                    </div>
+                    <div class="mt-8 flex flex-col md:flex-row gap-4 justify-center">
+                        <button type="button" onclick="copyAllGuarantees()" class="cta-btn">Copy All</button>
+                        <button type="button" onclick="downloadAllGuarantees()" class="cta-btn bg-gray-700 text-white hover:bg-gray-800">Download as .txt</button>
+                        <button type="button" onclick="downloadAsPDF()" class="cta-btn bg-red-600 text-white hover:bg-red-700">Export as PDF</button>
+                    </div>
+                    <div class="text-center mt-6">
+                        <button type="button" onclick="showResetModal()" class="start-over-link font-semibold transition">Start Over</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+
+        <!-- Reset Confirmation Modal -->
+        <div id="reset-modal" class="modal-overlay">
+            <div class="modal-content">
+                <h3 class="text-xl font-bold mb-4">Are you sure?</h3>
+                <p class="text-secondary mb-6">This will clear all your inputs and start the process over.</p>
+                <div class="flex justify-center gap-4">
+                    <button onclick="hideResetModal()" class="cta-btn bg-gray-700 text-white hover:bg-gray-800">Cancel</button>
+                    <button onclick="startOver()" class="cta-btn bg-red-600 text-white hover:bg-red-700">Yes, Reset</button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Toast Notification -->
+        <div id="toast"></div>
+    </main>
+    
+    <footer class="main-footer">
+        <p>&copy; 2025 ReuxMarketing. All Rights Reserved. Built to help you grow.</p>
+    </footer>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script>
+        // Ensure jsPDF is loaded
+        const { jsPDF } = window.jspdf;
+
+        let currentStep = 1;
+        const totalSteps = 4;
+        const steps = document.querySelectorAll('.step');
+        const progressBar = document.getElementById('progress-bar');
+        const progressLabel = document.getElementById('progress-label');
+        const refundRateSlider = document.getElementById('refund-rate');
+        const refundRateValue = document.getElementById('refund-rate-value');
+        const resetModal = document.getElementById('reset-modal');
+        const toast = document.getElementById('toast');
+
+        const stepLabels = [
+            "Step 1 of 4: Describe Your Offer & End Result",
+            "Step 2 of 4: Tell Us Your Refund Risk",
+            "Step 3 of 4: Pick the Guarantee Styles You're Willing to Offer",
+            "Step 4 of 4: Copy Your High-Converting Guarantees"
+        ];
+
+        const riskTypes = [
+            { value: 'double-money', icon: '💰', text: 'Double Your Money Back', tooltip: 'The boldest move. Signals supreme confidence. Use when you have a proven, low-refund product.' },
+            { value: 'performance', icon: '📈', text: 'Performance-Based', tooltip: 'Ties the refund to a specific, measurable outcome. Perfect for courses and services.' },
+            { value: 'trial', icon: '🗓️', text: 'Risk-Free Trial', tooltip: 'Let them experience the value first. A must-have for SaaS, memberships, or high-ticket items.' },
+            { value: 'conditional', icon: '📝', text: 'Conditional Guarantee', tooltip: "Protects your business from freebie-seekers who don't follow through." },
+            { value: 'lifetime', icon: '✨', text: 'Lifetime Access', tooltip: 'A simple, powerful value-add for digital products. Low risk for you, high perceived value for them.' }
+        ];
+
+        function populateRiskTypes() {
+            const container = document.getElementById('risk-type-container');
+            container.innerHTML = riskTypes.map(risk => `
+                <label class="flex items-center p-4 rounded-lg cursor-pointer transition risk-checkbox-label">
+                    <input type="checkbox" name="risk-type" value="${risk.value}" class="h-5 w-5 border-gray-300 rounded focus:ring-accent-gold">
+                    <span class="ml-3 text-primary font-semibold">${risk.icon} ${risk.text}</span>
+                </label>
+            `).join('');
+            // Add event listeners after populating
+            document.querySelectorAll('input[name="risk-type"]').forEach(checkbox => {
+                checkbox.addEventListener('change', updateLivePreview);
+            });
+        }
+
+        function getGuaranteeTemplates(productType, benefit) {
+            return {
+                trial: { text: `🎯 Try ${productType} for 14 days. If you don't feel closer to being able to ${benefit.toLowerCase()}, just email us for a full, prompt refund. No hoops to jump through.`, badge: '🥇 Most Used', boost: "2.5x" },
+                doubleMoney: { text: `🚀 We are so confident this will help you ${benefit.toLowerCase()}, we'll give you DOUBLE your money back if you complete the program, implement the steps, and don't see a measurable result in 60 days.`, badge: '💰 Highest Converting', boost: "4x" },
+                performance: { text: `🔥 Our Performance Guarantee: Use ${productType} and if you don't ${benefit.toLowerCase()} within 30 days, we don't deserve your money. You'll get a full refund, simple as that.`, badge: '📈 Data-Driven', boost: "3x" },
+                lifetime: { text: `✅ Your purchase today includes LIFETIME access to ${productType}, including all future updates. If you ever feel it wasn't worth the investment, let us know.`, badge: '👍 Value Add', boost: "1.8x" },
+                conditional: { text: `🔒 Our 'Action-Taker's' Guarantee: Complete the first 3 modules and do the work. If you can honestly say you didn't get value, we'll refund you 100%. This rewards serious members.`, badge: '🛡️ Protects You', boost: "2x" },
+                standard: { text: `👍 Your satisfaction is guaranteed. Try ${productType} for 30 days, and if it's not the right fit for you, get a full refund, no questions asked.`, badge: '✅ Standard', boost: "1.5x" }
+            };
+        }
+        
+        function calculateAndGetGuarantees() {
+            const productType = document.getElementById('product-type').value || "this program";
+            const benefit = document.getElementById('primary-benefit').value;
+            const refundRate = parseInt(document.getElementById('refund-rate').value);
+            const selectedRisks = Array.from(document.querySelectorAll('input[name="risk-type"]:checked')).map(cb => cb.value);
+            const templates = getGuaranteeTemplates(productType, benefit);
+            let guarantees = [];
+
+            if (selectedRisks.includes('double-money')) {
+                if (refundRate > 15) {
+                    guarantees.push({ text: `⚠️ A 'Double Your Money Back' guarantee is extremely bold and not recommended with a refund rate over 15%. Consider a different approach.`, badge: '🚨 High Risk', boost: "N/A" });
+                } else {
+                    guarantees.push(templates.doubleMoney);
+                }
+            }
+            if (selectedRisks.includes('performance')) guarantees.push(templates.performance);
+            if (selectedRisks.includes('trial')) guarantees.push(templates.trial);
+            if (selectedRisks.includes('conditional')) guarantees.push(templates.conditional);
+            if (selectedRisks.includes('lifetime')) guarantees.push(templates.lifetime);
+            
+            // Deduplicate based on badge
+            guarantees = guarantees.filter((guarantee, index, self) => index === self.findIndex((t) => (t.badge === guarantee.badge)));
+
+            return guarantees;
+        }
+
+        function truncateTextByWords(text, wordLimit) {
+            const words = text.split(' ');
+            if (words.length <= wordLimit) {
+                return text;
+            }
+            return words.slice(0, wordLimit).join(' ') + '...';
+        }
+
+        function updateLivePreview() {
+            const selectedRisks = Array.from(document.querySelectorAll('input[name="risk-type"]:checked'));
+            const previewContainer = document.getElementById('live-preview-container');
+            const previewOutput = document.getElementById('live-preview-output');
+            const generateButton = document.getElementById('generate-button');
+
+            if (selectedRisks.length === 0) {
+                previewContainer.style.display = 'none';
+                generateButton.disabled = true;
+                return;
+            }
+
+            previewContainer.style.display = 'block';
+            generateButton.disabled = false;
+            
+            const guarantees = calculateAndGetGuarantees();
+            previewOutput.innerHTML = guarantees.map(g => `
+                <div class="p-3 live-preview-item rounded-md shadow-sm text-sm">
+                    <span class="font-bold ${g.badge.includes('Highest') ? 'gold-text' : g.badge.includes('Most') ? 'gold-text' : 'text-secondary'}">${g.badge}:</span>
+                    <span class="text-secondary">${truncateTextByWords(g.text, 12)}</span>
+                </div>
+            `).join('');
+
+            // Update Aggressiveness Meter
+            const refundRate = parseInt(document.getElementById('refund-rate').value);
+            let score = 0;
+            const riskValues = selectedRisks.map(r => r.value);
+            if (riskValues.includes('double-money')) score += 40;
+            if (riskValues.includes('performance')) score += 30;
+            if (riskValues.includes('trial')) score += 20;
+            if (riskValues.includes('conditional')) score += 10;
+            if (riskValues.includes('lifetime')) score += 5;
+            if (refundRate < 5) score += 15; else if (refundRate < 15) score += 5;
+
+            const meter = document.getElementById('aggressiveness-meter');
+            let meterHTML = 'Calculated Aggressiveness: ';
+            if (score >= 65) meterHTML += '<span class="text-red-500">🔥 Savage</span>'; /* Use a red for danger */
+            else if (score >= 35) meterHTML += '<span class="gold-text">🤔 Bold</span>';
+            else meterHTML += '<span class="text-green-500">🔒 Safe</span>'; /* Use a green for safety */
+            meter.innerHTML = meterHTML;
+        }
+
+        function finalizeGuarantees() {
+            const guarantees = calculateAndGetGuarantees();
+            const outputContainer = document.getElementById('output-container');
+            outputContainer.innerHTML = ''; // Clear previous
+
+            if (guarantees.length === 0) {
+                const templates = getGuaranteeTemplates(document.getElementById('product-type').value, document.getElementById('primary-benefit').value);
+                guarantees.push(templates.standard);
+            }
+
+            guarantees.forEach((guarantee, index) => {
+                const card = `
+                    <div class="output-card rounded-xl p-5 shadow-sm transition-all hover:shadow-md">
+                        <div class="flex justify-between items-start mb-3">
+                            <span class="text-xs font-bold px-3 py-1 rounded-full badge-text">${guarantee.badge}</span>
+                            <div class="text-right">
+                                <span class="font-semibold text-accent-green">~${guarantee.boost} Boost</span>
+                                <p class="text-xs text-secondary">vs. no guarantee</p>
+                            </div>
+                        </div>
+                        <textarea id="guarantee-text-${index}" class="w-full h-32 p-2 input-field text-lg leading-relaxed">${guarantee.text}</textarea>
+                        <button onclick="copySingleToClipboard('guarantee-text-${index}', this)" class="mt-3 text-sm font-medium py-1 px-3 rounded-lg transition copy-btn">Copy</button>
+                    </div>
+                `;
+                outputContainer.innerHTML += card;
+            });
+            nextStep(4);
+        }
+
+        function updateProgress() {
+            const progress = (currentStep / totalSteps) * 100;
+            progressBar.style.width = `${progress}%`;
+            progressLabel.textContent = stepLabels[currentStep - 1];
+        }
+
+        function goToStep(step) {
+            if (step < 1 || step > totalSteps) return;
+            document.getElementById(`step-${currentStep}`).classList.remove('active');
+            currentStep = step;
+            const newStepEl = document.getElementById(`step-${currentStep}`);
+            newStepEl.classList.add('active');
+            updateProgress();
+            window.scrollTo(0, 0);
+            
+            // Auto-focus on the first input
+            const firstInput = newStepEl.querySelector('input, select, textarea');
+            if (firstInput) {
+                firstInput.focus();
+            }
+        }
+        
+        function nextStep(step) {
+            if (currentStep === 1 && document.getElementById('product-type').value.trim() === '') {
+                showToast('Please describe your offer first.', 'error');
+                return;
+            }
+            goToStep(step);
+        }
+
+        function prevStep(step) {
+            goToStep(step);
+        }
+        
+        function showToast(message) {
+            toast.textContent = message;
+            toast.classList.add('show');
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000);
+        }
+
+        function copySingleToClipboard(elementId, button) {
+            const textToCopy = document.getElementById(elementId).value;
+            document.execCommand('copy'); // Use execCommand for clipboard access in iframes
+            if (document.execCommand('copy')) {
+                button.textContent = 'Copied!';
+                showToast('Guarantee copied to clipboard!');
+                setTimeout(() => { button.textContent = 'Copy'; }, 2000);
+            } else {
+                showToast('Failed to copy. Please copy manually.', 'error');
+            }
+        }
+
+        function copyAllGuarantees() {
+            const textareas = document.querySelectorAll('#output-container textarea');
+            const allText = Array.from(textareas).map((ta, i) => `Guarantee ${i+1}:\n${ta.value}`).join('\n\n');
+            const tempTextArea = document.createElement('textarea');
+            tempTextArea.value = allText;
+            document.body.appendChild(tempTextArea);
+            tempTextArea.select();
+            if (document.execCommand('copy')) {
+                showToast('All guarantees copied to clipboard!');
+            } else {
+                showToast('Failed to copy all. Please copy manually.', 'error');
+            }
+            document.body.removeChild(tempTextArea);
+        }
+
+        function downloadAllGuarantees() {
+            const textareas = document.querySelectorAll('#output-container textarea');
+            const allText = Array.from(textareas).map((ta, i) => `Guarantee ${i+1}:\n${ta.value}`).join('\n\n');
+            const blob = new Blob([allText], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'optimized-guarantees.txt';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            showToast('Guarantees downloaded as .txt!');
+        }
+
+        function downloadAsPDF() {
+            const doc = new jsPDF();
+            const textareas = document.querySelectorAll('#output-container textarea');
+            const allText = Array.from(textareas).map((ta, i) => `Guarantee ${i+1}:\n${ta.value}`).join('\n\n');
+            
+            doc.setFontSize(18);
+            doc.text("Your Optimized Guarantees", 14, 22);
+            doc.setFontSize(11);
+            const splitText = doc.splitTextToSize(allText, 180);
+            doc.text(splitText, 14, 32);
+            doc.save('optimized-guarantees.pdf');
+            showToast('Guarantees exported as PDF!');
+        }
+
+        function showResetModal() { resetModal.classList.add('active'); }
+        function hideResetModal() { resetModal.classList.remove('active'); }
+
+        function startOver() {
+            document.getElementById('guarantee-form').reset();
+            localStorage.removeItem('guaranteeOptimizerState');
+            refundRateValue.textContent = '5%';
+            hideResetModal();
+            goToStep(1);
+            updateLivePreview();
+            showToast('Form has been reset.');
+        }
+
+        // --- LocalStorage Persistence ---
+        function saveState() {
+            const state = {
+                productType: document.getElementById('product-type').value,
+                primaryBenefit: document.getElementById('primary-benefit').value,
+                refundRate: document.getElementById('refund-rate').value,
+                risks: Array.from(document.querySelectorAll('input[name="risk-type"]:checked')).map(cb => cb.value)
+            };
+            localStorage.setItem('guaranteeOptimizerState', JSON.stringify(state));
+        }
+
+        function loadState() {
+            const savedState = localStorage.getItem('guaranteeOptimizerState');
+            if (savedState) {
+                const state = JSON.parse(savedState);
+                document.getElementById('product-type').value = state.productType || '';
+                document.getElementById('primary-benefit').value = state.primaryBenefit || 'Book More Calls';
+                document.getElementById('refund-rate').value = state.refundRate || '5';
+                refundRateValue.textContent = `${state.refundRate || '5'}%`;
+                state.risks.forEach(riskValue => {
+                    const checkbox = document.querySelector(`input[name="risk-type"][value="${riskValue}"]`);
+                    if (checkbox) checkbox.checked = true;
+                });
+                showToast('Welcome back! Your previous session was restored.');
+            }
+        }
+
+        // --- Event Listeners ---
+        document.getElementById('guarantee-form').addEventListener('change', saveState);
+        document.getElementById('guarantee-form').addEventListener('input', (e) => {
+            if (e.target.type !== 'range') saveState();
+        });
+        refundRateSlider.addEventListener('input', (event) => {
+            refundRateValue.textContent = `${event.target.value}%`;
+            updateLivePreview();
+        });
+        refundRateSlider.addEventListener('change', saveState); // Save on release
+
+        // Initial setup
+        document.addEventListener('DOMContentLoaded', () => {
+            populateRiskTypes();
+            loadState();
+            updateProgress();
+            goToStep(1); // Ensures autofocus on load
+        });
+    </script>
+    
+</body>
+</html>

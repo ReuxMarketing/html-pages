@@ -1,0 +1,583 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dynamic Pricing Calculator — ReuxMarketing</title>
+    
+    <!-- ReuxMarketing Official Style Guide -->
+    <style>
+        /* === ReuxMarketing Official Style Guide === */
+
+        /* --- Core Variables & Body --- */
+        :root {
+            --bg-main: #0a0a0a;
+            --bg-card: #1a1a1a;
+            --text-primary: #f0f0f0;
+            --text-secondary: #c7c7c7; /* For less emphasis */
+            --accent-gold: #FFD700;
+            --accent-green: #22c55e;
+            --border-color: #444;
+            --nav-blur-bg: rgba(10, 10, 10, 0.8);
+            --font-main: 'Inter', sans-serif;
+        }
+        body {
+            font-family: var(--font-main);
+            background-color: var(--bg-main);
+            color: var(--text-primary);
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        /* --- Reusable Components --- */
+        .gold-text { color: var(--accent-gold); }
+        .cta-btn {
+            background-color: var(--accent-green);
+            color: #0a0a0a; /* Dark text for contrast on green button */
+            font-weight: 700;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(34, 197, 94, 0.2);
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            text-decoration: none;
+        }
+        .cta-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(34, 197, 94, 0.3);
+        }
+        .input-field {
+            background-color: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 0.5rem;
+            padding: 0.75rem 1rem;
+            color: var(--text-primary);
+            transition: border-color 0.3s ease;
+            width: 100%;
+        }
+        .input-field:focus {
+            outline: none;
+            border-color: var(--accent-gold);
+        }
+        .card {
+            background-color: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 0.75rem;
+            overflow: hidden;
+        }
+
+        /* --- Main Header --- */
+        .main-header {
+            text-align: center;
+            padding: 2.5rem 1rem;
+            border-bottom: 1px solid #2a2a2a;
+        }
+        .main-header .brand-logo {
+            font-weight: 900;
+            font-size: 2.5rem;
+            color: var(--text-primary);
+            margin-bottom: 0.5rem;
+        }
+        .main-header .tool-title {
+            font-size: 1.25rem;
+            color: var(--text-secondary);
+        }
+
+        /* --- Cross-Tool Navigation Menu --- */
+        #tool-navigator {
+            position: sticky;
+            top: 0;
+            z-index: 50;
+            background-color: var(--nav-blur-bg);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            padding: 0.75rem 1rem;
+            border-bottom: 1px solid #2a2a2a;
+        }
+        #tool-navigator .nav-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .nav-cta-link {
+            color: var(--accent-gold);
+            font-weight: 700;
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+        .nav-cta-link:hover {
+            color: var(--text-primary);
+        }
+        .nav-tools-btn {
+            background-color: transparent;
+            border: 2px solid var(--border-color);
+            color: var(--text-secondary);
+            font-weight: 600;
+            font-size: 0.9rem;
+            padding: 0.4rem 1rem;
+            border-radius: 0.5rem;
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+        .nav-tools-btn:hover {
+            border-color: var(--accent-gold);
+            background-color: rgba(255, 215, 0, 0.1);
+            color: var(--accent-gold);
+        }
+
+        /* --- Footer --- */
+        .main-footer {
+            text-align: center;
+            padding: 2rem 1rem;
+            margin-top: 3rem;
+            border-top: 1px solid #2a2a2a;
+            color: #666;
+            font-size: 0.9rem;
+        }
+    </style>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        /* Add any page-specific, minor style tweaks here if absolutely necessary. */
+        .tooltip {
+            position: relative;
+            display: inline-block;
+        }
+        .tooltip .tooltiptext {
+            visibility: hidden;
+            width: 220px;
+            background-color: #555;
+            color: #fff;
+            text-align: center;
+            border-radius: 6px;
+            padding: 5px 10px;
+            position: absolute;
+            z-index: 1;
+            bottom: 125%;
+            left: 50%;
+            margin-left: -110px;
+            opacity: 0;
+            transition: opacity 0.3s;
+            font-size: 12px;
+            font-weight: 400;
+        }
+        .tooltip:hover .tooltiptext {
+            visibility: visible;
+            opacity: 1;
+        }
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            background: var(--accent-gold); /* Changed to gold accent */
+            cursor: pointer;
+            border-radius: 50%;
+        }
+        input[type="range"]::-moz-range-thumb {
+            width: 20px;
+            height: 20px;
+            background: var(--accent-gold); /* Changed to gold accent */
+            cursor: pointer;
+            border-radius: 50%;
+        }
+        /* Gauge specific styling */
+        #price-gauge {
+            background-color: var(--border-color); /* Darker background for gauge */
+        }
+        #gauge-bar {
+            background: linear-gradient(to right, #ef4444, #f97316, #eab308, var(--accent-green), #22c55e); /* Adjusted gradient */
+        }
+        #gauge-indicator {
+            background-color: var(--bg-main); /* Dark background for indicator */
+            border-color: var(--accent-gold); /* Gold border for indicator */
+        }
+    </style>
+</head>
+<body class="bg-black">
+
+    <header class="main-header">
+        <div class="brand-logo">Reux<span class="gold-text">Marketing</span></div>
+        <p class="tool-title">Optimize your offer's price point for maximum revenue and conversions.</p>
+    </header>
+
+    <nav id="tool-navigator">
+        <div class="nav-container">
+            <a href="tools.html" class="nav-tools-btn">Back to Tools</a>
+            <a href="index.html" class="nav-cta-link">Explore The Marketing With Me &rarr;</a>
+        </div>
+    </nav>
+
+    <main class="max-w-4xl mx-auto px-4 py-12">
+        <!-- Original tool's main content starts here -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <!-- Left Column: Inputs -->
+            <div class="card p-6 md:p-8">
+                <h2 class="text-2xl font-bold mb-6 border-b pb-4 border-gray-700">1. Configure Your Offer</h2>
+
+                <!-- Offer Components -->
+                <div class="mb-6">
+                    <h3 class="text-lg font-semibold flex items-center text-text-primary">
+                        Offer Components
+                        <div class="tooltip ml-2">
+                            <i class="fas fa-info-circle text-gray-400"></i>
+                            <span class="tooltiptext">List every item included in your offer, like the main product, bonuses, and special services.</span>
+                        </div>
+                    </h3>
+                    <div id="offer-components" class="space-y-3 mt-4">
+                        <!-- Dynamic components will be added here -->
+                    </div>
+                    <button id="add-component" class="mt-4 text-sm font-medium text-accent-gold hover:text-text-primary transition-colors flex items-center">
+                        <i class="fas fa-plus-circle mr-2"></i> Add Component
+                    </button>
+                </div>
+
+                <!-- Market Data -->
+                <div class="mb-6">
+                    <h3 class="text-lg font-semibold flex items-center text-text-primary">
+                        Market Data
+                        <div class="tooltip ml-2">
+                            <i class="fas fa-info-circle text-gray-400"></i>
+                            <span class="tooltiptext">Provide competitor pricing and your strategic goals to position your offer effectively.</span>
+                        </div>
+                    </h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                        <div>
+                            <label for="min-competitor-price" class="block text-sm font-medium text-text-secondary">Min Competitor Price ($)</label>
+                            <input type="number" id="min-competitor-price" class="input-field mt-1" placeholder="e.g., 197">
+                        </div>
+                        <div>
+                            <label for="max-competitor-price" class="block text-sm font-medium text-text-secondary">Max Competitor Price ($)</label>
+                            <input type="number" id="max-competitor-price" class="input-field mt-1" placeholder="e.g., 1997">
+                        </div>
+                    </div>
+                     <div class="mt-4">
+                        <label for="market-goal" class="block text-sm font-medium text-text-secondary">Market Pricing Goal</label>
+                        <select id="market-goal" class="input-field mt-1">
+                            <option value="balanced">Balanced Approach</option>
+                            <option value="revenue">Maximize Revenue</option>
+                            <option value="conversions">Maximize Conversions</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Value Stacking Factors -->
+                <div>
+                    <h3 class="text-lg font-semibold flex items-center text-text-primary">
+                        Value Stacking Factors
+                        <div class="tooltip ml-2">
+                            <i class="fas fa-info-circle text-gray-400"></i>
+                            <span class="tooltiptext">Adjust these psychological triggers to see how they influence your offer's perceived value.</span>
+                        </div>
+                    </h3>
+                    <div id="value-factors" class="space-y-4 mt-4">
+                        <!-- Sliders will be generated here -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Column: Outputs -->
+            <div class="card p-6 md:p-8 sticky top-8">
+                <h2 class="text-2xl font-bold mb-6 border-b pb-4 border-gray-700">2. Your Recommended Price</h2>
+                
+                <!-- Final Price Display -->
+                <div class="text-center my-8">
+                    <p class="text-lg text-text-secondary">Recommended Price</p>
+                    <p id="final-price" class="text-6xl font-bold text-accent-gold tracking-tight">$0.00</p>
+                </div>
+
+                <!-- Price Range Gauge -->
+                <div class="mb-8">
+                    <div id="price-gauge" class="w-full rounded-full h-4 relative">
+                        <div id="gauge-bar" class="h-4 rounded-full transition-all duration-500" style="width: 0%;"></div>
+                        <div id="gauge-indicator" class="absolute top-1/2 h-6 w-6 rounded-full -translate-x-1/2 -translate-y-1/2 transition-all duration-500" style="left: 50%;"></div>
+                    </div>
+                    <div class="flex justify-between text-xs text-text-secondary mt-2 px-1">
+                        <span>Too Low</span>
+                        <span class="font-semibold">Sweet Spot</span>
+                        <span>Too High</span>
+                    </div>
+                </div>
+                
+                <!-- Warnings -->
+                <div id="warnings" class="mb-6 text-center"></div>
+
+                <!-- Price Breakdown -->
+                <div class="bg-gray-900 p-4 rounded-lg border border-border-color">
+                    <h3 class="text-lg font-semibold mb-3 text-text-primary">Price Breakdown</h3>
+                    <div id="price-breakdown" class="space-y-2 text-sm text-text-secondary">
+                        <div class="flex justify-between">
+                            <span>Base Offer Total:</span>
+                            <span id="breakdown-base" class="font-medium">$0.00</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span>Value Stacking Boost:</span>
+                            <span id="breakdown-value-stack" class="font-medium">+$0.00 (0%)</span>
+                        </div>
+                        <div class="flex justify-between border-t pt-2 mt-2 border-gray-700">
+                            <span class="font-semibold">Subtotal:</span>
+                            <span id="breakdown-subtotal" class="font-semibold">$0.00</span>
+                        </div>
+                         <div class="flex justify-between text-accent-gold">
+                            <span class="font-semibold">Market Goal Adjustment:</span>
+                            <span id="breakdown-goal-adj" class="font-semibold">$0.00</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Estimated Revenue Impact -->
+                <div class="text-center mt-6">
+                     <p id="revenue-impact" class="text-sm text-accent-green bg-green-900 bg-opacity-20 p-3 rounded-lg"><i class="fas fa-chart-line mr-2"></i>Using this price can increase your average deal size by <strong>15-25%</strong>.</p>
+                </div>
+
+                <!-- CTA -->
+                <div class="mt-8 text-center">
+                    <button class="cta-btn w-full md:w-auto">
+                        Apply Pricing
+                    </button>
+                </div>
+            </div>
+        </div>
+        <!-- Original tool's main content ends here -->
+    </main>
+    
+    <footer class="main-footer">
+        <p>&copy; 2025 ReuxMarketing. All Rights Reserved. Built to help you grow.</p>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- CONFIGURATION (UPDATED) ---
+            const CURRENCY_SYMBOL = '$';
+            const VALUE_FACTORS = [
+                { id: 'scarcity', name: 'Scarcity', tooltip: 'Limited quantity or time offer.', weight: 0.20, value: 70 },
+                { id: 'urgency', name: 'Urgency', tooltip: 'Time-based incentives.', weight: 0.15, value: 60 },
+                { id: 'exclusivity', name: 'Exclusivity', tooltip: 'Special access/membership.', weight: 0.12, value: 50 },
+                { id: 'guarantee', name: 'Guarantee', tooltip: 'Money-back guarantee.', weight: 0.05, value: 90 },
+                { id: 'social-proof', name: 'Social Proof', tooltip: 'Testimonials, case studies.', weight: 0.25, value: 80 },
+            ];
+
+            // --- DOM ELEMENTS ---
+            const offerComponentsContainer = document.getElementById('offer-components');
+            const addComponentBtn = document.getElementById('add-component');
+            const valueFactorsContainer = document.getElementById('value-factors');
+            const allInputs = 'input, select';
+
+            // --- INITIALIZATION (CLEAN STATE) ---
+            function initialize() {
+                // Set default market data to be empty
+                document.getElementById('min-competitor-price').value = '';
+                document.getElementById('max-competitor-price').value = '';
+                document.getElementById('market-goal').value = 'balanced';
+
+                // Add one empty component to start
+                addComponent();
+
+                // Populate value factor sliders
+                populateValueFactors();
+                
+                // Add event listeners
+                document.body.addEventListener('input', handleInputChange);
+                addComponentBtn.addEventListener('click', () => addComponent());
+                offerComponentsContainer.addEventListener('click', handleComponentActions);
+                
+                // Initial calculation
+                calculateAndDisplay();
+            }
+
+            function addComponent(name = '', value = '') {
+                const componentId = `component-${Date.now()}-${Math.random()}`;
+                const componentHTML = `
+                    <div id="${componentId}" class="component-item flex items-center gap-2 p-2 rounded-lg bg-gray-900 border border-border-color">
+                        <input type="text" name="component-name" class="input-field flex-grow" placeholder="e.g., Core Product" value="${name}">
+                        <div class="relative">
+                            <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-text-secondary">${CURRENCY_SYMBOL}</span>
+                            <input type="number" name="component-value" class="input-field w-32 pl-7" placeholder="Value" value="${value}">
+                        </div>
+                        <button data-remove="${componentId}" class="text-red-500 hover:text-red-700 transition-colors p-2 rounded-full hover:bg-red-900 hover:bg-opacity-20">
+                            <i class="fas fa-trash-alt"></i>
+                        </button>
+                    </div>
+                `;
+                offerComponentsContainer.insertAdjacentHTML('beforeend', componentHTML);
+            }
+
+            function populateValueFactors() {
+                let factorsHTML = '';
+                VALUE_FACTORS.forEach(factor => {
+                    factorsHTML += `
+                        <div class="factor-item">
+                            <label for="${factor.id}" class="flex justify-between text-sm font-medium text-text-secondary">
+                                <span>${factor.name} <div class="tooltip inline-block"><i class="fas fa-info-circle text-gray-400 ml-1"></i><span class="tooltiptext">${factor.tooltip}</span></div></span>
+                                <span id="${factor.id}-value" class="font-semibold text-accent-gold">${factor.value}%</span>
+                            </label>
+                            <input type="range" id="${factor.id}" name="value-factor" min="0" max="100" value="${factor.value}" class="w-full h-2 bg-border-color rounded-lg appearance-none cursor-pointer mt-1">
+                        </div>
+                    `;
+                });
+                valueFactorsContainer.innerHTML = factorsHTML;
+            }
+
+            function handleInputChange(event) {
+                if (event.target.matches(allInputs)) {
+                    // Update slider value display immediately
+                    if (event.target.type === 'range') {
+                        document.getElementById(`${event.target.id}-value`).textContent = `${event.target.value}%`;
+                    }
+                    calculateAndDisplay();
+                }
+            }
+
+            function handleComponentActions(event) {
+                const removeBtn = event.target.closest('[data-remove]');
+                if (removeBtn) {
+                    const componentId = removeBtn.dataset.remove;
+                    document.getElementById(componentId).remove();
+                    calculateAndDisplay();
+                }
+            }
+
+            // --- CALCULATION LOGIC ---
+            function calculateAndDisplay() {
+                // 1. Get all input values
+                const { components, minCompPrice, maxCompPrice, marketGoal, factors } = getInputs();
+
+                // 2. Core Calculations
+                const baseValue = components.reduce((sum, item) => sum + item.value, 0);
+                
+                const valueStackingMultiplier = factors.reduce((multiplier, factor) => {
+                    const factorConfig = VALUE_FACTORS.find(f => f.id === factor.id);
+                    return multiplier + (factorConfig.weight * (factor.value / 100));
+                }, 1);
+
+                const valueStackingBoost = (baseValue * valueStackingMultiplier) - baseValue;
+                const priceBeforeGoal = baseValue + valueStackingBoost;
+
+                // 3. Apply Market Goal
+                let recommendedPrice = priceBeforeGoal;
+                let goalAdjustment = 0;
+                const competitorMidpoint = (minCompPrice + maxCompPrice) / 2 || priceBeforeGoal;
+
+                switch (marketGoal) {
+                    case 'revenue':
+                        // Push towards the higher end of the competitor range or 15% above midpoint if no range
+                        const revenueTarget = maxCompPrice > 0 ? (competitorMidpoint * 0.7 + maxCompPrice * 0.3) : priceBeforeGoal * 1.15;
+                        recommendedPrice = (priceBeforeGoal + revenueTarget) / 2;
+                        break;
+                    case 'conversions':
+                        // Push towards the lower end of the competitor range or 15% below midpoint
+                        const conversionTarget = minCompPrice > 0 ? (competitorMidpoint * 0.7 + minCompPrice * 0.3) : priceBeforeGoal * 0.85;
+                        recommendedPrice = (priceBeforeGoal + conversionTarget) / 2;
+                        break;
+                    case 'balanced':
+                         // Averages the calculated price with the competitor midpoint
+                        recommendedPrice = (priceBeforeGoal + competitorMidpoint) / 2;
+                        break;
+                }
+                goalAdjustment = recommendedPrice - priceBeforeGoal;
+
+                // 4. Generate Warnings
+                const warnings = generateWarnings(recommendedPrice, minCompPrice, maxCompPrice);
+
+                // 5. Update UI
+                updateDisplay({
+                    baseValue,
+                    valueStackingBoost,
+                    priceBeforeGoal,
+                    goalAdjustment,
+                    recommendedPrice,
+                    warnings,
+                    minCompPrice,
+                    maxCompPrice
+                });
+            }
+            
+            function getInputs() {
+                const components = Array.from(document.querySelectorAll('.component-item')).map(item => ({
+                    name: item.querySelector('[name="component-name"]').value || 'Unnamed Item',
+                    value: parseFloat(item.querySelector('[name="component-value"]').value) || 0,
+                }));
+
+                const minCompPrice = parseFloat(document.getElementById('min-competitor-price').value) || 0;
+                const maxCompPrice = parseFloat(document.getElementById('max-competitor-price').value) || 0;
+
+                const marketGoal = document.getElementById('market-goal').value;
+
+                const factors = Array.from(document.querySelectorAll('[name="value-factor"]')).map(input => ({
+                    id: input.id,
+                    value: parseInt(input.value),
+                }));
+
+                return { components, minCompPrice, maxCompPrice, marketGoal, factors };
+            }
+
+            function generateWarnings(price, min, max) {
+                let warningsHTML = '';
+                if (max > 0 && price > max) {
+                    warningsHTML += `<div class="text-red-600 bg-red-900 bg-opacity-20 p-3 rounded-lg text-sm"><i class="fas fa-exclamation-triangle mr-2"></i><strong>Warning:</strong> Price may be too high, risking customer loss. It's above the max competitor price of ${formatCurrency(max)}.</div>`;
+                }
+                if (min > 0 && price < min) {
+                    warningsHTML += `<div class="text-yellow-600 bg-yellow-900 bg-opacity-20 p-3 rounded-lg text-sm mt-2"><i class="fas fa-exclamation-circle mr-2"></i><strong>Alert:</strong> Price might be too low, potentially undervaluing your offer. It's below the min competitor price of ${formatCurrency(min)}.</div>`;
+                }
+                return warningsHTML;
+            }
+
+            // --- UI UPDATE FUNCTIONS ---
+            function updateDisplay(data) {
+                const { baseValue, valueStackingBoost, priceBeforeGoal, goalAdjustment, recommendedPrice, warnings, minCompPrice, maxCompPrice } = data;
+
+                document.getElementById('final-price').textContent = formatCurrency(recommendedPrice);
+                
+                // Breakdown
+                document.getElementById('breakdown-base').textContent = formatCurrency(baseValue);
+                const valueStackPercent = baseValue > 0 ? (valueStackingBoost / baseValue * 100) : 0;
+                document.getElementById('breakdown-value-stack').textContent = `+${formatCurrency(valueStackingBoost)} (${valueStackPercent.toFixed(1)}%)`;
+                document.getElementById('breakdown-subtotal').textContent = formatCurrency(priceBeforeGoal);
+                document.getElementById('breakdown-goal-adj').textContent = `${goalAdjustment >= 0 ? '+' : ''}${formatCurrency(goalAdjustment)}`;
+
+                // Warnings
+                document.getElementById('warnings').innerHTML = warnings;
+                
+                // Gauge
+                updateGauge(recommendedPrice, minCompPrice, maxCompPrice);
+            }
+
+            function updateGauge(price, min, max) {
+                const indicator = document.getElementById('gauge-indicator');
+                let positionPercent = 50; // Default to center
+
+                if (max > min) {
+                    if (price < min) {
+                        // Scale from 0 to min for the "Too Low" section (0-25% of gauge)
+                        positionPercent = (price / min) * 25;
+                    } else if (price > max) {
+                        // Scale from max upwards for "Too High" (75-100% of gauge)
+                        const overflow = (price - max) / (max * 0.5); // How far past max are we?
+                        positionPercent = 75 + Math.min(overflow * 25, 25);
+                    } else {
+                        // Scale within the "Sweet Spot" (25-75% of gauge)
+                        positionPercent = 25 + ((price - min) / (max - min)) * 50;
+                    }
+                }
+                // Clamp the value between 0 and 100
+                positionPercent = Math.max(0, Math.min(100, positionPercent));
+                indicator.style.left = `${positionPercent}%`;
+            }
+
+            function formatCurrency(value) {
+                return `${CURRENCY_SYMBOL}${value.toFixed(2)}`;
+            }
+
+            // --- START THE APP ---
+            initialize();
+        });
+    </script>
+    
+</body>
+</html>

@@ -1,0 +1,1462 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VSL Script Writer — ReuxMarketing</title>
+
+    <!-- Favicon -->
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎥</text></svg>">
+    <!-- Meta tags for sharing -->
+    <meta property="og:title" content="VSL Script Writer - High-Converting Video Sales Letter Tool">
+    <meta property="og:description" content="Generate complete, high-converting Video Sales Letter scripts optimized for emotional engagement, storytelling, and sales conversion.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://your-app-url.com"> <!-- Replace with actual URL if deployed -->
+
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <!-- React and ReactDOM CDNs -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <!-- Babel CDN for client-side JSX transpilation -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <!-- html2pdf.js CDN for PDF export -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap" rel="stylesheet">
+
+    <style>
+        /* === ReuxMarketing Official Style Guide === */
+
+        /* --- Core Variables & Body --- */
+        :root {
+            --bg-main: #0a0a0a;
+            --bg-card: #1a1a1a;
+            --text-primary: #f0f0f0;
+            --text-secondary: #c7c7c7; /* For less emphasis */
+            --accent-gold: #FFD700;
+            --accent-green: #22c55e;
+            --border-color: #444;
+            --nav-blur-bg: rgba(10, 10, 10, 0.8);
+            --font-main: 'Inter', sans-serif;
+        }
+        body {
+            font-family: var(--font-main);
+            background-color: var(--bg-main);
+            color: var(--text-primary);
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        /* --- Reusable Components --- */
+        .gold-text { color: var(--accent-gold); }
+        .cta-btn {
+            background-color: var(--accent-green);
+            color: #0a0a0a; /* Dark text for contrast on green button */
+            font-weight: 700;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(34, 197, 94, 0.2);
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            text-decoration: none;
+        }
+        .cta-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(34, 197, 94, 0.3);
+        }
+        .input-field {
+            background-color: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 0.5rem;
+            padding: 0.75rem 1rem;
+            color: var(--text-primary);
+            transition: border-color 0.3s ease;
+            width: 100%;
+        }
+        .input-field:focus {
+            outline: none;
+            border-color: var(--accent-gold);
+        }
+        .card {
+            background-color: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 0.75rem;
+            overflow: hidden;
+        }
+
+        /* --- Main Header --- */
+        .main-header {
+            text-align: center;
+            padding: 2.5rem 1rem;
+            border-bottom: 1px solid #2a2a2a;
+        }
+        .main-header .brand-logo {
+            font-weight: 900;
+            font-size: 2.5rem;
+            color: var(--text-primary);
+            margin-bottom: 0.5rem;
+        }
+        .main-header .tool-title {
+            font-size: 1.25rem;
+            color: var(--text-secondary);
+        }
+
+        /* --- Cross-Tool Navigation Menu --- */
+        #tool-navigator {
+            position: sticky;
+            top: 0;
+            z-index: 50;
+            background-color: var(--nav-blur-bg);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            padding: 0.75rem 1rem;
+            border-bottom: 1px solid #2a2a2a;
+        }
+        #tool-navigator .nav-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .nav-cta-link {
+            color: var(--accent-gold);
+            font-weight: 700;
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+        .nav-cta-link:hover {
+            color: var(--text-primary);
+        }
+        .nav-tools-btn {
+            background-color: transparent;
+            border: 2px solid var(--border-color);
+            color: var(--text-secondary);
+            font-weight: 600;
+            font-size: 0.9rem;
+            padding: 0.4rem 1rem;
+            border-radius: 0.5rem;
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+        .nav-tools-btn:hover {
+            border-color: var(--accent-gold);
+            background-color: rgba(255, 215, 0, 0.1);
+            color: var(--accent-gold);
+        }
+
+        /* --- Footer --- */
+        .main-footer {
+            text-align: center;
+            padding: 2rem 1rem;
+            margin-top: 3rem;
+            border-top: 1px solid #2a2a2a;
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        /* Custom styles from original app, adapted for new theme */
+        .tooltip {
+            position: relative;
+            display: inline-block;
+        }
+
+        .tooltip .tooltiptext {
+            visibility: hidden;
+            width: 200px;
+            background-color: var(--bg-card); /* Adapted */
+            color: var(--text-primary); /* Adapted */
+            text-align: center;
+            border-radius: 6px;
+            padding: 5px 0;
+            position: absolute;
+            z-index: 10;
+            bottom: 125%;
+            left: 50%;
+            margin-left: -100px;
+            opacity: 0;
+            transition: opacity 0.3s;
+            font-size: 0.8rem;
+            line-height: 1.2;
+            border: 1px solid var(--border-color); /* Added */
+        }
+
+        .tooltip .tooltiptext::after {
+            content: "";
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            margin-left: -5px;
+            border-width: 5px;
+            border-style: solid;
+            border-color: var(--bg-card) transparent transparent transparent; /* Adapted */
+        }
+
+        .tooltip:hover .tooltiptext {
+            visibility: visible;
+            opacity: 1;
+        }
+
+        /* Custom style for editable text areas */
+        .editable-text:focus {
+            outline: none;
+            border: 1px dotted var(--accent-gold); /* Adapted */
+            box-shadow: 0 0 0 2px rgba(255, 215, 0, 0.5); /* Adapted */
+        }
+
+        /* Style for placeholder highlighting */
+        .highlight-placeholder {
+            background-color: rgba(255, 215, 0, 0.3); /* Adapted to gold accent */
+            padding: 0 2px;
+            border-radius: 3px;
+            color: var(--text-primary); /* Ensure text is visible */
+        }
+
+        /* Dropdown menu styling */
+        .dropdown-menu {
+            position: absolute;
+            right: 0;
+            background-color: var(--bg-card); /* Adapted */
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3); /* Darker shadow */
+            z-index: 20;
+            min-width: 160px;
+            padding: 0.5rem 0;
+            border: 1px solid var(--border-color); /* Added */
+        }
+        .dropdown-menu button {
+            display: block;
+            width: 100%;
+            padding: 0.5rem 1rem;
+            text-align: left;
+            color: var(--text-primary); /* Adapted */
+            font-weight: 500;
+            transition: background-color 0.2s;
+        }
+        .dropdown-menu button:hover {
+            background-color: rgba(255, 215, 0, 0.1); /* Adapted to gold accent */
+            color: var(--accent-gold); /* Adapted */
+        }
+    </style>
+</head>
+<body class="bg-black">
+
+    <header class="main-header">
+        <div class="brand-logo">Reux<span class="gold-text">Marketing</span></div>
+        <p class="tool-title">High-Converting Video Sales Letter Tool</p>
+    </header>
+
+    <nav id="tool-navigator">
+        <div class="nav-container">
+            <a href="tools.html" class="nav-tools-btn">Back to Tools</a>
+            <a href="index.html" class="nav-cta-link">Explore The Marketing With Me &rarr;</a>
+        </div>
+    </nav>
+
+    <main class="max-w-4xl mx-auto px-4 py-12">
+        <div id="root"></div>
+    </main>
+
+    <footer class="main-footer">
+        <p>&copy; 2025 ReuxMarketing. All Rights Reserved. Built to help you grow.</p>
+    </footer>
+
+    <script type="text/babel">
+        // Simulated "Massive Library" of VSL components
+        // Each entry now includes a 'quality' field for verification and a unique 'id'.
+        // Added 'styleCompatibility' to allow specific segments to be preferred for certain VSL styles.
+        // Updated text to include more explicit placeholder tokens for personalization.
+        const vslLibrary = {
+            hooks: [
+                { id: 'h1', keywords: ['productivity', 'entrepreneur', 'overwhelm', 'time management', 'stress'], tone: ['inspirational', 'direct'], styleCompatibility: ['Classic Long-Form Direct Response', 'Hero’s Journey Style'], text: "Are you an entrepreneur constantly battling the clock, feeling overwhelmed by endless tasks, and watching your dreams gather dust? [PAUSE] What if I told you there's a simple way to reclaim your time, double your output, and finally live the life you envisioned?", quality: "High-converting, empathy-driven, problem-solution hook." },
+                { id: 'h2', keywords: ['saas', 'efficiency', 'burnout', 'team', 'workflow', 'manual tasks'], tone: ['direct', 'bold'], styleCompatibility: ['Classic Long-Form Direct Response', 'Webinar Teaser VSL'], text: "Stop the burnout cycle! [CUE] If your current tools are failing you and your team is drowning in inefficiency, it's time for a radical shift. This isn't just another app; it's the end of your productivity nightmare.", quality: "Aggressive, problem-focused, pattern interrupt." },
+                { id: 'h3', keywords: ['digital course', 'skill', 'transformation', 'learning', 'growth', 'potential'], tone: ['emotional', 'inspirational'], styleCompatibility: ['Hero’s Journey Style', 'Value First / Educational'], text: "Imagine waking up every day with crystal-clear focus, knowing exactly what to do to achieve your biggest goals. [PAUSE] For years, I struggled just like you, until I discovered the secret to unlocking true productivity. Now, I'm sharing it all.", quality: "Vision-casting, relatable struggle, promise of discovery." },
+                { id: 'h4', keywords: ['ecommerce', 'sales', 'growth', 'conversion', 'revenue', 'profit'], tone: ['direct', 'authoritative'], styleCompatibility: ['Classic Long-Form Direct Response', 'Short-Form \'Punchy\' TikTok/IG Reels Sales Scripts'], text: "Is your e-commerce store stuck in a rut? Are you tired of low conversion rates and abandoned carts? [CUE] Discover the proven strategy that's helping thousands of online businesses explode their sales overnight.", quality: "Question-based, pain-agitation, results-oriented." },
+                { id: 'h5', keywords: ['info-product', 'secret', 'breakthrough', 'unlock', 'hidden truth'], tone: ['mysterious', 'direct'], styleCompatibility: ['Classic Long-Form Direct Response', 'Webinar Teaser VSL'], text: "What if the one thing holding you back from massive success isn't what you think it is? [PAUSE] There's a hidden truth about [INDUSTRY_PROBLEM] that the 'experts' don't want you to know. And once you understand it, everything changes.", quality: "Intrigue-based, 'hidden truth' hook." },
+                { id: 'h6', keywords: ['high-ticket', 'coaching', 'service', 'elite', 'exclusive', 'top 1%'], tone: ['bold', 'exclusive'], styleCompatibility: ['Classic Long-Form Direct Response', 'Webinar Teaser VSL'], text: "This isn't for everyone. [CUE] If you're tired of playing small and ready to ascend to the top 1% in your field, then pay close attention. This message is for the ambitious few who demand extraordinary results.", quality: "Exclusivity-driven, aspirational hook." },
+                { id: 'h7', keywords: ['problem', 'solution', 'frustration', 'struggle'], tone: ['direct', 'empathetic'], styleCompatibility: ['Classic Long-Form Direct Response', 'Hero’s Journey Style'], text: "Are you constantly hitting a wall when it comes to [SPECIFIC_PROBLEM]? [PAUSE] You're not alone. Millions face this exact challenge, but very few know the real way out. Today, that changes.", quality: "Direct problem identification, empathetic, promise of change." },
+                { id: 'h8', keywords: ['shocking stat', 'industry', 'misconception', 'truth'], tone: ['shocking', 'authoritative'], styleCompatibility: ['Classic Long-Form Direct Response', 'Short-Form \'Punchy\' TikTok/IG Reels Sales Scripts'], text: "Did you know that [SHOCKING_STATISTIC_ABOUT_INDUSTRY_PROBLEM]? [CUE] Most people are completely unaware of this, and it's costing them dearly. I'm here to reveal the truth and show you how to leverage it.", quality: "Statistic-based, truth-revealing, authority-building." },
+                { id: 'h9', keywords: ['future', 'vision', 'dream', 'achieve'], tone: ['inspirational', 'visionary'], styleCompatibility: ['Hero’s Journey Style', 'Value First / Educational'], text: "Close your eyes for a moment and imagine your ideal future. [PAUSE] A future where [DESIRED_OUTCOME_1] and [DESIRED_OUTCOME_2] are your everyday reality. This isn't a fantasy; it's within your reach.", quality: "Future-pacing, vision-casting, aspirational." },
+                { id: 'h10', keywords: ['warning', 'danger', 'avoid', 'mistake'], tone: ['direct', 'urgent'], styleCompatibility: ['Classic Long-Form Direct Response', 'Short-Form \'Punchy\' TikTok/IG Reels Sales Scripts'], text: "WARNING: If you continue to [CURRENT_NEGATIVE_ACTION], you're heading straight for [NEGATIVE_CONSEQUENCE]. [CUE] But there's a way to avoid this trap and secure your future. Listen closely.", quality: "Fear-based, warning, urgent call to attention." }
+            ],
+            relatablePainStories: [
+                { id: 'p1', keywords: ['entrepreneur', 'overwhelm', 'burnout', 'struggle', 'time', 'loneliness'], tone: ['emotional', 'humble'], styleCompatibility: ['Classic Long-Form Direct Response', 'Hero’s Journey Style'], text: "I remember those late nights, staring at my to-do list, feeling the weight of unfulfilled potential. [PAUSE] The constant pressure, the feeling of never being enough, the fear that my dreams would remain just that – dreams. [CUE] You've probably felt it too, that gnawing sense that [AUDIENCE_PAIN_POINT_1].", quality: "Deeply empathetic, vivid imagery of struggle, addresses emotional toll." },
+                { id: 'p2', keywords: ['saas', 'inefficiency', 'frustration', 'manual tasks', 'cost', 'wasted effort'], tone: ['direct'], styleCompatibility: ['Classic Long-Form Direct Response', 'Webinar Teaser VSL'], text: "How many times have you jumped between apps, lost crucial information, or spent hours on manual tasks that could be automated? [PAUSE] The frustration of disjointed workflows and wasted effort isn't just annoying; it's costing you valuable time and money every single day.", quality: "Problem-agitation, cost-focused, relatable scenario." },
+                { id: 'p3', keywords: ['info-product', 'struggle', 'confusion', 'failed attempts', 'information overload'], tone: ['emotional'], styleCompatibility: ['Hero’s Journey Style', 'Value First / Educational'], text: "For years, I followed the 'experts,' bought all the courses, but nothing truly clicked. I was stuck, just spinning my wheels. [CUE] It felt like I was missing a crucial piece of the puzzle, and the harder I tried, the more overwhelmed I became. Until one day, everything changed.", quality: "Personal journey, 'tried everything' narrative, addresses information overwhelm." },
+                { id: 'p4', keywords: ['ecommerce', 'stagnation', 'competitors', 'stress', 'unpredictable revenue'], tone: ['emotional', 'direct'], styleCompatibility: ['Classic Long-Form Direct Response'], text: "Are you watching your competitors soar while your own sales flatline? [PAUSE] The stress of unpredictable revenue and the fear of being left behind can be paralyzing. You've poured your heart into your business, but it feels like you're constantly fighting an uphill battle.", quality: "Competitive pain, emotional appeal, highlights business stagnation." },
+                { id: 'p5', keywords: ['coaching', 'service', 'stuck', 'plateau', 'lack of direction'], tone: ['empathetic', 'humble'], styleCompatibility: ['Hero’s Journey Style', 'Value First / Educational'], text: "I used to believe that hard work alone was enough. But then I hit a plateau. [PAUSE] No matter how many hours I put in, I just couldn't break through to the next level. It was frustrating, isolating, and honestly, a little scary. Have you ever felt that way?", quality: "Relatable plateau experience, question to engage audience." },
+                { id: 'p6', keywords: ['digital course', 'learning', 'overwhelm', 'giving up', 'complexity'], tone: ['emotional'], styleCompatibility: ['Hero’s Journey Style', 'Value First / Educational'], text: "Remember that feeling when you started a new course, full of hope, only to get bogged down by complexity and eventually give up? [CUE] It's not your fault. Most courses are designed to overwhelm, not empower. We've all been there.", quality: "Addresses past failures, builds empathy, shifts blame from user." },
+                { id: 'p7', keywords: ['financial', 'debt', 'struggle', 'anxiety', 'future'], tone: ['emotional', 'direct'], styleCompatibility: ['Classic Long-Form Direct Response'], text: "The constant worry about money, the sleepless nights, the feeling that you're just one step away from financial disaster. [PAUSE] It's a heavy burden, isn't it? This isn't just about numbers; it's about your peace of mind and your family's future.", quality: "Deep emotional pain, connects to broader life impact." }
+            ],
+            authorityPositioning: [
+                { id: 'a1', keywords: ['expert', 'experience', 'results', 'proven', 'decade'], tone: ['authoritative'], styleCompatibility: ['Classic Long-Form Direct Response', 'Webinar Teaser VSL'], text: "With over a decade in the industry and having personally coached hundreds of [AUDIENCE_PERSONA_ROLE] to achieve 7-figure success, I've seen what works and what doesn't. [PAUSE] My methods are battle-tested, refined, and proven to deliver tangible results.", quality: "Experience-based, results-oriented, credible." },
+                { id: 'a2', keywords: ['founder', 'innovation', 'solution', 'passion', 'built from scratch'], tone: ['inspirational', 'humble'], styleCompatibility: ['Hero’s Journey Style', 'Value First / Educational'], text: "As the founder of [PRODUCT_NAME], I built this solution because I faced the exact same problems you do. [CUE] We've invested thousands of hours and countless resources to create a system that truly solves the core issues of modern productivity.", quality: "Founder's story, problem-solver, dedication." },
+                { id: 'a3', keywords: ['research', 'data', 'science', 'backed', 'studies'], tone: ['authoritative'], styleCompatibility: ['Classic Long-Form Direct Response', 'Value First / Educational'], text: "Our approach isn't based on guesswork. [PAUSE] It's built on years of rigorous research and and data from thousands of successful case studies. We've distilled complex principles into a simple, actionable framework.", quality: "Data-driven, scientific backing." },
+                { id: 'a4', keywords: ['award-winning', 'recognized', 'leader', 'industry'], tone: ['bold', 'authoritative'], styleCompatibility: ['Classic Long-Form Direct Response', 'Webinar Teaser VSL'], text: "Recognized as an award-winning leader in [YOUR_FIELD], my work has been featured in [PUBLICATION_1] and [PUBLICATION_2]. [CUE] I've dedicated my career to mastering [SPECIFIC_SKILL_AREA] and now I'm sharing those insights with you.", quality: "External validation, media mentions, expertise." },
+                { id: 'a5', keywords: ['transformation', 'personal journey', 'overcame', 'from struggle to success'], tone: ['humble', 'inspirational'], styleCompatibility: ['Hero’s Journey Style', 'Value First / Educational'], text: "I'm not just teaching theory; I've lived this transformation myself. [PAUSE] From struggling with [PAST_PROBLEM] to achieving [CURRENT_SUCCESS], I've walked the path and built a system that anyone can follow.", quality: "Relatable personal transformation, humble authority." }
+            ],
+            transformationFramework: [
+                { id: 't1', keywords: ['clarity', 'focus', 'freedom', 'empowerment', 'peace of mind'], tone: ['inspirational'], styleCompatibility: ['Classic Long-Form Direct Response', 'Hero’s Journey Style'], text: "Imagine a life where you wake up energized, with a clear roadmap for your day. [PAUSE] You'll move from [PAIN_POINT_1_SHORT] to absolute clarity, from [PAIN_POINT_2_SHORT] to laser-like focus, and from feeling trapped to experiencing true time freedom. [CUE] This isn't just about doing more; it's about becoming the person who effortlessly achieves more.", quality: "Before-after transformation, identity-driven, emotional benefits." },
+                { id: 't2', keywords: ['efficiency', 'automation', 'growth', 'streamline', 'scale'], tone: ['direct'], styleCompatibility: ['Classic Long-Form Direct Response', 'Webinar Teaser VSL'], text: "Our system takes you from manual chaos to automated efficiency. [PAUSE] Tasks that once took hours will be completed in minutes, freeing up your team to focus on high-impact activities. [CUE] This isn't just a small improvement; it's a complete overhaul of how you operate, leading to unprecedented growth.", quality: "Process-oriented transformation, tangible benefits, business growth." },
+                { id: 't3', keywords: ['confidence', 'mastery', 'future', 'potential', 'skills'], tone: ['inspirational'], styleCompatibility: ['Hero’s Journey Style', 'Value First / Educational'], text: "Picture yourself, just weeks from now, confidently navigating challenges you once thought impossible. [PAUSE] You'll possess the skills and mindset to unlock your full potential, not just for today, but for a lifetime of sustained success.", quality: "Future-pacing, skill mastery, long-term vision." },
+                { id: 't4', keywords: ['freedom', 'location independent', 'time freedom', 'financial freedom'], tone: ['aspirational'], styleCompatibility: ['Hero’s Journey Style', 'Classic Long-Form Direct Response'], text: "What if your work could fit around your life, not the other way around? [PAUSE] This transformation isn't just about [PRODUCT_BENEFIT]; it's about achieving true freedom – financial, time, and even location freedom. Imagine the possibilities.", quality: "Highlights broader lifestyle transformation." },
+                { id: 't5', keywords: ['identity', 'become', 'new person', 'self-belief'], tone: ['emotional', 'identity-driven'], styleCompatibility: ['Hero’s Journey Style'], text: "This isn't just about what you *do*; it's about who you *become*. [CUE] You'll shed the old identity of [OLD_IDENTITY] and step into your new self as a [NEW_IDENTITY] – confident, capable, and unstoppable.", quality: "Strong identity-driven transformation." }
+            ],
+            stackTheValue: [
+                { id: 'v1', keywords: ['bonus', 'guarantee', 'scarcity', 'limited time'], tone: ['direct'], styleCompatibility: ['Classic Long-Form Direct Response', 'Webinar Teaser VSL'], text: "But that's not all. When you act today, you'll also receive [BONUS_1_NAME] and [BONUS_2_NAME] – exclusive resources designed to accelerate your results. [PAUSE] And because I'm so confident in your success, your investment is backed by our iron-clad [NUMBER_DAYS_GUARANTEE]-day money-back guarantee. [CUE] This offer, including these bonuses, is only available for a limited time, so don't miss out!", quality: "Standard value stack with bonuses, strong guarantee, and scarcity." },
+                { id: 'v2', keywords: ['social proof', 'limited', 'proof', 'testimonials', 'community', 'early bird'], tone: ['direct'], styleCompatibility: ['Classic Long-Form Direct Response', 'Short-Form \'Punchy\' TikTok/IG Reels Sales Scripts'], text: "Don't just take my word for it. [CUE] [TESTIMONIAL_1] and [TESTIMONIAL_2] are just a few examples of the incredible transformations our clients are experiencing. [PAUSE] We've helped thousands, and now it's your turn. This special pricing is only for the first [NUMBER_MEMBERS] new members.", quality: "Social proof focused, limited availability." },
+                { id: 'v3', keywords: ['urgency', 'fast-action', 'support', 'community', 'exclusive'], tone: ['direct', 'urgent'], styleCompatibility: ['Classic Long-Form Direct Response', 'Webinar Teaser VSL'], text: "For the next 48 hours only, we're including a special fast-action bonus: [FAST_ACTION_BONUS_NAME], valued at $XXX. [PAUSE] Plus, you'll gain access to our private community where you can get direct support and network with fellow achievers. This is your chance to get everything you need, and more.", quality: "High urgency, added support/community value." },
+                { id: 'v4', keywords: ['risk-free', 'no brainer', 'investment', 'return'], tone: ['direct'], styleCompatibility: ['Classic Long-Form Direct Response'], text: "Think of this not as an expense, but as an investment in your future. [PAUSE] With our [NUMBER_DAYS_GUARANTEE]-day risk-free guarantee, the only way you lose is by doing nothing. The potential return on this investment is truly limitless.", quality: "Reframes cost as investment, emphasizes risk-free." },
+                { id: 'v5', keywords: ['premium', 'exclusive', 'personalized', 'limited spots'], tone: ['exclusive'], styleCompatibility: ['Classic Long-Form Direct Response', 'Webinar Teaser VSL'], text: "This isn't a mass-market solution. [CUE] We're committed to providing a premium, personalized experience, which is why we can only accept a limited number of new clients each month. Secure your spot before they're all gone.", quality: "Highlights exclusivity and limited capacity." }
+            ],
+            strongCTA: [
+                { id: 'c1', keywords: ['trial', 'now', 'click', 'start', 'transform'], tone: ['direct', 'urgent'], styleCompatibility: ['Classic Long-Form Direct Response', 'Short-Form \'Punchy\' TikTok/IG Reels Sales Scripts'], text: "The choice is clear. Are you ready to stop struggling and start thriving? [PAUSE] Click the button below right now to [CALL_TO_ACTION_TEXT] and begin your transformation today. [CUE] This is your moment. Don't let it pass you by.", quality: "Direct, benefit-driven, urgency-infused CTA." },
+                { id: 'c2', keywords: ['buy', 'secure', 'limited', 'enroll', 'action'], tone: ['direct', 'urgent'], styleCompatibility: ['Classic Long-Form Direct Response', 'Webinar Teaser VSL'], text: "This exclusive offer won't last forever. [PAUSE] To secure your spot and unlock all the bonuses, click the 'Enroll Now' button below. [CUE] Take action now and transform your future.", quality: "Scarcity-driven, clear action, future-focused." },
+                { id: 'c3', keywords: ['discover', 'learn more', 'free training', 'webinar'], tone: ['educational'], styleCompatibility: ['Value First / Educational', 'Webinar Teaser VSL'], text: "If you're still on the fence, I invite you to discover more. [PAUSE] Click here to watch a free masterclass that reveals exactly how this system works, and see if it's the right fit for you. [CUE] No obligation, just pure value.", quality: "Lower-friction, educational CTA (for Value First VSLs)." },
+                { id: 'c4', keywords: ['book call', 'consultation', 'strategy session', 'personalized'], tone: ['direct', 'exclusive'], styleCompatibility: ['Classic Long-Form Direct Response', 'Webinar Teaser VSL'], text: "For those serious about [DESIRED_OUTCOME], I'm offering a limited number of complimentary strategy sessions. [PAUSE] Click the link below to book your call now and let's map out your personalized path to success.", quality: "High-ticket, consultation-based CTA." },
+                { id: 'c5', keywords: ['join', 'community', 'movement', 'together'], tone: ['inspirational', 'community-focused'], styleCompatibility: ['Hero’s Journey Style', 'Value First / Educational'], text: "This isn't just a product; it's a movement. [PAUSE] Join thousands of others who are already experiencing [DESIRED_OUTCOME]. Click below to become part of our thriving community today!", quality: "Community-driven, aspirational CTA." }
+            ],
+            optionalClose: [
+                { id: 'oc1', keywords: ['faq', 'objections', 'risk', 'guarantee'], tone: ['direct'], styleCompatibility: ['Classic Long-Form Direct Response'], text: "You might be thinking, 'Is this really for me?' [PAUSE] If you're an entrepreneur serious about growth, the answer is a resounding yes. [CUE] What if it doesn't work? Our [NUMBER_DAYS_GUARANTEE]-day guarantee means there's zero risk. Your success is our priority.", quality: "Objection handling, risk reversal." },
+                { id: 'oc2', keywords: ['risk-free', 'final push', 'decision', 'inaction'], tone: ['direct', 'urgent'], styleCompatibility: ['Classic Long-Form Direct Response', 'Short-Form \'Punchy\' TikTok/IG Reels Sales Scripts'], text: "Remember, the biggest risk is doing nothing. [PAUSE] Continue down the path of [AUDIENCE_PAIN_POINT_1] and missed opportunities, or take a decisive step towards the future you deserve. [CUE] The choice is yours. Click that button.", quality: "Fear of inaction, strong final push." },
+                { id: 'oc3', keywords: ['community', 'support', 'join', 'alone'], tone: ['inspirational'], styleCompatibility: ['Hero’s Journey Style', 'Value First / Educational'], text: "Join a growing community of individuals just like you, who are transforming their lives and businesses. [PAUSE] You don't have to do this alone. We're here to support you every step of the way. [CUE] Your future self will thank you.", quality: "Community-focused, supportive close." },
+                { id: 'oc4', keywords: ['last chance', 'urgency', 'miss out', 'limited'], tone: ['urgent', 'direct'], styleCompatibility: ['Classic Long-Form Direct Response', 'Webinar Teaser VSL', 'Short-Form \'Punchy\' TikTok/IG Reels Sales Scripts'], text: "This truly is your last chance to get [PRODUCT_NAME] at this special price. [PAUSE] The clock is ticking, and spots are filling up fast. Don't look back weeks from now wishing you had acted. Secure your future, now.", quality: "Strong urgency, FOMO-driven final close." },
+                { id: 'oc5', keywords: ['simple', 'easy', 'overcome fear'], tone: ['humble', 'empathetic'], styleCompatibility: ['Hero’s Journey Style', 'Value First / Educational'], text: "I know taking the first step can be daunting. [PAUSE] But we've made this process incredibly simple and risk-free. Just one click can set you on a new trajectory. What have you got to lose?", quality: "Addresses fear of commitment, simplifies action." }
+            ]
+        };
+
+        // Helper function to find the best match from the library
+        // Returns an object { text: string, index: number, score: number }
+        const findBestMatch = (sectionType, inputs, excludeIndex = -1) => {
+            const allSections = vslLibrary[sectionType];
+            if (!allSections || allSections.length === 0) return { text: '', index: -1, score: 0 };
+
+            let candidateSections = [];
+
+            // Step 1: Filter by style compatibility (strong preference)
+            const styleFilteredSections = allSections.filter(section =>
+                section.styleCompatibility && section.styleCompatibility.includes(inputs.vslStyle)
+            );
+
+            if (styleFilteredSections.length > 0) {
+                candidateSections = styleFilteredSections;
+            } else {
+                // Fallback: If no style-specific sections, consider all sections
+                candidateSections = allSections;
+            }
+
+            let bestMatch = candidateSections[0]; // Default to first candidate
+            let bestIndex = allSections.indexOf(bestMatch); // Get its index in the *original* allSections array
+            let maxScore = -1;
+
+            candidateSections.forEach((section, relativeIndex) => {
+                // Get the absolute index in the original vslLibrary[sectionType] array
+                const absoluteIndex = allSections.indexOf(section);
+
+                if (absoluteIndex === excludeIndex) return; // Skip if we're trying to find a *different* match
+
+                let currentScore = 0;
+
+                // Score for Tone Match (highest priority)
+                if (section.tone && section.tone.includes(inputs.tone)) {
+                    currentScore += 3;
+                }
+
+                // Score for Keyword Matches
+                if (section.keywords) {
+                    const inputKeywords = new Set([
+                        inputs.productName.toLowerCase(),
+                        inputs.productType.toLowerCase(),
+                        inputs.audiencePersona.toLowerCase(),
+                        ...inputs.painPoints.toLowerCase().split(/[,\s]+/).filter(k => k),
+                        ...inputs.benefits.toLowerCase().split(/[,\s]+/).filter(k => k),
+                        ...inputs.offerDetails.toLowerCase().split(/[,\s]+/).filter(k => k)
+                    ].filter(k => k)); // Filter out empty strings
+
+                    section.keywords.forEach(keyword => {
+                        if (inputKeywords.has(keyword.toLowerCase())) {
+                            currentScore += 1;
+                        }
+                    });
+                }
+
+                // Score for Quality (heuristic for richness/completeness)
+                if (section.quality && section.quality.length > 30) {
+                    currentScore += 0.5;
+                }
+
+                if (currentScore > maxScore) {
+                    maxScore = currentScore;
+                    bestMatch = section;
+                    bestIndex = absoluteIndex; // Store the absolute index
+                }
+            });
+
+            return { text: bestMatch.text, index: bestIndex, score: maxScore };
+        };
+
+        // Main App Component
+        const App = () => {
+            const { useState, useRef, useEffect } = React;
+
+            // State for form inputs
+            const [productName, setProductName] = useState('');
+            const [productType, setProductType] = useState('');
+            const [audiencePersona, setAudiencePersona] = useState('');
+            const [painPoints, setPainPoints] = useState('');
+            const [benefits, setBenefits] = useState('');
+            const [offerDetails, setOfferDetails] = useState('');
+            const [tone, setTone] = useState('inspirational');
+            const [vslStyle, setVslStyle] = useState('Classic Long-Form Direct Response');
+
+            // State for script generation and display
+            const [script, setScript] = useState({}); // Stores { sectionKey: { text: string, index: number, score: number } }
+            const [loading, setLoading] = useState(false);
+            const [error, setError] = useState('');
+            const [showScriptPreview, setShowScriptPreview] = useState(false);
+            const [showWelcomeBanner, setShowWelcomeBanner] = useState(true);
+
+            // State for section toggles
+            const [showHook, setShowHook] = useState(true);
+            const [showPainStory, setShowPainStory] = useState(true);
+            const [showAuthority, setShowAuthority] = useState(true);
+            const [showTransformation, setShowTransformation] = useState(true);
+            const [showValueStack, setShowValueStack] = useState(true);
+            const [showCta, setShowCta] = useState(true);
+            const [showOptionalClose, setShowOptionalClose] = useState(true);
+
+            // State for copy enhancements
+            const [addUrgency, setAddUrgency] = useState(false);
+            const [addEmpathy, setAddEmpathy] = useState(false);
+            const [addAuthority, setAddAuthority] = useState(false);
+            const [segmentVariation, setSegmentVariation] = useState('');
+            const [addDisclaimers, setAddDisclaimers] = useState(false);
+            const [addGuarantee, setAddGuarantee] = useState(false);
+            const [addBonusStacking, setAddBonusStacking] = useState(false);
+            const [highlightPlaceholders, setHighlightPlaceholders] = useState(true);
+
+            // UI feedback states
+            const [showSaveIndicator, setShowSaveIndicator] = useState(false);
+            const [showExportDropdown, setShowExportDropdown] = useState(false);
+
+
+            // Ref for script preview area to enable copy functionality
+            const scriptPreviewRef = useRef(null);
+
+            // Debounce mechanism for auto-updating script
+            const debounceTimeoutRef = useRef(null);
+
+            // Function to replace placeholders in a text string
+            const replacePlaceholders = (text, inputs) => {
+                let newText = text;
+                const painPointsArray = inputs.painPoints.split(',').map(p => p.trim()).filter(p => p);
+                const benefitsArray = inputs.benefits.split(',').map(b => b.trim()).filter(b => b);
+                const offerDetailsArray = inputs.offerDetails.split(',').map(o => o.trim()).filter(o => o);
+
+                newText = newText.replace(/\[PRODUCT_NAME\]/g, inputs.productName || 'your amazing product');
+                newText = newText.replace(/\[PRODUCT_TYPE\]/g, inputs.productType || 'solution');
+                newText = newText.replace(/\[AUDIENCE_PERSONA\]/g, inputs.audiencePersona || 'your target audience');
+                newText = newText.replace(/\[AUDIENCE_PAIN_POINT_1\]/g, painPointsArray[0] || 'your biggest challenge');
+                newText = newText.replace(/\[AUDIENCE_PAIN_POINT_2\]/g, painPointsArray[1] || 'another common struggle');
+                newText = newText.replace(/\[AUDIENCE_PAIN_POINT_3\]/g, painPointsArray[2] || 'a frustrating obstacle');
+                newText = newText.replace(/\[BENEFITS\]/g, inputs.benefits || 'incredible benefits');
+                newText = newText.replace(/\[OFFER_DETAILS\]/g, inputs.offerDetails || 'our special offer');
+                newText = newText.replace(/\[TONE\]/g, inputs.tone || 'compelling tone');
+                newText = newText.replace(/\[INDUSTRY_PROBLEM\]/g, painPointsArray[0] || 'the industry problem');
+                newText = newText.replace(/\[SHOCKING_STATISTIC_ABOUT_INDUSTRY_PROBLEM\]/g, 'a shocking 90% of people face this problem');
+                newText = newText.replace(/\[DESIRED_OUTCOME_1\]/g, benefitsArray[0] || 'achieve your first desired outcome');
+                newText = newText.replace(/\[DESIRED_OUTCOME_2\]/g, benefitsArray[1] || 'reach your second desired outcome');
+                newText = newText.replace(/\[CURRENT_NEGATIVE_ACTION\]/g, 'ignoring this problem');
+                newText = newText.replace(/\[NEGATIVE_CONSEQUENCE\]/g, 'missing out on huge opportunities');
+                newText = newText.replace(/\[PAST_PROBLEM\]/g, 'struggling with [Your Past Problem]');
+                newText = newText.replace(/\[CURRENT_SUCCESS\]/g, 'achieving [Your Current Success]');
+                newText = newText.replace(/\[OLD_IDENTITY\]/g, 'a struggling [Old Identity]');
+                newText = newText.replace(/\[NEW_IDENTITY\]/g, 'a thriving [New Identity]');
+                newText = newText.replace(/\[YOUR_FIELD\]/g, 'your field');
+                newText = newText.replace(/\[PUBLICATION_1\]/g, 'Forbes');
+                newText = newText.replace(/\[PUBLICATION_2\]/g, 'TechCrunch');
+                newText = newText.replace(/\[BONUS_1_NAME\]/g, offerDetailsArray[0] || 'Bonus Training');
+                newText = newText.replace(/\[BONUS_2_NAME\]/g, offerDetailsArray[1] || 'Exclusive Checklist');
+                newText = newText.replace(/\[NUMBER_DAYS_GUARANTEE\]/g, '30');
+                newText = newText.replace(/\[CALL_TO_ACTION_TEXT\]/g, offerDetailsArray[2] || 'Start Your Free Trial');
+                newText = newText.replace(/\[DESIRED_OUTCOME\]/g, benefitsArray[0] || 'your desired outcome');
+                newText = newText.replace(/\[FAST_ACTION_BONUS_NAME\]/g, 'a special Fast Action Bonus');
+                newText = newText.replace(/\[NUMBER_MEMBERS\]/g, '100');
+                newText = newText.replace(/\[TESTIMONIAL_1\]/g, '“This changed everything for me!” - Happy Client 1');
+                newText = newText.replace(/\[TESTIMONIAL_2\]/g, '“Absolutely incredible results!” - Happy Client 2');
+                newText = newText.replace(/\[NUMBER\]/g, '30'); // Generic number placeholder
+
+                return newText;
+            };
+
+            // Function to generate script from library
+            const generateScript = () => {
+                setLoading(true);
+                setError('');
+
+                try {
+                    const inputs = {
+                        productName: productName.trim(),
+                        productType: productType.trim(),
+                        audiencePersona: audiencePersona.trim(),
+                        painPoints: painPoints.trim(),
+                        benefits: benefits.trim(),
+                        offerDetails: offerDetails.trim(),
+                        tone,
+                        vslStyle
+                    };
+
+                    let newScript = {};
+
+                    const sectionsToGenerate = {
+                        hook: showHook,
+                        relatablePainStory: showPainStory,
+                        authorityPositioning: showAuthority,
+                        transformationFramework: showTransformation,
+                        stackTheValue: showValueStack,
+                        strongCTA: showCta,
+                        optionalClose: showOptionalClose
+                    };
+
+                    for (const key in sectionsToGenerate) {
+                        if (sectionsToGenerate[key]) {
+                            // If a script already exists for this key, try to keep its current index
+                            const currentEntry = script[key];
+                            let initialMatch = { text: '', index: -1, score: 0 };
+                            if (currentEntry && currentEntry.index !== -1 && vslLibrary[key] && vslLibrary[key][currentEntry.index]) {
+                                // Try to use the existing entry if it's still valid
+                                initialMatch = {
+                                    text: vslLibrary[key][currentEntry.index].text,
+                                    index: currentEntry.index,
+                                    score: currentEntry.score // Preserve score if using existing
+                                };
+                            } else {
+                                // Otherwise, find the best match
+                                initialMatch = findBestMatch(key, inputs);
+                            }
+
+                            // If no good match found (score 0), provide a fallback message
+                            if (initialMatch.score === 0 && initialMatch.text === '') {
+                                initialMatch.text = "This section may not fully match your inputs. Consider editing it manually or adjusting your input details.";
+                            }
+
+                            newScript[key] = {
+                                text: replacePlaceholders(initialMatch.text, inputs), // Replace placeholders
+                                index: initialMatch.index,
+                                score: initialMatch.score
+                            };
+                        } else {
+                            newScript[key] = { text: '', index: -1, score: 0 }; // Section is off
+                        }
+                    }
+
+                    // Apply copy enhancements (simplified string manipulation for demonstration)
+                    if (newScript.strongCTA.text && addUrgency) {
+                        newScript.strongCTA.text += " [PAUSE] This limited-time offer expires soon!";
+                    }
+                    if (newScript.relatablePainStory.text && addEmpathy) {
+                        newScript.relatablePainStory.text = "We truly understand your struggle. " + newScript.relatablePainStory.text;
+                    }
+                    if (newScript.authorityPositioning.text && addAuthority) {
+                        newScript.authorityPositioning.text = "As a recognized leader in the field, " + newScript.authorityPositioning.text;
+                    }
+                    if (newScript.optionalClose.text && addDisclaimers) {
+                        newScript.optionalClose.text += "\n\n[Disclaimer: Results may vary. Consult a professional for specific advice.]";
+                    }
+                    if (newScript.stackTheValue.text && addGuarantee) {
+                        newScript.stackTheValue.text += "\n\nYour purchase is backed by our full money-back guarantee.";
+                    }
+                    if (newScript.stackTheValue.text && addBonusStacking) {
+                        newScript.stackTheValue.text += "\n\nAct now to claim exclusive bonus package worth $XXX!";
+                    }
+                    if (newScript.optionalClose.text && segmentVariation.trim()) {
+                        newScript.optionalClose.text += `\n\n[Note for ${segmentVariation.trim()} segment: Consider emphasizing X, Y, Z.]`;
+                    }
+
+                    setScript(newScript);
+                    setShowScriptPreview(true);
+
+                } catch (err) {
+                    console.error('Error generating script from library:', err);
+                    setError('An error occurred while assembling the script. Please try again.');
+                } finally {
+                    setLoading(false);
+                }
+            };
+
+            // Debounce effect for live preview
+            useEffect(() => {
+                if (debounceTimeoutRef.current) {
+                    clearTimeout(debounceTimeoutRef.current);
+                }
+                debounceTimeoutRef.current = setTimeout(() => {
+                    // Only generate if at least product name is entered to avoid empty initial generation
+                    if (productName.trim() || productType.trim() || audiencePersona.trim() || painPoints.trim() || benefits.trim() || offerDetails.trim()) {
+                        generateScript();
+                    }
+                }, 500); // 500ms debounce
+
+                // Cleanup on unmount
+                return () => {
+                    if (debounceTimeoutRef.current) {
+                        clearTimeout(debounceTimeoutRef.current);
+                    }
+                };
+            }, [productName, productType, audiencePersona, painPoints, benefits, offerDetails, tone, vslStyle,
+                addUrgency, addEmpathy, addAuthority, segmentVariation, addDisclaimers, addGuarantee, addBonusStacking,
+                showHook, showPainStory, showAuthority, showTransformation, showValueStack, showCta, showOptionalClose]);
+
+
+            // LocalStorage Load on Mount
+            useEffect(() => {
+                try {
+                    const loadState = (stateSource) => {
+                        setProductName(stateSource.productName || '');
+                        setProductType(stateSource.productType || '');
+                        setAudiencePersona(stateSource.audiencePersona || '');
+                        setPainPoints(stateSource.painPoints || '');
+                        setBenefits(stateSource.benefits || '');
+                        setOfferDetails(stateSource.offerDetails || '');
+                        setTone(stateSource.tone || 'inspirational');
+                        setVslStyle(stateSource.vslStyle || 'Classic Long-Form Direct Response');
+                        setShowHook(stateSource.showHook !== undefined ? stateSource.showHook : true);
+                        setShowPainStory(stateSource.showPainStory !== undefined ? stateSource.showPainStory : true);
+                        setShowAuthority(stateSource.showAuthority !== undefined ? stateSource.showAuthority : true);
+                        setShowTransformation(stateSource.showTransformation !== undefined ? stateSource.showTransformation : true);
+                        setShowValueStack(stateSource.showValueStack !== undefined ? stateSource.showValueStack : true);
+                        setShowCta(stateSource.showCta !== undefined ? stateSource.showCta : true);
+                        setShowOptionalClose(stateSource.showOptionalClose !== undefined ? stateSource.showOptionalClose : true);
+                        setAddUrgency(stateSource.addUrgency || false);
+                        setAddEmpathy(stateSource.addEmpathy || false);
+                        setAddAuthority(stateSource.addAuthority || false);
+                        setSegmentVariation(stateSource.segmentVariation || '');
+                        setAddDisclaimers(stateSource.addDisclaimers || false);
+                        setAddGuarantee(stateSource.addGuarantee || false);
+                        setAddBonusStacking(stateSource.addBonusStacking || false);
+                        if (stateSource.script && Object.keys(stateSource.script).length > 0) {
+                            setScript(stateSource.script);
+                            setShowScriptPreview(true);
+                        }
+                    };
+
+                    // Check for URL encoded state first
+                    const hash = window.location.hash.substring(1); // Remove '#'
+                    if (hash) {
+                        try {
+                            const decodedState = JSON.parse(atob(decodeURIComponent(hash)));
+                            loadState(decodedState);
+                            setShowWelcomeBanner(false); // Hide banner if loaded from URL
+                            return; // Stop here if URL state is loaded
+                        } catch (urlError) {
+                            console.error("Error decoding URL hash, falling back to localStorage:", urlError);
+                            // Fallback to localStorage if URL hash is invalid
+                        }
+                    }
+
+                    // If no valid URL state, try localStorage
+                    const savedInputs = JSON.parse(localStorage.getItem('vslScriptWriterInputs'));
+                    const savedScript = JSON.parse(localStorage.getItem('vslScriptWriterScript'));
+
+                    if (savedInputs || savedScript) {
+                        loadState({ ...savedInputs, script: savedScript });
+                        setShowWelcomeBanner(false); // Hide banner if loaded from localStorage
+                    }
+
+                } catch (e) {
+                    console.error("Failed to load state:", e);
+                }
+            }, []); // Run once on mount
+
+            // LocalStorage Save Effect for inputs and toggles
+            useEffect(() => {
+                const inputsToSave = {
+                    productName, productType, audiencePersona, painPoints, benefits, offerDetails, tone, vslStyle,
+                    showHook, showPainStory, showAuthority, showTransformation, showValueStack, showCta, showOptionalClose,
+                    addUrgency, addEmpathy, addAuthority, segmentVariation, addDisclaimers, addGuarantee, addBonusStacking
+                };
+                localStorage.setItem('vslScriptWriterInputs', JSON.stringify(inputsToSave));
+                if (Object.keys(script).length > 0) {
+                    localStorage.setItem('vslScriptWriterScript', JSON.stringify(script));
+                }
+                setShowSaveIndicator(true);
+                const timer = setTimeout(() => setShowSaveIndicator(false), 2000); // Hide after 2 seconds
+                return () => clearTimeout(timer);
+            }, [productName, productType, audiencePersona, painPoints, benefits, offerDetails, tone, vslStyle,
+                showHook, showPainStory, showAuthority, showTransformation, showValueStack, showCta, showOptionalClose,
+                addUrgency, addEmpathy, addAuthority, segmentVariation, addDisclaimers, addGuarantee, addBonusStacking, script]);
+
+
+            // Function to handle swapping a section
+            const handleSwap = (sectionKey) => {
+                setScript(prevScript => {
+                    const currentSection = prevScript[sectionKey];
+                    if (!currentSection || currentSection.index === -1) return prevScript; // Section is off or no content
+
+                    const libraryEntries = vslLibrary[sectionKey];
+                    if (!libraryEntries || libraryEntries.length === 0) return prevScript;
+
+                    const nextIndex = (currentSection.index + 1) % libraryEntries.length;
+                    const newText = libraryEntries[nextIndex].text;
+
+                    const inputs = { // Need inputs for placeholder replacement
+                        productName, productType, audiencePersona, painPoints,
+                        benefits, offerDetails, tone, vslStyle
+                    };
+
+                    return {
+                        ...prevScript,
+                        [sectionKey]: {
+                            text: replacePlaceholders(newText, inputs), // Replace placeholders on swap
+                            index: nextIndex,
+                            score: currentSection.score // Keep score as it's a manual swap
+                        }
+                    };
+                });
+            };
+
+            // Function to estimate script length (very rough estimate: 150 words per minute)
+            const estimateScriptLength = () => {
+                if (!script || Object.keys(script).length === 0 || Object.values(script).every(s => !s.text)) {
+                    return { display: '0:00', isShort: true, tooltip: 'Enter product details to generate script.' };
+                }
+                const fullScriptText = Object.values(script).map(s => s.text).join(' '); // Use .text property
+                const wordCount = fullScriptText.split(/\s+/).filter(word => word.length > 0).length;
+
+                if (wordCount < 10) { // Arbitrary threshold for "too short"
+                    return { display: 'Too short to estimate', isShort: true, tooltip: 'Script is too short for a meaningful estimate.' };
+                }
+
+                let totalSeconds = Math.round(wordCount / 2.5); // 2.5 words per second = 150 WPM
+                // Round to nearest 30 seconds
+                totalSeconds = Math.round(totalSeconds / 30) * 30;
+
+                const minutes = Math.floor(totalSeconds / 60);
+                const seconds = totalSeconds % 60;
+
+                return {
+                    display: `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`,
+                    isShort: false,
+                    tooltip: 'Based on average 150 words per minute voiceover pacing.'
+                };
+            };
+
+            const scriptLengthInfo = estimateScriptLength();
+
+
+            // Function to copy script to clipboard
+            const copyScript = () => {
+                if (scriptPreviewRef.current) {
+                    const scriptText = scriptPreviewRef.current.innerText;
+                    const textarea = document.createElement('textarea');
+                    textarea.value = scriptText;
+                    document.body.appendChild(textarea);
+                    textarea.select();
+                    document.execCommand('copy');
+                    document.body.removeChild(textarea);
+                    console.log('Script copied to clipboard!'); // Use a custom modal in a real app
+                }
+            };
+
+            // Function to export to TXT
+            const exportToTxt = () => {
+                if (!script) return;
+                const fullScriptText = Object.entries(script)
+                    .filter(([, value]) => value.text) // Only include active sections
+                    .map(([key, value]) => {
+                        const title = key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase());
+                        return `=== ${title.toUpperCase()} ===\n\n${value.text}\n\n`;
+                    })
+                    .join('');
+                const blob = new Blob([fullScriptText], { type: 'text/plain' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'vsl_script.txt';
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+            };
+
+            // Function to export to DOCX (as a .doc text file)
+            const exportToDocx = () => {
+                if (!script) return;
+                const fullScriptText = Object.entries(script)
+                    .filter(([, value]) => value.text) // Only include active sections
+                    .map(([key, value]) => {
+                        const title = key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase());
+                        return `=== ${title.toUpperCase()} ===\n\n${value.text}\n\n`;
+                    })
+                    .join('');
+                const blob = new Blob([fullScriptText], { type: 'application/msword' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'vsl_script.doc'; // Use .doc for basic compatibility
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+            };
+
+            // Function to export to SRT (basic subtitle format)
+            const exportToSrt = () => {
+                if (!script) return;
+                let srtContent = '';
+                let timeOffset = 0; // in seconds
+                let sequence = 1;
+
+                const wordsPerSecond = 2.5; // Average speaking rate
+
+                const sections = Object.entries(script).filter(([, value]) => value.text); // Only active sections
+                sections.forEach(([key, value]) => {
+                    const text = value.text.replace(/\[PAUSE\]/g, '').replace(/\[CUE\]/g, '').trim();
+                    if (text) {
+                        const words = text.split(/\s+/).filter(word => word.length > 0).length;
+                        const durationSeconds = Math.ceil(words / wordsPerSecond);
+
+                        const startMin = Math.floor(timeOffset / 60);
+                        const startSec = timeOffset % 60;
+                        const startMs = 0;
+
+                        const endOffset = timeOffset + durationSeconds;
+                        const endMin = Math.floor(endOffset / 60);
+                        const endSec = endOffset % 60;
+                        const endMs = 999; // End just before the next second
+
+                        const formatTime = (min, sec, ms) =>
+                            `${String(min).padStart(2, '0')}:${String(sec).padStart(2, '0')},${String(ms).padStart(3, '0')}`;
+
+                        srtContent += `${sequence}\n`;
+                        srtContent += `${formatTime(startMin, startSec, startMs)} --> ${formatTime(endMin, endSec, endMs)}\n`;
+                        srtContent += `${text}\n\n`;
+
+                        timeOffset = endOffset;
+                        sequence++;
+                    }
+                });
+
+                srtContent += `\n999\n00:00:00,000 --> 00:00:05,000\nScript generated at vsl.reuxmarketing.com\n`; // Watermark
+
+                const blob = new Blob([srtContent], { type: 'text/plain' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'vsl_script.srt';
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+            };
+
+            // Function to copy HTML version
+            const copyHtmlVersion = () => {
+                if (!script) return;
+                const htmlContent = Object.entries(script)
+                    .filter(([, value]) => value.text) // Only include active sections
+                    .map(([key, value]) => {
+                        const title = key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase());
+                        return `<h3>${title}</h3><p>${value.text.replace(/\n/g, '<br>')}</p>`;
+                    })
+                    .join('');
+
+                const tempDiv = document.createElement('div');
+                tempDiv.innerHTML = htmlContent;
+                document.body.appendChild(tempDiv);
+
+                const range = document.createRange();
+                range.selectNode(tempDiv);
+                window.getSelection().removeAllRanges();
+                window.getSelection().addRange(range);
+                document.execCommand('copy');
+                window.getSelection().removeAllRanges();
+                document.body.removeChild(tempDiv);
+                console.log('HTML script copied to clipboard!'); // Use a custom modal in a real app
+            };
+
+            // Function to export to PDF
+            const exportToPdf = () => {
+                if (!scriptPreviewRef.current) return;
+
+                setLoading(true);
+
+                // Create a temporary element to hold the content for PDF,
+                // ensuring only active sections are included and correctly formatted.
+                const tempPdfContent = document.createElement('div');
+                tempPdfContent.style.fontFamily = 'Inter, sans-serif'; // Ensure font is used in PDF
+                tempPdfContent.style.color = '#333'; // Ensure text color
+                tempPdfContent.style.padding = '10px'; // Add some padding
+
+                Object.entries(script)
+                    .filter(([, value]) => value.text)
+                    .forEach(([key, value]) => {
+                        const title = key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase());
+                        const sectionDiv = document.createElement('div');
+                        sectionDiv.style.marginBottom = '1rem'; // Space between sections
+                        sectionDiv.style.padding = '0.5rem';
+
+                        const h3 = document.createElement('h3');
+                        h3.style.fontSize = '1.25rem';
+                        h3.style.fontWeight = '600';
+                        h3.style.color = '#6b46c1'; // Original color, might need adjustment
+                        h3.style.marginBottom = '0.5rem';
+                        h3.innerText = `=== ${title.toUpperCase()} ===`; // Cleaner header
+                        sectionDiv.appendChild(h3);
+
+                        const p = document.createElement('p');
+                        p.style.whiteSpace = 'pre-wrap';
+                        p.style.lineHeight = '1.6';
+                        p.innerText = value.text;
+                        sectionDiv.appendChild(p);
+
+                        tempPdfContent.appendChild(sectionDiv);
+                    });
+
+                // Add subtle watermark to PDF
+                const watermark = document.createElement('div');
+                watermark.innerHTML = '<p style="font-size: 0.7rem; color: #a0aec0; text-align: center; margin-top: 20px;">Made with VSL Creator by ReuxMarketing.</p>'; // Modified watermark
+                tempPdfContent.appendChild(watermark);
+
+                // Append temporary content to body (or a hidden div) for html2pdf to process
+                document.body.appendChild(tempPdfContent);
+
+                html2pdf().set({
+                    margin: 10,
+                    filename: 'vsl_script.pdf',
+                    image: { type: 'jpeg', quality: 0.98 },
+                    html2canvas: { scale: 2, logging: true, dpi: 192, letterRendering: true, useCORS: true }, // useCORS might be needed for some external resources, though none here
+                    jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+                }).from(tempPdfContent).save().then(() => {
+                    document.body.removeChild(tempPdfContent); // Clean up temporary element
+                    setLoading(false);
+                    console.log('Script exported to PDF!');
+                }).catch(err => {
+                    console.error('Error exporting to PDF:', err);
+                    setError('Failed to export PDF. Please try again.');
+                    document.body.removeChild(tempPdfContent); // Clean up even on error
+                    setLoading(false);
+                });
+            };
+
+            // Function to export to Markdown
+            const exportToMarkdown = () => {
+                if (!script) return;
+                const markdownContent = Object.entries(script)
+                    .filter(([, value]) => value.text) // Only include active sections
+                    .map(([key, value]) => {
+                        const title = key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase());
+                        let text = value.text;
+                        // Replace [PAUSE] and [CUE] with Markdown-friendly indicators
+                        text = text.replace(/\[PAUSE\]/g, '_ _ _ (PAUSE) _ _ _');
+                        text = text.replace(/\[CUE\]/g, '_ _ _ (CUE) _ _ _');
+                        return `## ${title}\n\n${text}\n\n`;
+                    })
+                    .join('');
+
+                const blob = new Blob([markdownContent], { type: 'text/markdown' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'vsl_script.md';
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+            };
+
+            // Function to export to JSON
+            const exportToJson = () => {
+                if (!script) return;
+                const jsonContent = JSON.stringify(script, null, 2); // Pretty print JSON
+                const blob = new Blob([jsonContent], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'vsl_script.json';
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+            };
+
+            // Function to share via URL
+            const shareViaUrl = () => {
+                const stateToEncode = {
+                    productName, productType, audiencePersona, painPoints, benefits, offerDetails, tone, vslStyle,
+                    showHook, showPainStory, showAuthority, showTransformation, showValueStack, showCta, showOptionalClose,
+                    addUrgency, addEmpathy, addAuthority, segmentVariation, addDisclaimers, addGuarantee, addBonusStacking,
+                    script // Include the current script state for perfect restoration
+                };
+                try {
+                    const encodedState = btoa(JSON.stringify(stateToEncode));
+                    const shareUrl = `${window.location.origin}${window.location.pathname}#${encodedState}`;
+                    navigator.clipboard.writeText(shareUrl).then(() => {
+                        console.log('Share URL copied to clipboard!');
+                        // In a real app, you'd show a custom success message here
+                    }).catch(err => {
+                        console.error('Failed to copy URL:', err);
+                        // Fallback for older browsers or security restrictions
+                        prompt("Copy this URL to share:", shareUrl);
+                    });
+                } catch (e) {
+                    console.error("Error encoding state for URL:", e);
+                    alert("Could not generate shareable URL. State might be too large.");
+                }
+            };
+
+            // Function to clear all inputs and script
+            const clearAllInputs = () => {
+                setProductName('');
+                setProductType('');
+                setAudiencePersona('');
+                setPainPoints('');
+                setBenefits('');
+                setOfferDetails('');
+                setTone('inspirational');
+                setVslStyle('Classic Long-Form Direct Response');
+                setShowHook(true);
+                setShowPainStory(true);
+                setShowAuthority(true);
+                setShowTransformation(true);
+                setShowValueStack(true);
+                setShowCta(true);
+                setShowOptionalClose(true);
+                setAddUrgency(false);
+                setAddEmpathy(false);
+                setAddAuthority(false);
+                setSegmentVariation('');
+                setAddDisclaimers(false);
+                setAddGuarantee(false);
+                setAddBonusStacking(false);
+                setScript({}); // Clear generated script
+                setShowScriptPreview(false);
+                localStorage.removeItem('vslScriptWriterInputs');
+                localStorage.removeItem('vslScriptWriterScript');
+            };
+
+
+            // Preset functions
+            const applyAggressivePreset = () => {
+                setTone('bold');
+                setAddUrgency(true);
+                setAddAuthority(true);
+                setAddEmpathy(false);
+                setVslStyle('Classic Long-Form Direct Response');
+            };
+
+            const applyEmpatheticPreset = () => {
+                setTone('emotional');
+                setAddEmpathy(true);
+                setAddUrgency(false);
+                setAddAuthority(false);
+                setVslStyle('Hero’s Journey Style');
+            };
+
+            const applyConcisePreset = () => {
+                setTone('direct');
+                setAddUrgency(true);
+                setAddEmpathy(false);
+                setAddAuthority(false);
+                setVslStyle('Short-Form \'Punchy\' TikTok/IG Reels Sales Scripts');
+            };
+
+
+            const sectionLabels = {
+                hook: { label: 'Hook', icon: 'fas fa-bullseye' },
+                relatablePainStory: { label: 'Relatable Pain Story', icon: 'fas fa-sad-tear' },
+                authorityPositioning: { label: 'Authority Positioning', icon: 'fas fa-brain' },
+                transformationFramework: { label: 'Transformation Framework', icon: 'fas fa-magic' },
+                stackTheValue: { label: 'Stack the Value', icon: 'fas fa-gift' },
+                strongCTA: { label: 'Strong CTA', icon: 'fas fa-bullhorn' },
+                optionalClose: { label: 'Optional Close', icon: 'fas fa-times-circle' },
+            };
+
+
+            return (
+                <div className="min-h-screen p-4 sm:p-6 lg:p-8 flex flex-col items-center">
+                    <div className="w-full max-w-4xl card p-6 sm:p-8 lg:p-10 mb-8">
+                        {/* Welcome Banner / Onboarding */}
+                        {showWelcomeBanner && (
+                            <div className="bg-gray-800 text-text-primary p-4 rounded-lg mb-8 text-center shadow-inner">
+                                <h2 className="text-xl font-bold mb-2">👋 Welcome to VSL Script Writer!</h2>
+                                <p className="text-text-secondary">Fill out your product info below and your VSL script will generate live. You can customize the tone, sections, and copy enhancements — or export it when you're ready.</p>
+                                <button
+                                    onClick={() => setShowWelcomeBanner(false)}
+                                    className="mt-4 cta-btn"
+                                >
+                                    Got it!
+                                </button>
+                            </div>
+                        )}
+
+                        <h1 className="text-3xl sm:text-4xl font-bold text-center text-text-primary mb-6">VSL Script Writer</h1>
+                        <p className="text-center text-text-secondary mb-8">Generate high-converting Video Sales Letter scripts optimized for emotional engagement and sales conversion.</p>
+
+                        {/* Guided Input Form */}
+                        <div className="space-y-6">
+                            <div className="flex flex-col sm:flex-row sm:space-x-4 space-y-4 sm:space-y-0">
+                                <div className="flex-1">
+                                    <label htmlFor="productName" className="block text-sm font-medium text-text-secondary mb-1">Product Name</label>
+                                    <input
+                                        type="text"
+                                        id="productName"
+                                        className="input-field"
+                                        value={productName}
+                                        onChange={(e) => setProductName(e.target.value)}
+                                        placeholder="e.g., 'Productivity Masterclass'"
+                                    />
+                                </div>
+                                <div className="flex-1">
+                                    <label htmlFor="productType" className="block text-sm font-medium text-text-secondary mb-1">Product Type</label>
+                                    <input
+                                        type="text"
+                                        id="productType"
+                                        className="input-field"
+                                        value={productType}
+                                        onChange={(e) => setProductType(e.target.value)}
+                                        placeholder="e.g., 'Digital Course', 'SaaS App'"
+                                    />
+                                </div>
+                            </div>
+
+                            <div>
+                                <label htmlFor="audiencePersona" className="block text-sm font-medium text-text-secondary mb-1">Target Audience Persona</label>
+                                <textarea
+                                    id="audiencePersona"
+                                    rows="2"
+                                    className="input-field"
+                                    value={audiencePersona}
+                                    onChange={(e) => setAudiencePersona(e.target.value)}
+                                    placeholder="e.g., 'Busy entrepreneurs, aged 30-50, struggling with time management and burnout.'"
+                                ></textarea>
+                            </div>
+
+                            <div>
+                                <label htmlFor="painPoints" className="block text-sm font-medium text-text-secondary mb-1">Core Pain Points (top 3)</label>
+                                <textarea
+                                    id="painPoints"
+                                    rows="3"
+                                    className="input-field"
+                                    value={painPoints}
+                                    onChange={(e) => setPainPoints(e.target.value)}
+                                    placeholder="e.g., '1. Overwhelm & burnout, 2. Lack of clear direction, 3. Procrastination'"
+                                ></textarea>
+                            </div>
+
+                            <div>
+                                <label htmlFor="benefits" className="block text-sm font-medium text-text-secondary mb-1">Product Benefits and Transformation</label>
+                                <textarea
+                                    id="benefits"
+                                    rows="3"
+                                    className="input-field"
+                                    value={benefits}
+                                    onChange={(e) => setBenefits(e.target.value)}
+                                    placeholder="e.g., 'Gain clarity, boost productivity by 2x, reclaim free time, achieve work-life balance, become a confident leader.'"
+                                ></textarea>
+                            </div>
+
+                            <div>
+                                <label htmlFor="offerDetails" className="block text-sm font-medium text-text-secondary mb-1">Core Offer (price, urgency, guarantee, CTA)</label>
+                                <textarea
+                                    id="offerDetails"
+                                    rows="2"
+                                    className="input-field"
+                                    value={offerDetails}
+                                    onChange={(e) => setOfferDetails(e.target.value)}
+                                    placeholder="e.g., '$19/month subscription, limited-time bonus training, 30-day money-back guarantee, Click 'Start Free Trial' now!'"
+                                ></textarea>
+                            </div>
+
+                            <div className="flex flex-col sm:flex-row sm:space-x-4 space-y-4 sm:space-y-0">
+                                <div className="flex-1">
+                                    <label htmlFor="tone" className="block text-sm font-medium text-text-secondary mb-1">Tone</label>
+                                    <select
+                                        id="tone"
+                                        className="input-field"
+                                        value={tone}
+                                        onChange={(e) => setTone(e.target.value)}
+                                    >
+                                        <option value="inspirational">Inspirational</option>
+                                        <option value="direct">Direct</option>
+                                        <option value="emotional">Emotional</option>
+                                        <option value="bold">Bold</option>
+                                        <option value="humble">Humble</option>
+                                        <option value="authoritative">Authoritative</option>
+                                    </select>
+                                </div>
+                                <div className="flex-1">
+                                    <label htmlFor="vslStyle" className="block text-sm font-medium text-text-secondary mb-1">
+                                        VSL Style / Framework
+                                        <span className="tooltip ml-2">
+                                            <i className="fas fa-info-circle text-gray-400 cursor-help"></i>
+                                            <span className="tooltiptext">
+                                                Choose a VSL style to influence the script's overall structure and tone.
+                                                "Classic Long-Form" is detailed, "Hero's Journey" focuses on transformation,
+                                                "Value First" is educational, "Webinar Teaser" builds anticipation,
+                                                and "Short-Form" is punchy for social media.
+                                            </span>
+                                        </span>
+                                    </label>
+                                    <select
+                                        id="vslStyle"
+                                        className="input-field"
+                                        value={vslStyle}
+                                        onChange={(e) => setVslStyle(e.target.value)}
+                                    >
+                                        <option value="Classic Long-Form Direct Response">Classic Long-Form Direct Response</option>
+                                        <option value="Hero’s Journey Style">Hero’s Journey Style</option>
+                                        <option value="Value First / Educational">Value First / Educational (YouTube-friendly)</option>
+                                        <option value="Webinar Teaser VSL">Webinar Teaser VSL</option>
+                                        <option value="Short-Form 'Punchy' TikTok/IG Reels Sales Scripts">Short-Form 'Punchy' TikTok/IG Reels Sales Scripts</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            {/* Presets */}
+                            <div className="border-t border-border-color pt-6 mt-6">
+                                <h2 className="text-xl font-semibold text-text-primary mb-4">Quick Presets</h2>
+                                <div className="flex flex-wrap gap-3">
+                                    <button onClick={applyAggressivePreset} className="bg-red-700 hover:bg-red-800 text-white font-bold py-2 px-4 rounded-lg shadow-md transition duration-300 ease-in-out transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-red-700 focus:ring-opacity-75">
+                                        Aggressive
+                                    </button>
+                                    <button onClick={applyEmpatheticPreset} className="bg-teal-700 hover:bg-teal-800 text-white font-bold py-2 px-4 rounded-lg shadow-md transition duration-300 ease-in-out transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-teal-700 focus:ring-opacity-75">
+                                        Empathetic
+                                    </button>
+                                    <button onClick={applyConcisePreset} className="bg-indigo-700 hover:bg-indigo-800 text-white font-bold py-2 px-4 rounded-lg shadow-md transition duration-300 ease-in-out transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-indigo-700 focus:ring-opacity-75">
+                                        Concise
+                                    </button>
+                                </div>
+                            </div>
+
+                            {/* Section Toggle Controls */}
+                            <div className="border-t border-border-color pt-6 mt-6">
+                                <h2 className="text-xl font-semibold text-text-primary mb-4">VSL Sections</h2>
+                                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                                    <label className="flex items-center space-x-2 text-text-secondary">
+                                        <input type="checkbox" className="form-checkbox h-5 w-5 text-accent-gold rounded-md" checked={showHook} onChange={(e) => setShowHook(e.target.checked)} />
+                                        <span>Hook</span>
+                                    </label>
+                                    <label className="flex items-center space-x-2 text-text-secondary">
+                                        <input type="checkbox" className="form-checkbox h-5 w-5 text-accent-gold rounded-md" checked={showPainStory} onChange={(e) => setShowPainStory(e.target.checked)} />
+                                        <span>Relatable Pain Story</span>
+                                    </label>
+                                    <label className="flex items-center space-x-2 text-text-secondary">
+                                        <input type="checkbox" className="form-checkbox h-5 w-5 text-accent-gold rounded-md" checked={showAuthority} onChange={(e) => setShowAuthority(e.target.checked)} />
+                                        <span>Authority Positioning</span>
+                                    </label>
+                                    <label className="flex items-center space-x-2 text-text-secondary">
+                                        <input type="checkbox" className="form-checkbox h-5 w-5 text-accent-gold rounded-md" checked={showTransformation} onChange={(e) => setShowTransformation(e.target.checked)} />
+                                        <span>Transformation Framework</span>
+                                    </label>
+                                    <label className="flex items-center space-x-2 text-text-secondary">
+                                        <input type="checkbox" className="form-checkbox h-5 w-5 text-accent-gold rounded-md" checked={showValueStack} onChange={(e) => setShowValueStack(e.target.checked)} />
+                                        <span>Stack the Value</span>
+                                    </label>
+                                    <label className="flex items-center space-x-2 text-text-secondary">
+                                        <input type="checkbox" className="form-checkbox h-5 w-5 text-accent-gold rounded-md" checked={showCta} onChange={(e) => setShowCta(e.target.checked)} />
+                                        <span>Strong CTA</span>
+                                    </label>
+                                    <label className="flex items-center space-x-2 text-text-secondary">
+                                        <input type="checkbox" className="form-checkbox h-5 w-5 text-accent-gold rounded-md" checked={showOptionalClose} onChange={(e) => setShowOptionalClose(e.target.checked)} />
+                                        <span>Optional Close</span>
+                                    </label>
+                                </div>
+                            </div>
+
+                            {/* Copy Enhancements Panel */}
+                            <div className="border-t border-border-color pt-6 mt-6">
+                                <h2 className="text-xl font-semibold text-text-primary mb-4">Copy Enhancements</h2>
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+                                    <label className="flex items-center space-x-2 text-text-secondary">
+                                        <input type="checkbox" className="form-checkbox h-5 w-5 text-accent-gold rounded-md" checked={addUrgency} onChange={(e) => setAddUrgency(e.target.checked)} />
+                                        <span>Add More Urgency</span>
+                                    </label>
+                                    <label className="flex items-center space-x-2 text-text-secondary">
+                                        <input type="checkbox" className="form-checkbox h-5 w-5 text-accent-gold rounded-md" checked={addEmpathy} onChange={(e) => setAddEmpathy(e.target.checked)} />
+                                        <span>Add More Empathy</span>
+                                    </label>
+                                    <label className="flex items-center space-x-2 text-text-secondary">
+                                        <input type="checkbox" className="form-checkbox h-5 w-5 text-accent-gold rounded-md" checked={addAuthority} onChange={(e) => setAddAuthority(e.target.checked)} />
+                                        <span>Add More Authority</span>
+                                    </label>
+                                    <label className="flex items-center space-x-2 text-text-secondary">
+                                        <input type="checkbox" className="form-checkbox h-5 w-5 text-accent-gold rounded-md" checked={addDisclaimers} onChange={(e) => setAddDisclaimers(e.target.checked)} />
+                                        <span>Add Legal Disclaimers</span>
+                                    </label>
+                                    <label className="flex items-center space-x-2 text-text-secondary">
+                                        <input type="checkbox" className="form-checkbox h-5 w-5 text-accent-gold rounded-md" checked={addGuarantee} onChange={(e) => setAddGuarantee(e.target.checked)} />
+                                        <span>Add Money-Back Guarantee</span>
+                                    </label>
+                                    <label className="flex items-center space-x-2 text-text-secondary">
+                                        <input type="checkbox" className="form-checkbox h-5 w-5 text-accent-gold rounded-md" checked={addBonusStacking} onChange={(e) => setAddBonusStacking(e.target.checked)} />
+                                        <span>Add Bonus Stacking</span>
+                                    </label>
+                                </div>
+                                <div>
+                                    <label htmlFor="segmentVariation" className="block text-sm font-medium text-text-secondary mb-1">Suggest variation for specific segment (e.g., "skeptical buyers")</label>
+                                    <input
+                                        type="text"
+                                        id="segmentVariation"
+                                        className="input-field"
+                                        value={segmentVariation}
+                                        onChange={(e) => setSegmentVariation(e.target.value)}
+                                        placeholder="e.g., 'skeptical buyers' or 'first-time entrepreneurs'"
+                                    />
+                                </div>
+                                <label className="flex items-center space-x-2 text-text-secondary">
+                                    <input type="checkbox" className="form-checkbox h-5 w-5 text-accent-gold rounded-md" checked={highlightPlaceholders} onChange={(e) => setHighlightPlaceholders(e.target.checked)} />
+                                    <span>Highlight editable placeholders?</span>
+                                </label>
+                            </div>
+
+                            {/* Removed manual generate button as it's now debounced */}
+                            {loading && <p className="text-accent-gold text-center mt-4">Generating Script...</p>}
+                            {error && <p className="text-red-600 text-center mt-4">{error}</p>}
+                        </div>
+                    </div>
+
+                    {/* Script Output and Export Options */}
+                    {showScriptPreview && (
+                        <div className="w-full max-w-4xl card p-6 sm:p-8 lg:p-10">
+                            <h2 className="text-2xl sm:text-3xl font-bold text-center text-text-primary mb-6">Your VSL Script</h2>
+
+                            <div className="mb-6 text-center text-text-secondary">
+                                <p>
+                                    Estimated Script Length:
+                                    <span className={`font-semibold ml-1 ${scriptLengthInfo.isShort ? 'text-text-secondary' : 'text-text-primary'}`}>
+                                        {scriptLengthInfo.display}
+                                    </span>
+                                    <span className="tooltip ml-2">
+                                        <i className="fas fa-info-circle text-text-secondary cursor-help"></i>
+                                        <span className="tooltiptext">{scriptLengthInfo.tooltip}</span>
+                                    </span>
+                                </p>
+                                {showSaveIndicator && (
+                                    <p className="text-xs text-accent-green mt-1">Draft saved automatically!</p>
+                                )}
+                            </div>
+
+                            {/* Script Preview with inline editing and styled blocks */}
+                            <div
+                                ref={scriptPreviewRef}
+                                className="bg-bg-main p-4 sm:p-6 rounded-lg border border-border-color mb-6 max-h-96 overflow-y-auto"
+                            >
+                                {Object.entries(script).map(([key, value]) => (
+                                    value.text && ( // Only render if section is active and has text
+                                        <div key={key} className="mb-4 p-4 card">
+                                            <div className="flex justify-between items-center mb-2">
+                                                <h3 className="text-lg font-semibold text-text-primary flex items-center">
+                                                    <i className={`${sectionLabels[key].icon} mr-2 text-accent-gold`}></i>
+                                                    {sectionLabels[key].label}
+                                                </h3>
+                                                <button
+                                                    onClick={() => handleSwap(key)}
+                                                    className="bg-accent-gold bg-opacity-20 hover:bg-opacity-30 text-accent-gold font-bold py-1 px-3 rounded-full text-sm transition duration-200 ease-in-out transform hover:scale-105"
+                                                    title="Swap to next variant"
+                                                >
+                                                    <i className="fas fa-sync-alt mr-1"></i> Swap
+                                                </button>
+                                            </div>
+                                            <p
+                                                className="whitespace-pre-wrap text-text-primary leading-relaxed editable-text"
+                                                contentEditable="true" // Enable inline editing
+                                                suppressContentEditableWarning={true} // Suppress React warning
+                                                onBlur={(e) => {
+                                                    // Update script state if user edits manually
+                                                    setScript(prevScript => ({
+                                                        ...prevScript,
+                                                        [key]: { ...prevScript[key], text: e.target.innerText }
+                                                    }));
+                                                }}
+                                                dangerouslySetInnerHTML={{
+                                                    __html: highlightPlaceholders
+                                                        ? value.text.replace(/\[([A-Z_]+)\]/g, '<span class="highlight-placeholder">[$1]</span>')
+                                                        : value.text
+                                                }}
+                                            >
+                                            </p>
+                                        </div>
+                                    )
+                                ))}
+                            </div>
+
+                            {/* Copy/Export Buttons */}
+                            <div className="flex flex-wrap justify-center gap-4">
+                                <button
+                                    onClick={copyScript}
+                                    className="cta-btn bg-blue-600 hover:bg-blue-700"
+                                >
+                                    <i className="fas fa-copy mr-2"></i> Copy Script
+                                </button>
+                                <button
+                                    onClick={exportToPdf}
+                                    className="cta-btn bg-red-600 hover:bg-red-700"
+                                    disabled={loading}
+                                >
+                                    <i className="fas fa-file-pdf mr-2"></i> {loading ? 'Generating PDF...' : 'Export .PDF'}
+                                </button>
+
+                                {/* Dropdown for other export options */}
+                                <div className="relative">
+                                    <button
+                                        onClick={() => setShowExportDropdown(!showExportDropdown)}
+                                        className="cta-btn bg-gray-600 hover:bg-gray-700"
+                                    >
+                                        <i className="fas fa-download mr-2"></i> More Exports <i className="fas fa-caret-down ml-1"></i>
+                                    </button>
+                                    {showExportDropdown && (
+                                        <div className="dropdown-menu">
+                                            <button onClick={() => { exportToTxt(); setShowExportDropdown(false); }}>
+                                                <i className="fas fa-file-alt mr-2"></i> Export .TXT
+                                            </button>
+                                            <button onClick={() => { exportToDocx(); setShowExportDropdown(false); }}>
+                                                <i className="fas fa-file-word mr-2"></i> Export .DOCX
+                                            </button>
+                                            <button onClick={() => { exportToSrt(); setShowExportDropdown(false); }}>
+                                                <i className="fas fa-closed-captioning mr-2"></i> Export .SRT
+                                            </button>
+                                            <button onClick={() => { exportToMarkdown(); setShowExportDropdown(false); }}>
+                                                <i className="fab fa-markdown mr-2"></i> Export .MD
+                                            </button>
+                                            <button onClick={() => { exportToJson(); setShowExportDropdown(false); }}>
+                                                <i className="fas fa-file-code mr-2"></i> Export .JSON
+                                            </button>
+                                        </div>
+                                    )}
+                                </div>
+
+                                <button
+                                    onClick={shareViaUrl}
+                                    className="cta-btn bg-green-600 hover:bg-green-700"
+                                >
+                                    <i className="fas fa-share-alt mr-2"></i> Share via URL
+                                </button>
+                            </div>
+                            <div className="text-center mt-6">
+                                <button
+                                    onClick={clearAllInputs}
+                                    className="text-text-secondary hover:text-text-primary text-sm transition duration-200"
+                                >
+                                    <i className="fas fa-eraser mr-1"></i> Clear all inputs & script
+                                </button>
+                            </div>
+                        </div>
+                    )}
+                    {/* Watermark at the bottom of the page - REMOVED AS PER USER REQUEST */}
+                    {/* <div className="mt-8 text-center text-text-secondary text-sm">
+                        <p>🚀 Made with VSL Creator by ReuxMarketing.</p>
+                    </div> */}
+                </div>
+            );
+        };
+
+        // Render the React component into the root div
+        ReactDOM.render(<App />, document.getElementById('root'));
+    </script>
+
+</body>
+</html>
