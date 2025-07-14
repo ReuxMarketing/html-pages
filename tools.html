@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ReuxMarketing Tools Hub</title>
+
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Google Fonts: Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    
+    <!-- Custom Tailwind Config (from index.html) -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        gold: '#FFD700',
+                        'lime-green': '#32CD32',
+                    },
+                    boxShadow: {
+                        'gold-glow': '0 0 20px 0px rgba(255, 215, 0, 0.5)',
+                    }
+                }
+            }
+        }
+    </script>
+
+    <!-- Custom Styles (from index.html, adapted for tools page) -->
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0A0A0A;
+            color: #F5F5F5;
+        }
+        .hover\:bg-gold-dark:hover { background-color: #e6c200; }
+        .reveal {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+        }
+        .reveal.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        .spinner {
+            border: 4px solid rgba(255, 255, 255, 0.3);
+            border-top: 4px solid #FFD700;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* ReuxMarketing Official Style Guide - Core Variables & Reusable Components (from your other tool files) */
+        :root {
+            --bg-main: #0a0a0a;
+            --bg-card: #1a1a1a;
+            --text-primary: #f0f0f0; /* Slightly lighter than F5F5F5 for general text */
+            --text-secondary: #c7c7c7; /* For less emphasis */
+            --accent-gold: #FFD700;
+            --accent-green: #22c55e;
+            --border-color: #444;
+            --nav-blur-bg: rgba(10, 10, 10, 0.8);
+            /* font-main is already Inter from Google Fonts */
+        }
+        /* Ensure body background and text color match the main site's dark theme */
+        body {
+            background-color: var(--bg-main);
+            color: var(--text-primary);
+        }
+        .gold-text { color: var(--accent-gold); }
+        .cta-btn {
+            background-color: var(--accent-green);
+            color: #0a0a0a; /* Dark text for contrast on green button */
+            font-weight: 700;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(34, 197, 94, 0.2);
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            text-decoration: none;
+        }
+        .cta-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(34, 197, 94, 0.3);
+        }
+        .card {
+            background-color: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 0.75rem;
+            overflow: hidden;
+        }
+        /* Page-specific styles */
+        .tool-card {
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            height: 100%; /* Ensure cards in a row have equal height */
+            transition: all 0.3s ease;
+        }
+        .tool-card:hover {
+            border-color: var(--accent-gold);
+            box-shadow: 0 0 20px 0px rgba(255, 215, 0, 0.2);
+            transform: translateY(-5px);
+        }
+        .tool-card .cta-btn {
+            align-self: flex-start; /* Align button to the start of the card */
+        }
+        /* Footer styling, adjusted for consistency */
+        .main-footer {
+            text-align: center;
+            padding: 2rem 1rem;
+            margin-top: 3rem;
+            border-top: 1px solid #2a2a2a;
+            color: #666; /* This color is fine for copyright */
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+<body class="bg-[#0A0A0A] text-[#F5F5F5] antialiased">
+
+    <!-- ===== Header (Integrated from index.html) ===== -->
+    <header id="header" class="bg-[#0A0A0A]/80 backdrop-blur-sm sticky top-0 z-50 transition-all duration-300">
+        <nav class="container mx-auto px-6 py-4 flex justify-between items-center">
+            <a href="index.html" class="text-2xl font-bold tracking-tighter">
+                Reux<span class="text-gold">Marketing</span>
+            </a>
+            <div class="hidden md:flex items-center space-x-8">
+                <!-- Links assuming sections on index.html -->
+                <a href="index.html#services" class="text-sm font-medium hover:text-gold transition-colors duration-300">Services</a>
+                <a href="index.html#why-us" class="text-sm font-medium hover:text-gold transition-colors duration-300">Why Us</a>
+                <a href="index.html#resources" class="text-sm font-medium hover:text-gold transition-colors duration-300">Resources</a>
+                <button class="calendly-trigger bg-gold text-black text-sm font-bold py-2 px-5 rounded-lg hover:bg-gold-dark transition-all duration-300 transform hover:scale-105">
+                    Free Strategy Call
+                </button>
+            </div>
+            <div class="md:hidden">
+                <button id="mobile-menu-button" class="text-white focus:outline-none">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7"></path></svg>
+                </button>
+            </div>
+        </nav>
+        <div id="mobile-menu" class="hidden md:hidden bg-[#111111]">
+            <a href="index.html#services" class="mobile-link block py-3 px-6 text-sm hover:bg-gray-800">Services</a>
+            <a href="index.html#why-us" class="mobile-link block py-3 px-6 text-sm hover:bg-gray-800">Why Us</a>
+            <a href="index.html#resources" class="mobile-link block py-3 px-6 text-sm hover:bg-gray-800">Resources</a>
+            <div class="p-4">
+                <button class="calendly-trigger w-full bg-gold text-black text-sm font-bold py-3 px-5 rounded-lg hover:bg-gold-dark">
+                    Free Strategy Call
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content Area -->
+    <main class="max-w-6xl mx-auto px-4 py-12">
+        <!-- Hero Section for Tools Hub -->
+        <section class="text-center mb-12 reveal">
+            <h1 class="text-4xl md:text-5xl font-extrabold text-primary mb-4">Unleash Your Marketing Potential</h1>
+            <p class="text-lg md:text-xl text-secondary max-w-2xl mx-auto">
+                Explore our suite of powerful tools designed to streamline your marketing efforts, boost conversions, and accelerate your growth.
+            </p>
+        </section>
+
+        <!-- Tools Grid Section -->
+        <section id="tools-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            <!-- Tool: Grand Slam Offer Builder -->
+            <div class="tool-card card p-6 reveal">
+                <div>
+                    <h2 class="text-2xl font-bold text-gold-text mb-2">Grand Slam Offer Builder</h2>
+                    <p class="text-text-secondary mb-4">Design irresistible offers by stacking value and leveraging psychological triggers. This is foundational for any business.</p>
+                </div>
+                <!-- Link to the Grand Slam Offer HTML file -->
+                <a href="grand-slam-offer.html" class="cta-btn">Launch Tool</a>
+            </div>
+
+            <!-- Tool: VSL Script Writer -->
+            <div class="tool-card card p-6 reveal">
+                <div>
+                    <h2 class="text-2xl font-bold text-gold-text mb-2">VSL Script Writer</h2>
+                    <p class="text-text-secondary mb-4">Generate high-converting Video Sales Letter scripts optimized for emotional engagement and sales conversion.</p>
+                </div>
+                <!-- Link to the VSL Script Writer HTML file -->
+                <a href="vsl-script-writer.html" class="cta-btn">Launch Tool</a>
+            </div>
+
+            <!-- Tool: Ad Copy Generator & Analyzer -->
+            <div class="tool-card card p-6 reveal">
+                <div>
+                    <h2 class="text-2xl font-bold text-gold-text mb-2">Ad Copy Generator & Analyzer</h2>
+                    <p class="text-text-secondary mb-4">Craft compelling ad copy using proven frameworks and get instant analysis to optimize for conversions.</p>
+                </div>
+                <!-- Corrected link to use a clean URL slug -->
+                <a href="ad-copy-generator-&-analyzer" class="cta-btn">Launch Tool</a>
+            </div>
+
+            <!-- Tool: Cold Email Forge -->
+            <div class="tool-card card p-6 reveal">
+                <div>
+                    <h2 class="text-2xl font-bold text-gold-text mb-2">Cold Email Forge</h2>
+                    <p class="text-text-secondary mb-4">Generate personalized cold email sequences that get replies and book meetings, powered by AI.</p>
+                </div>
+                <!-- Link to the Cold Email Creator HTML file -->
+                <a href="cold-email-creator.html" class="cta-btn">Launch Tool</a>
+            </div>
+
+            <!-- Tool: Dynamic Pricing Calculator -->
+            <div class="tool-card card p-6 reveal">
+                <div>
+                    <h2 class="text-2xl font-bold text-gold-text mb-2">Dynamic Pricing Calculator</h2>
+                    <p class="text-text-secondary mb-4">Optimize your offer's price point for maximum revenue and conversions using market data.</p>
+                </div>
+                <!-- Link to the Offer Pricing HTML file -->
+                <a href="offer-pricing.html" class="cta-btn">Launch Tool</a>
+            </div>
+
+            <!-- Tool: Guarantee Optimizer Tool -->
+            <div class="tool-card card p-6 reveal">
+                <div>
+                    <h2 class="text-2xl font-bold text-gold-text mb-2">Guarantee Optimizer Tool</h2>
+                    <p class="text-text-secondary mb-4">Create high-impact, risk-reversing guarantees that turn fence-sitters into confident buyers.</p>
+                </div>
+                <!-- Link to the Custom Guarantees HTML file -->
+                <a href="custom-guarantees.html" class="cta-btn">Launch Tool</a>
+            </div>
+
+            <!-- Tool: Upsell Generator -->
+            <div class="tool-card card p-6 reveal">
+                <div>
+                    <h2 class="text-2xl font-bold text-gold-text mb-2">Upsell Generator</h2>
+                    <p class="text-text-secondary mb-4">Transform single sales into high-value customer journeys with intelligent upsell suggestions.</p>
+                </div>
+                <!-- Link to the Upseller HTML file -->
+                <a href="upseller.html" class="cta-btn">Launch Tool</a>
+            </div>
+
+            <!-- Tool: Hook Generator -->
+            <div class="tool-card card p-6 reveal">
+                <div>
+                    <h2 class="text-2xl font-bold text-gold-text mb-2">Hook Generator</h2>
+                    <p class="text-text-secondary mb-4">Craft attention-grabbing hooks for your content, ads, and sales messages in seconds.</p>
+                </div>
+                <!-- Link to the Hook Crafter HTML file -->
+                <a href="hook-crafter.html" class="cta-btn">Launch Tool</a>
+            </div>
+
+            <!-- Placeholder for Future Tools -->
+            <div class="tool-card card p-6 border-dashed border-gray-600 flex items-center justify-center text-center reveal">
+                <div>
+                    <h2 class="text-2xl font-bold text-gray-500 mb-2">More Tools Coming Soon!</h2>
+                    <p class="text-gray-600 mb-4">We're constantly building new ways to supercharge your marketing. Stay tuned!</p>
+                    <a href="mailto:feedback@reuxmarketing.com?subject=Feedback%20for%20ReuxMarketing%20Tools&body=Hi%20ReuxMarketing%2C%0A%0AI%20have%20some%20feedback%20about%20your%20tools%3A%0A%0A[Your%20feedback%20here]%0A%0AThanks%2C%0A[Your%20Name]" class="cta-btn bg-gray-700 hover:bg-gray-600 text-gray-300 cursor-not-allowed">Suggest a Tool</a>
+                </div>
+            </div>
+
+        </section>
+
+        <!-- Legal Disclaimer Section -->
+        <section class="mt-16 p-6 card text-center reveal">
+            <h2 class="text-2xl font-bold text-red-500 mb-4">Legal Disclaimer</h2>
+            <p class="text-text-secondary text-sm">
+                The tools and content provided on this page by ReuxMarketing are for informational and educational purposes only.
+                They are designed to assist in marketing strategy and content creation but do not constitute professional advice.
+                Results are not guaranteed and may vary based on individual effort, market conditions, and other factors.
+                ReuxMarketing and its affiliates are not responsible for any outcomes, positive or negative, resulting from the use of these tools.
+                Users are encouraged to seek independent professional advice before making any business decisions.
+            </p>
+        </section>
+    </main>
+
+    <!-- ===== Footer (Integrated from index.html) ===== -->
+    <footer class="py-8 border-t border-gray-800">
+        <div class="container mx-auto px-6 text-center text-gray-400">
+            <div class="flex justify-center space-x-6 mb-4">
+                <!-- X/Twitter Icon -->
+                <a href="https://x.com/ReuxMarketing" target="_blank" rel="noopener noreferrer" class="hover:text-gold transition-colors duration-300" aria-label="X/Twitter">
+                    <svg class="h-6 w-6" fill="currentColor" viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H4.68l4.713 6.231L18.244 2.25zM17.5 19.5h1.5l-8.5-11.5h-1.5l8.5 11.5z"/></svg>
+                </a>
+                <!-- YouTube Icon -->
+                <a href="https://www.youtube.com/@ReuxMarketing" target="_blank" rel="noopener noreferrer" class="hover:text-gold transition-colors duration-300" aria-label="YouTube">
+                    <svg class="h-6 w-6" fill="currentColor" viewBox="0 0 24 24"><path d="M19.615 3.184c-3.604-.246-11.631-.245-15.23 0-3.897.266-4.356 2.62-4.385 8.816.029 6.185.484 8.549 4.385 8.816 3.6.245 11.626.246 15.23 0 3.897-.266 4.356-2.62 4.385-8.816-.029-6.185-.484-8.549-4.385-8.816zm-10.615 12.816v-8l8 3.993-8 4.007z"/></svg>
+                </a>
+                <!-- Instagram Icon -->
+                <a href="https://www.instagram.com/reuxmarketing/" target="_blank" rel="noopener noreferrer" class="hover:text-gold transition-colors duration-300" aria-label="Instagram">
+                    <svg class="h-6 w-6" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.85s-.011 3.584-.069 4.85c-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07s-3.584-.012-4.85-.07c-3.252-.148-4.771-1.691-4.919-4.919-.058-1.265-.069-1.645-.069-4.85s.011-3.584.069-4.85c.149-3.225 1.664-4.771 4.919-4.919 1.266-.057 1.644-.069 4.85-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948s.014 3.667.072 4.947c.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072s3.667-.014 4.947-.072c4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.947s-.014-3.667-.072-4.947c-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.689-.073-4.948-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.162 6.162 6.162 6.162-2.759 6.162-6.162-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4s1.791-4 4-4 4 1.79 4 4-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44 1.441-.645 1.441-1.44-.645-1.44-1.441-1.44z"/></svg>
+                </a>
+                <!-- Discord Icon -->
+                <a href="https://discord.gg/4TgWtMK6fX" target="_blank" rel="noopener noreferrer" class="hover:text-gold transition-colors duration-300" aria-label="Discord">
+                   <svg class="h-6 w-6" fill="currentColor" role="img" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M20.317 4.37a19.79 19.79 0 0 0-4.88-1.52.08.08 0 0 0-.08.04c-.21.38-.45.83-.62 1.25a17.74 17.74 0 0 0-4.08 0 18.44 18.44 0 0 0-.62-1.25.08.08 0 0 0-.08-.04 19.74 19.74 0 0 0-4.88 1.52C2.7 5.1 2 6.23 2 6.23a17.91 17.91 0 0 0 6.28 15.66.08.08 0 0 0 .08 0 16.57 16.57 0 0 0 1.83-2 .08.08 0 0 0-.04-.12 12.65 12.65 0 0 1-1.92-.88.08.08 0 0 1 0-.12c.02-.02.05-.04.08-.05a12.1 12.1 0 0 1 1.84-.55.08.08 0 0 1 .09 0c.39.19.74.4 1.08.62a.08.08 0 0 0 .09.05c.44.28.84.58 1.22.91a.08.08 0 0 0 .09.04 16.57 16.57 0 0 0 1.83 2 .08.08 0 0 0 .08 0 17.91 17.91 0 0 0 6.28-15.66S22.21 5.1 20.317 4.37zM15.61 15.89c-.78 0-1.41-.63-1.41-1.41s.63-1.41 1.41-1.41 1.41.63 1.41 1.41-1.19 1.41-1.41 1.41zm-4.59 0c-.78 0-1.41-.63-1.41-1.41s.63-1.41 1.41-1.41 1.41.63 1.41 1.41-1.19 1.41-1.41 1.41z"/></svg>
+                </a>
+            </div>
+            <p class="text-sm">&copy; 2025 ReuxMarketing. All Rights Reserved.</p>
+        </div>
+    </footer>
+
+    <!-- ===== Calendly Modal (Integrated from index.html) ===== -->
+    <div id="calendly-modal" class="fixed inset-0 bg-black bg-opacity-80 backdrop-blur-sm flex items-center justify-center z-50 hidden">
+        <div class="bg-[#1A1A1A] rounded-lg w-11/12 max-w-4xl h-5/6 relative p-4">
+            <button id="close-modal" class="absolute -top-3 -right-3 text-white bg-black rounded-full p-2 z-10 hover:bg-gray-700 transition-colors">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+            </button>
+            <div class="w-full h-full rounded-lg overflow-hidden relative">
+                <!-- Loading Spinner for Calendly -->
+                <div id="calendly-loading" class="absolute inset-0 flex items-center justify-center bg-[#1A1A1A] text-white">
+                    <div class="spinner"></div>
+                    <p class="ml-4 text-lg">Loading Calendly...</p>
+                </div>
+                <div id="calendly-fallback" class="hidden absolute inset-0 bg-[#1A1A1A] flex-col items-center justify-center text-center p-4">
+                    <h3 class="text-2xl font-bold text-white mb-4">Having trouble loading?</h3>
+                    <p class="text-gray-300 mb-6">You can book your call directly or email us.</p>
+                    <a href="mailto:contact@reuxmarketing.com" class="bg-gold text-black font-bold py-3 px-6 rounded-lg hover:bg-gold-dark">Email Us: contact@reuxmarketing.com</a>
+                </div>
+                <iframe id="calendly-iframe" src="" class="w-full h-full border-0 hidden"></iframe>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Mobile menu toggle logic
+            const mobileMenuButton = document.getElementById('mobile-menu-button');
+            const mobileMenu = document.getElementById('mobile-menu');
+            const mobileLinks = document.querySelectorAll('.mobile-link');
+
+            mobileMenuButton.addEventListener('click', () => {
+                mobileMenu.classList.toggle('hidden');
+            });
+
+            const closeMobileMenu = () => {
+                mobileMenu.classList.add('hidden');
+            };
+            
+            mobileLinks.forEach(link => link.addEventListener('click', closeMobileMenu));
+
+            // Calendly Modal logic (copied from index.html)
+            const calendlyModal = document.getElementById('calendly-modal');
+            const closeModalButton = document.getElementById('close-modal');
+            const calendlyTriggers = document.querySelectorAll('.calendly-trigger');
+            const calendlyIframe = document.getElementById('calendly-iframe');
+            const calendlyFallback = document.getElementById('calendly-fallback');
+            const calendlyLoading = document.getElementById('calendly-loading');
+            const calendlyUrl = 'https://calendly.com/reuben-reuxmarketing/15m-information-call'; // Your Calendly URL
+
+            const openModal = (e) => {
+                e.preventDefault();
+                calendlyLoading.classList.remove('hidden');
+                calendlyFallback.classList.add('hidden');
+                calendlyIframe.classList.add('hidden');
+
+                if (calendlyIframe.src !== calendlyUrl) {
+                    calendlyIframe.src = calendlyUrl;
+                }
+                calendlyModal.classList.remove('hidden');
+                document.body.style.overflow = 'hidden';
+            };
+
+            const closeModal = () => {
+                calendlyModal.classList.add('hidden');
+                document.body.style.overflow = '';
+                calendlyIframe.src = ''; 
+            };
+
+            calendlyTriggers.forEach(trigger => trigger.addEventListener('click', openModal));
+            closeModalButton.addEventListener('click', closeModal);
+            calendlyModal.addEventListener('click', (e) => {
+                if (e.target === calendlyModal) {
+                    closeModal();
+                }
+            });
+            
+            calendlyIframe.onload = function() {
+                calendlyLoading.classList.add('hidden');
+                calendlyIframe.classList.remove('hidden');
+            };
+
+            calendlyIframe.onerror = function() {
+                calendlyLoading.classList.add('hidden');
+                calendlyIframe.classList.add('hidden');
+                calendlyFallback.classList.remove('hidden');
+                calendlyFallback.classList.add('flex');
+            };
+
+            // Reveal animation for sections (copied from index.html)
+            const revealElements = document.querySelectorAll('.reveal');
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('visible');
+                    }
+                });
+            }, { threshold: 0.1 });
+
+            revealElements.forEach(el => observer.observe(el));
+
+            // Header shadow on scroll (copied from index.html)
+            const header = document.getElementById('header');
+            window.addEventListener('scroll', () => {
+                header.classList.toggle('shadow-lg', window.scrollY > 10);
+                header.classList.toggle('shadow-black/20', window.scrollY > 10);
+            });
+        });
+
+        // MailerLite specific JS (from your provided code)
+        function ml_webform_success_28370270() {
+            var $ = ml_jQuery || jQuery; // Use ml_jQuery if available, fallback to global jQuery
+            if ($) {
+                $('.ml-subscribe-form-28370270 .row-success').show();
+                $('.ml-subscribe-form-28370270 .row-form').hide();
+            } else {
+                console.warn("jQuery or ml_jQuery not found. MailerLite success function might not work as expected.");
+                // Fallback for environments without jQuery if needed
+                document.querySelector('.ml-subscribe-form-28370270 .row-success').style.display = 'block';
+                document.querySelector('.ml-subscribe-form-28370270 .row-form').style.display = 'none';
+            }
+            // Redirect to tools page after success
+            try {
+                window.top.location.href = 'https://reuxmarketing.com/tools.html'; // Use .html extension
+            } catch (e) {
+                window.location.href = 'https://reuxmarketing.com/tools.html'; // Use .html extension
+            }
+        }
+    </script>
+    <!-- MailerLite Webforms Script (Legacy) -->
+    <script src="https://groot.mailerlite.com/js/w/webforms.min.js?v176e10baa5e7ed80d35ae235be3d5024" type="text/javascript"></script>
+    <!-- MailerLite JSONP Fetch (Legacy) -->
+    <script>
+        // This fetch call is part of the legacy embed to ensure form loads.
+        fetch("https://assets.mailerlite.com/jsonp/1664028/forms/159908600858281926/takel")
+    </script>
+</body>
+</html>
