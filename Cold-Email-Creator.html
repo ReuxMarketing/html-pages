@@ -1,0 +1,1878 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cold Email Forge — ReuxMarketing</title>
+
+    <!-- Tailwind CSS CDN - Re-added for proper styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts - Inter - Re-added for proper font display -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap" rel="stylesheet">
+
+    <style>
+        /* === ReuxMarketing Official Style Guide === */
+
+        /* --- Core Variables & Body --- */
+        :root {
+            --bg-main: #0a0a0a;
+            --bg-card: #1a1a1a;
+            --text-primary: #f0f0f0;
+            --text-secondary: #c7c7c7; /* For less emphasis */
+            --accent-gold: #FFD700;
+            --accent-green: #22c55e;
+            --border-color: #444;
+            --nav-blur-bg: rgba(10, 10, 10, 0.8);
+            --font-main: 'Inter', sans-serif; /* Retained for local font or fallback */
+        }
+        body {
+            font-family: var(--font-main);
+            background-color: var(--bg-main);
+            color: var(--text-primary);
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        /* --- Reusable Components --- */
+        .gold-text { color: var(--accent-gold); }
+        .cta-btn {
+            background-color: var(--accent-green);
+            color: #0a0a0a; /* Dark text for contrast on green button */
+            font-weight: 700;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(34, 197, 94, 0.2);
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            text-decoration: none;
+        }
+        .cta-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(34, 197, 94, 0.3);
+        }
+        .input-field {
+            background-color: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 0.5rem;
+            padding: 0.75rem 1rem;
+            color: var(--text-primary);
+            transition: border-color 0.3s ease;
+            width: 100%;
+        }
+        .input-field:focus {
+            outline: none;
+            border-color: var(--accent-gold);
+        }
+        .card {
+            background-color: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 0.75rem;
+            overflow: hidden;
+        }
+
+        /* --- Main Header --- */
+        .main-header {
+            text-align: center;
+            padding: 2.5rem 1rem;
+            border-bottom: 1px solid #2a2a2a;
+        }
+        .main-header .brand-logo {
+            font-weight: 900;
+            font-size: 2.5rem;
+            color: var(--text-primary);
+            margin-bottom: 0.5rem;
+        }
+        .main-header .tool-title {
+            font-size: 1.25rem;
+            color: var(--text-secondary);
+        }
+
+        /* --- Cross-Tool Navigation Menu --- */
+        #tool-navigator {
+            position: sticky;
+            top: 0;
+            z-index: 50;
+            background-color: var(--nav-blur-bg);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            padding: 0.75rem 1rem;
+            border-bottom: 1px solid #2a2a2a;
+        }
+        #tool-navigator .nav-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .nav-cta-link {
+            color: var(--accent-gold);
+            font-weight: 700;
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+        .nav-cta-link:hover {
+            color: var(--text-primary);
+        }
+        .nav-tools-btn {
+            background-color: transparent;
+            border: 2px solid var(--border-color);
+            color: var(--text-secondary);
+            font-weight: 600;
+            font-size: 0.9rem;
+            padding: 0.4rem 1rem;
+            border-radius: 0.5rem;
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+        .nav-tools-btn:hover {
+            border-color: var(--accent-gold);
+            background-color: rgba(255, 215, 0, 0.1);
+            color: var(--accent-gold);
+        }
+
+        /* --- Footer --- */
+        .main-footer {
+            text-align: center;
+            padding: 2rem 1rem;
+            margin-top: 3rem;
+            border-top: 1px solid #2a2a2a;
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        /* Specific styles for Radix-like components recreated in HTML */
+        .select-trigger {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+        }
+        .select-content {
+            position: absolute;
+            background-color: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            z-index: 100;
+            max-height: 200px;
+            overflow-y: auto;
+            width: 100%;
+            margin-top: 0.25rem;
+        }
+        .select-item {
+            padding: 0.75rem 1rem;
+            cursor: pointer;
+            color: var(--text-primary);
+        }
+        .select-item:hover {
+            background-color: rgba(255, 215, 0, 0.1);
+            color: var(--accent-gold);
+        }
+        .hidden {
+            display: none !important;
+        }
+        .tab-button.active {
+            background-color: var(--accent-green);
+            color: var(--bg-main);
+            font-weight: 600;
+        }
+        .tab-button:not(.active):hover {
+            background-color: #2a2a2a;
+        }
+        .accordion-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease-out;
+        }
+        .accordion-content.open {
+            max-height: 500px; /* Adjust as needed for content */
+            transition: max-height 0.3s ease-in;
+        }
+        .accordion-trigger {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+            padding: 1rem 0;
+            text-align: left;
+            font-weight: 600;
+            font-size: 1.125rem;
+            color: var(--text-primary);
+            cursor: pointer;
+            border-bottom: 1px solid var(--border-color);
+            transition: color 0.3s ease;
+        }
+        .accordion-trigger:hover {
+            color: var(--accent-gold);
+        }
+        .accordion-chevron {
+            transition: transform 0.3s ease;
+        }
+        .accordion-trigger[aria-expanded="true"] .accordion-chevron {
+            transform: rotate(180deg);
+        }
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+        .modal-content {
+            background-color: var(--bg-card);
+            padding: 2rem;
+            border-radius: 0.75rem;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
+            max-width: 500px;
+            width: 90%;
+            border: 1px solid var(--border-color);
+        }
+        .notification {
+            position: fixed;
+            top: 1rem;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: var(--accent-green);
+            color: var(--bg-main);
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 15px rgba(34, 197, 94, 0.2);
+            z-index: 1000;
+            opacity: 0;
+            transition: opacity 0.3s ease-in-out;
+        }
+        .notification.show {
+            opacity: 1;
+        }
+    </style>
+</head>
+<body class="bg-black">
+
+    <header class="main-header">
+        <div class="brand-logo">Reux<span class="gold-text">Marketing</span></div>
+        <p class="tool-title">Cold Email Forge</p>
+    </header>
+
+    <nav id="tool-navigator">
+        <div class="nav-container">
+            <a href="tools.html" class="nav-tools-btn">Back to Tools</a>
+            <a href="index.html" class="nav-cta-link">Explore The Marketing With Me &rarr;</a>
+        </div>
+    </nav>
+
+    <main class="max-w-4xl mx-auto px-4 py-12">
+        <!-- Global Notification -->
+        <div id="notification" class="notification hidden"></div>
+
+        <div id="error-message" class="bg-red-900 border border-red-700 text-red-300 px-4 py-3 rounded-lg relative mb-6 hidden" role="alert">
+            <strong class="font-bold">Error!</strong>
+            <span id="error-text" class="block sm:inline ml-2"></span>
+            <span class="absolute top-0 bottom-0 right-0 px-4 py-3 cursor-pointer" onclick="document.getElementById('error-message').classList.add('hidden');">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-x-circle fill-current h-6 w-6 text-red-500"><circle cx="12" cy="12" r="10"></circle><line x1="15" y1="9" x2="9" y2="15"></line><line x1="9" y1="9" x2="15" y2="15"></line></svg>
+            </span>
+        </div>
+
+        <!-- Internal Navigation Bar -->
+        <nav class="mb-8 bg-[#1a1a1a] p-4 rounded-lg shadow-lg flex justify-center space-x-4 border border-[#444]">
+            <button id="nav-inputs" class="py-2 px-6 rounded-lg font-semibold transition duration-200 flex items-center bg-[#22c55e] text-[#0a0a0a] shadow-md">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-settings mr-2"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0-.33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82-.33V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09A1.65 1.65 0 0 0 15 4.6a1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0 .33 1.82H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+                Personalization
+            </button>
+            <button id="nav-generated" class="py-2 px-6 rounded-lg font-semibold transition duration-200 flex items-center bg-[#0a0a0a] text-[#f0f0f0] hover:bg-[#2a2a2a] border border-[#444]" disabled>
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-message-square mr-2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V3a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+                Generated Emails
+            </button>
+            <button id="nav-bestPractices" class="py-2 px-6 rounded-lg font-semibold transition duration-200 flex items-center bg-[#0a0a0a] text-[#f0f0f0] hover:bg-[#2a2a2a] border border-[#444]">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-check-square mr-2"><polyline points="9 11 12 14 22 4"></polyline><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path></svg>
+                Best Practices
+            </button>
+            <button id="nav-swipeFile" class="py-2 px-6 rounded-lg font-semibold transition duration-200 flex items-center bg-[#0a0a0a] text-[#f0f0f0] hover:bg-[#2a2a2a] border border-[#444]">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-image mr-2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>
+                Swipe File
+            </button>
+        </nav>
+
+        <!-- Conditional Page Rendering -->
+        <div id="inputs-page" class="card p-8 md:p-8">
+            <h2 class="text-3xl font-bold text-[#f0f0f0] mb-6 flex items-center">
+                <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-settings mr-3 text-[#FFD700]"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0-.33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82-.33V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09A1.65 1.65 0 0 0 15 4.6a1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0 .33 1.82H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+                Personalization Inputs
+            </h2>
+
+            <!-- Template Presets -->
+            <div class="mb-6 pb-4 border-b border-[#2a2a2a]">
+                <label class="block text-[#f0f0f0] text-sm font-bold mb-2">Template Presets</label>
+                <div class="relative inline-block w-full">
+                    <div id="template-preset-trigger" class="input-field select-trigger flex justify-between items-center cursor-pointer">
+                        <span id="template-preset-value">Select a preset to auto-fill fields</span>
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-down"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                    </div>
+                    <div id="template-preset-content" class="select-content hidden">
+                        <!-- Options will be dynamically inserted here -->
+                    </div>
+                </div>
+            </div>
+
+            <form id="email-form">
+                <div class="mb-4">
+                    <label class="block text-[#f0f0f0] text-sm font-bold mb-2">Campaign Name</label>
+                    <input type="text" id="campaignName" class="input-field" placeholder="e.g., SaaS CMO Outreach Q3">
+                </div>
+                <div class="mb-4">
+                    <label class="block text-[#f0f0f0] text-sm font-bold mb-2">Target Persona (e.g., CMO, Head of Sales)</label>
+                    <input type="text" id="persona" class="input-field" placeholder="e.g., Head of Sales, VP Marketing">
+                </div>
+                <div class="mb-4">
+                    <label class="block text-[#f0f0f0] text-sm font-bold mb-2">Industry (e.g., SaaS, E-commerce, Fintech)</label>
+                    <input type="text" id="industry" class="input-field" placeholder="e.g., SaaS, Healthcare, Real Estate">
+                </div>
+                <div class="mb-4">
+                    <label class="block text-[#f0f0f0] text-sm font-bold mb-2">Company Size</label>
+                    <div class="relative inline-block w-full">
+                        <div id="company-size-trigger" class="input-field select-trigger flex justify-between items-center cursor-pointer">
+                            <span id="company-size-value">Select company size</span>
+                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-down"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                        </div>
+                        <div id="company-size-content" class="select-content hidden">
+                            <div class="select-item" data-value="SMB (1-50 employees)">SMB (1-50 employees)</div>
+                            <div class="select-item" data-value="Mid-market (51-500 employees)">Mid-market (51-500 employees)</div>
+                            <div class="select-item" data-value="Enterprise (500+ employees)">Enterprise (500+ employees)</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="mb-4">
+                    <label class="block text-[#f0f0f0] text-sm font-bold mb-2">Prospect's Pain Point / Obstacle</label>
+                    <textarea id="painPoint" class="input-field h-32" placeholder="e.g., Low demo show-up rate, Inefficient lead qualification" rows="4"></textarea>
+                </div>
+                <div class="mb-4">
+                    <label class="block text-[#f0f0f0] text-sm font-bold mb-2">Your Offer (product/service description)</label>
+                    <textarea id="offer" class="input-field h-32" placeholder="e.g., Calendar automation tool, AI-powered lead scoring platform" rows="4"></textarea>
+                </div>
+                <div class="mb-4">
+                    <label class="block text-[#f0f0f0] text-sm font-bold mb-2">Desired Outcome/Transformation for Prospect</label>
+                    <textarea id="outcome" class="input-field h-32" placeholder="e.g., 25% increase in booked demos, Reduced sales cycle by 15%" rows="4"></textarea>
+                </div>
+                <div class="mb-4">
+                    <label class="block text-[#f0f0f0] text-sm font-bold mb-2">Tone Selection</label>
+                    <div id="tone-selection" class="flex flex-wrap gap-2">
+                        <button type="button" class="px-4 py-2 rounded-lg font-semibold transition duration-200 ease-in-out border bg-[#1a1a1a] text-[#c7c7c7] border-[#444] hover:bg-[#2a2a2a] hover:border-[#FFD700]" data-value="Professional">Professional</button>
+                        <button type="button" class="px-4 py-2 rounded-lg font-semibold transition duration-200 ease-in-out border bg-[#1a1a1a] text-[#c7c7c7] border-[#444] hover:bg-[#2a2a2a] hover:border-[#FFD700]" data-value="Friendly">Friendly</button>
+                        <button type="button" class="px-4 py-2 rounded-lg font-semibold transition duration-200 ease-in-out border bg-[#1a1a1a] text-[#c7c7c7] border-[#444] hover:bg-[#2a2a2a] hover:border-[#FFD700]" data-value="Assertive">Assertive</button>
+                        <button type="button" class="px-4 py-2 rounded-lg font-semibold transition duration-200 ease-in-out border bg-[#1a1a1a] text-[#c7c7c7] border-[#444] hover:bg-[#2a2a2a] hover:border-[#FFD700]" data-value="Casual">Casual</button>
+                        <button type="button" class="px-4 py-2 rounded-lg font-semibold transition duration-200 ease-in-out border bg-[#1a1a1a] text-[#c7c7c7] border-[#444] hover:bg-[#2a2a2a] hover:border-[#FFD700]" data-value="Punchy">Punchy</button>
+                    </div>
+                </div>
+                <div class="mb-4">
+                    <label class="block text-[#f0f0f0] text-sm font-bold mb-2">Framework Preference</label>
+                    <div id="framework-selection" class="flex flex-wrap gap-2">
+                        <button type="button" class="px-4 py-2 rounded-lg font-semibold transition duration-200 ease-in-out border bg-[#1a1a1a] text-[#c7c7c7] border-[#444] hover:bg-[#2a2a2a] hover:border-[#FFD700]" data-value="None">None</button>
+                        <button type="button" class="px-4 py-2 rounded-lg font-semibold transition duration-200 ease-in-out border bg-[#1a1a1a] text-[#c7c7c7] border-[#444] hover:bg-[#2a2a2a] hover:border-[#FFD700]" data-value="PAS (Problem, Agitate, Solve)">PAS (Problem, Agitate, Solve)</button>
+                        <button type="button" class="px-4 py-2 rounded-lg font-semibold transition duration-200 ease-in-out border bg-[#1a1a1a] text-[#c7c7c7] border-[#444] hover:bg-[#2a2a2a] hover:border-[#FFD700]" data-value="AIDA (Attention, Interest, Desire, Action)">AIDA (Attention, Interest, Desire, Action)</button>
+                        <button type="button" class="px-4 py-2 rounded-lg font-semibold transition duration-200 ease-in-out border bg-[#1a1a1a] text-[#c7c7c7] border-[#444] hover:bg-[#2a2a2a] hover:border-[#FFD700]" data-value="FAB (Features, Advantages, Benefits)">FAB (Features, Advantages, Benefits)</button>
+                    </div>
+                </div>
+                <div class="mb-4">
+                    <label class="block text-[#f0f0f0] text-sm font-bold mb-2">Lead Awareness Level</label>
+                    <div id="lead-awareness-selection" class="flex flex-wrap gap-2">
+                        <button type="button" class="px-4 py-2 rounded-lg font-semibold transition duration-200 ease-in-out border bg-[#1a1a1a] text-[#c7c7c7] border-[#444] hover:bg-[#2a2a2a] hover:border-[#FFD700]" data-value="Cold / Awareness">Cold / Awareness</button>
+                        <button type="button" class="px-4 py-2 rounded-lg font-semibold transition duration-200 ease-in-out border bg-[#1a1a1a] text-[#c7c7c7] border-[#444] hover:bg-[#2a2a2a] hover:border-[#FFD700]" data-value="Warm / Consideration">Warm / Consideration</button>
+                        <button type="button" class="px-4 py-2 rounded-lg font-semibold transition duration-200 ease-in-out border bg-[#1a1a1a] text-[#c7c7c7] border-[#444] hover:bg-[#2a2a2a] hover:border-[#FFD700]" data-value="Hot / Decision">Hot / Decision</button>
+                    </div>
+                </div>
+
+                <button type="submit" id="generate-button" class="cta-btn w-full mt-6 flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-mail mr-2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
+                    Generate Email Sequence
+                </button>
+            </form>
+
+            <div class="mt-6 flex flex-col space-y-3">
+                <button id="save-sequence-button" class="cta-btn w-full bg-blue-500 hover:bg-blue-600 text-white">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-save mr-2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg>
+                    Save Sequence
+                </button>
+                <button id="load-sequence-button" class="cta-btn w-full bg-purple-500 hover:bg-purple-600 text-white">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-folder-open mr-2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg>
+                    Load Sequence
+                </button>
+            </div>
+        </div>
+
+        <div id="generated-page" class="card p-8 md:p-8 hidden">
+            <h2 class="text-3xl font-bold text-[#f0f0f0] mb-6 flex items-center">
+                <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-message-square mr-3 text-[#FFD700]"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V3a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+                Generated Email Sequence
+            </h2>
+
+            <!-- Preview Email Flow Visualizer -->
+            <div class="mb-8 p-4 bg-[#0a0a0a] rounded-lg border border-[#444] text-[#f0f0f0] shadow-inner">
+                <h3 class="text-xl font-bold mb-3 flex items-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-layout-dashboard mr-2 text-[#FFD700]"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="3" y1="9" x2="21" y2="9"></line><line x1="9" y1="21" x2="9" y2="9"></line></svg>
+                    Campaign Flow Preview
+                </h3>
+                <div id="campaign-flow-preview" class="flex flex-wrap justify-center items-center gap-4 text-center">
+                    <!-- Flow items will be inserted here by JS -->
+                </div>
+            </div>
+
+            <!-- Campaign Benchmarks -->
+            <div class="mb-8 p-4 bg-[#0a0a0a] rounded-lg border border-[#444] text-[#f0f0f0] shadow-inner">
+                <h3 class="text-xl font-bold mb-3 flex items-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-line-chart mr-2 text-[#FFD700]"><path d="M3 18v-6a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="17 4 12 9 7 4"></polyline></svg>
+                    Campaign Benchmarks
+                </h3>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-center">
+                    <div class="p-3 bg-[#1a1a1a] rounded-lg border border-[#444]">
+                        <p class="text-2xl font-bold text-[#f0f0f0]">15-25%</p>
+                        <p class="text-sm text-[#c7c7c7]">Expected Open Rate</p>
+                    </div>
+                    <div class="p-3 bg-[#1a1a1a] rounded-lg border border-[#444]">
+                        <p class="text-2xl font-bold text-[#f0f0f0]">1-3 days</p>
+                        <p class="text-sm text-[#c7c7c7]">Follow-up Wait Time</p>
+                    </div>
+                    <div class="p-3 bg-[#1a1a1a] rounded-lg border border-[#444]">
+                        <p class="text-2xl font-bold text-[#f0f0f0]">50-100</p>
+                        <p class="text-sm text-[#c7c7c7]">Avg. Word Count (Initial)</p>
+                    </div>
+                </div>
+                <p class="text-xs text-[#c7c7c7] mt-3 text-center">
+                    *These benchmarks are general guidelines and can vary based on industry, audience, and personalization.
+                </p>
+            </div>
+
+            <div class="w-full">
+                <div class="flex flex-wrap justify-center bg-[#0a0a0a] rounded-lg p-1 mb-6 shadow-inner border border-[#444]">
+                    <button class="tab-button py-2 px-4 rounded-md text-[#c7c7c7] hover:bg-[#2a2a2a] active" data-tab="initial">Initial Outreach</button>
+                    <button class="tab-button py-2 px-4 rounded-md text-[#c7c7c7] hover:bg-[#2a2a2a]" data-tab="followUp1">Follow-Up #1</button>
+                    <button class="tab-button py-2 px-4 rounded-md text-[#c7c7c7] hover:bg-[#2a2a2a]" data-tab="followUp2">Follow-Up #2</button>
+                    <button class="tab-button py-2 px-4 rounded-md text-[#c7c7c7] hover:bg-[#2a2a2a]" data-tab="breakup">Break-up Email</button>
+                </div>
+
+                <div id="tab-content-initial" class="tab-content">
+                    <!-- Email Card content will be rendered here -->
+                </div>
+                <div id="tab-content-followUp1" class="tab-content hidden"></div>
+                <div id="tab-content-followUp2" class="tab-content hidden"></div>
+                <div id="tab-content-breakup" class="tab-content hidden"></div>
+            </div>
+
+            <!-- Export Options -->
+            <div class="mt-8 pt-6 border-t border-[#2a2a2a]">
+                <h3 class="text-2xl font-bold text-[#f0f0f0] mb-4 flex items-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-download mr-3 text-[#FFD700]"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+                    Export Options
+                </h3>
+                <div class="flex flex-wrap gap-4">
+                    <button id="download-txt-button" class="cta-btn flex-1 min-w-[150px] bg-[#c7c7c7] hover:bg-[#f0f0f0] text-[#0a0a0a]">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-file-text mr-2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+                        Export to .TXT
+                    </button>
+                    <button id="download-csv-button" class="cta-btn flex-1 min-w-[150px] bg-[#FFD700] hover:bg-opacity-80 text-[#0a0a0a]">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-file-spreadsheet mr-2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+                        Export to .CSV
+                    </button>
+                    <button class="cta-btn flex-1 min-w-[150px] bg-[#444] hover:bg-[#666] text-[#c7c7c7] opacity-70 cursor-not-allowed" disabled>
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-zap mr-2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
+                        Zapier Webhook (Soon!)
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div id="bestPractices-page" class="card p-8 md:p-8 hidden">
+            <h2 class="text-3xl font-bold text-[#f0f0f0] mb-6 flex items-center">
+                <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-check-square mr-3 text-[#FFD700]"><polyline points="9 11 12 14 22 4"></polyline><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path></svg>
+                Cold Email Best Practices
+            </h2>
+            <div class="w-full">
+                <div class="accordion-item border-b border-[#2a2a2a]">
+                    <button class="accordion-trigger" aria-expanded="false" aria-controls="accordion-content-1">
+                        Optimal Send Times & Cadence
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-down accordion-chevron"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                    </button>
+                    <div id="accordion-content-1" class="accordion-content">
+                        <ul class="list-disc list-inside text-[#c7c7c7] pb-4 pl-4">
+                            <li><strong>Best Days:</strong> Tuesday, Wednesday, Thursday. Avoid Mondays (inbox overload) and Fridays (winding down).</li>
+                            <li><strong>Best Times:</strong> 9 AM - 11 AM and 1 PM - 4 PM (prospects are settled but not yet leaving).</li>
+                            <li><strong>Cadence:</strong>
+                                <ul class="list-disc list-inside ml-4">
+                                    <li>Initial Email: Immediate</li>
+                                    <li>Follow-Up #1: 1-2 business days later (e.g., if initial on Mon, FU1 on Wed)</li>
+                                    <li>Follow-Up #2: 3-5 business days after FU1 (e.g., if FU1 on Wed, FU2 next Mon/Tue)</li>
+                                    <li>Break-up Email: 7-10 business days after FU2 (last touch, no reply expected)</li>
+                                </ul>
+                            </li>
+                            <li><strong>Persona-Specific:</strong> For busy executives, early mornings (7-8 AM) or late evenings (5-6 PM) can sometimes work as they check emails outside peak hours.</li>
+                            <li><strong>Time Zones:</strong> Always consider your prospect's time zone. Send emails during their optimal hours, not yours.</li>
+                            <li><strong>Consistency:</strong> Maintain a consistent sending schedule for your campaigns to build predictability and improve deliverability.</li>
+                            <li><strong>Automated vs. Manual:</strong> For very high-value prospects, consider manual follow-ups to allow for more personalized responses based on their engagement.</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="accordion-item border-b border-[#2a2a2a]">
+                    <button class="accordion-trigger" aria-expanded="false" aria-controls="accordion-content-2">
+                        Call to Action (CTA) Recommendations
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-down accordion-chevron"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                    </button>
+                    <div id="accordion-content-2" class="accordion-content">
+                        <ul class="list-disc list-inside text-[#c7c7c7] pb-4 pl-4">
+                            <li><strong>Single, Clear CTA:</strong> Focus on one primary action per email. Too many options confuse the prospect.</li>
+                            <li><strong>Low-Commitment CTAs:</strong> For initial emails, aim for a low-friction "micro-commitment" rather than a full demo.
+                                <ul class="list-disc list-inside ml-4">
+                                    <li>"Would you be open to a brief 15-minute chat next week?"</li>
+                                    <li>"Are you free for a quick 10-minute call to discuss this further?"</li>
+                                    <li>"Does this sound like something worth exploring?" (Reply-based)</li>
+                                </ul>
+                            </li>
+                            <li><strong>Calendar Link:</strong> If using, ensure it's easy to access and pre-populates meeting details. Tools like Calendly or Chili Piper are great.</li>
+                            <li><strong>Reply-Based CTAs:</strong> Often perform better in cold outreach as they require less effort.
+                                <ul class="list-disc list-inside ml-4">
+                                    <li>"Simply reply 'Yes' if you'd like to learn more."</li>
+                                    <li>"What are your thoughts on [Pain Point]?"</li>
+                                </ul>
+                            </li>
+                            <li><strong>Value-Driven CTAs:</strong> Frame the CTA around the benefit to the prospect.
+                                <ul class="list-disc list-inside ml-4">
+                                    <li>"Ready to boost your [Outcome]?"</li>
+                                    <li>"Let's explore how [Your Offer] can solve [Pain Point]."</li>
+                                </ul>
+                            </li>
+                            <li><strong>Personalized CTAs:</strong> Whenever possible, tailor the CTA to the prospect's specific situation or a recent trigger.</li>
+                            <li><strong>A/B Test CTAs:</strong> Always test different CTA variations to see which ones resonate best with your audience.</li>
+                            <li><strong>Clarity is King:</strong> Avoid jargon or ambiguous language. The prospect should immediately understand what you want them to do.</li>
+                            <li><strong>Mobile-Friendly:</strong> Ensure your CTA is easily clickable on mobile devices.</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="accordion-item border-b border-[#2a2a2a]">
+                    <button class="accordion-trigger" aria-expanded="false" aria-controls="accordion-content-3">
+                        GDPR / Compliance Reminder
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-down accordion-chevron"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                    </button>
+                    <div id="accordion-content-3" class="accordion-content">
+                        <div class="text-[#c7c7c7] pb-4 pl-4">
+                            <p class="mb-2">Always ensure your cold email outreach complies with relevant data privacy regulations like GDPR (Europe) and CCPA (California).</p>
+                            <ul class="list-disc list-inside ml-4">
+                                <li><strong>Legitimate Interest:</strong> Ensure you have a legitimate interest in contacting the prospect and that your offer is relevant to their professional role.</li>
+                                <li><strong>Transparency:</strong> Clearly identify yourself and your company.</li>
+                                <li><strong>Opt-Out:</strong> Provide a clear and easy way for recipients to opt-out of future communications (e.g., an unsubscribe link).</li>
+                                <li><strong>Data Sourcing:</strong> Be transparent about where you obtained their contact information if asked.</li>
+                                <li><strong>Record Keeping:</strong> Maintain records of consent or legitimate interest assessments.</li>
+                                <li><strong>Data Minimization:</strong> Only collect and process data that is necessary for your outreach.</li>
+                                <li><strong>Jurisdiction:</strong> Be aware of the specific regulations in the regions you are targeting. Compliance requirements can vary significantly.</li>
+                            </ul>
+                            <p class="mt-2 text-sm text-red-500 font-medium">Disclaimer: This is not legal advice. Consult a legal professional for specific compliance guidance.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="swipeFile-page" class="card p-8 md:p-8 hidden">
+            <h2 class="text-3xl font-bold text-[#f0f0f0] mb-6 flex items-center">
+                <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-image mr-3 text-[#FFD700]"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>
+                Swipe File: Inspiration & Examples
+            </h2>
+            <p class="text-[#c7c7c7] mb-6">
+                Browse proven subject lines and email body examples. Click "Use This" to copy content and pre-fill your personalization inputs.
+            </p>
+
+            <div id="swipe-file-content">
+                <!-- Swipe file categories and examples will be inserted here by JS -->
+            </div>
+        </div>
+    </main>
+
+    <footer class="main-footer">
+        <p>&copy; 2025 ReuxMarketing. All Rights Reserved. Built to help you grow.</p>
+    </footer>
+
+    <!-- Save Sequence Modal -->
+    <div id="save-modal" class="modal-overlay hidden">
+        <div class="modal-content">
+            <div class="mb-6">
+                <h2 class="text-2xl font-bold text-[#f0f0f0] mb-2">Save Current Sequence</h2>
+                <p class="text-[#c7c7c7]">
+                    Give your generated email sequence a name to save it for later.
+                </p>
+            </div>
+            <div class="mb-4">
+                <label class="block text-[#f0f0f0] text-sm font-bold mb-2">Sequence Name</label>
+                <input type="text" id="newSequenceName" class="input-field" placeholder="e.g., SaaS CMO Outreach Q3">
+            </div>
+            <div class="flex justify-end space-x-4 mt-6">
+                <button id="cancel-save-button" class="bg-[#444] hover:bg-[#666] text-[#f0f0f0] font-bold py-2 px-4 rounded-lg transition duration-200">
+                    Cancel
+                </button>
+                <button id="confirm-save-button" class="cta-btn bg-[#22c55e] hover:bg-opacity-80 text-[#0a0a0a]" disabled>
+                    Save
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Load Sequence Modal -->
+    <div id="load-modal" class="modal-overlay hidden">
+        <div class="modal-content">
+            <div class="mb-6">
+                <h2 class="text-2xl font-bold text-[#f0f0f0] mb-2">Load Saved Sequence</h2>
+                <p class="text-[#c7c7c7]">
+                    Select a previously saved email sequence to load its details and generated emails.
+                </p>
+            </div>
+            <div id="saved-sequences-list" class="space-y-3 max-h-80 overflow-y-auto pr-2">
+                <!-- Saved sequences will be loaded here -->
+                <div id="loading-sequences" class="text-center py-8 text-[#c7c7c7] flex items-center justify-center">
+                    <svg class="animate-spin h-5 w-5 text-[#FFD700] mr-3" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    Loading saved sequences...
+                </div>
+                <p id="no-sequences-found" class="text-center text-[#c7c7c7] py-8 hidden">No saved sequences found.</p>
+            </div>
+            <div class="flex justify-end mt-6">
+                <button id="close-load-button" class="bg-[#444] hover:bg-[#666] text-[#f0f0f0] font-bold py-2 px-4 rounded-lg transition duration-200">
+                    Close
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- Global State Variables ---
+        let savedSequences = [];
+        let selectedSequenceId = null;
+        let showSaveModal = false;
+        let showLoadModal = false;
+        let newSequenceName = '';
+        let loadingSavedSequences = true; // Still used for initial UI state, but quickly resolved
+
+        let campaignName = '';
+        let persona = '';
+        let industry = '';
+        let companySize = '';
+        let painPoint = '';
+        let offer = '';
+        let outcome = '';
+        let tone = 'Professional';
+        let framework = 'None';
+        let leadAwareness = 'Cold / Awareness';
+
+        let generatedEmails = {};
+        let loading = false;
+        let error = '';
+        let activeTab = 'initial';
+        let currentPage = 'inputs';
+
+        let isNotificationVisible = false;
+        let currentNotificationMessage = '';
+
+        const LOCAL_STORAGE_KEY = 'coldEmailSequences'; // Key for localStorage
+
+        // --- DOM Elements ---
+        const notificationElem = document.getElementById('notification');
+        const errorElem = document.getElementById('error-message');
+        const errorTextElem = document.getElementById('error-text');
+
+        const navInputsBtn = document.getElementById('nav-inputs');
+        const navGeneratedBtn = document.getElementById('nav-generated');
+        const navBestPracticesBtn = document.getElementById('nav-bestPractices');
+        const navSwipeFileBtn = document.getElementById('nav-swipeFile');
+
+        const inputsPage = document.getElementById('inputs-page');
+        const generatedPage = document.getElementById('generated-page');
+        const bestPracticesPage = document.getElementById('bestPractices-page');
+        const swipeFilePage = document.getElementById('swipeFile-page');
+
+        const campaignNameInput = document.getElementById('campaignName');
+        const personaInput = document.getElementById('persona');
+        const industryInput = document.getElementById('industry');
+        const painPointInput = document.getElementById('painPoint');
+        const offerInput = document.getElementById('offer');
+        const outcomeInput = document.getElementById('outcome');
+
+        const generateButton = document.getElementById('generate-button');
+        const saveSequenceButton = document.getElementById('save-sequence-button');
+        const loadSequenceButton = document.getElementById('load-sequence-button');
+
+        const saveModal = document.getElementById('save-modal');
+        const newSequenceNameInput = document.getElementById('newSequenceName');
+        const cancelSaveButton = document.getElementById('cancel-save-button');
+        const confirmSaveButton = document.getElementById('confirm-save-button');
+
+        const loadModal = document.getElementById('load-modal');
+        const savedSequencesList = document.getElementById('saved-sequences-list');
+        const loadingSequencesElem = document.getElementById('loading-sequences');
+        const noSequencesFoundElem = document.getElementById('no-sequences-found');
+        const closeLoadButton = document.getElementById('close-load-button');
+
+        const templatePresetTrigger = document.getElementById('template-preset-trigger');
+        const templatePresetValue = document.getElementById('template-preset-value');
+        const templatePresetContent = document.getElementById('template-preset-content');
+
+        const companySizeTrigger = document.getElementById('company-size-trigger');
+        const companySizeValue = document.getElementById('company-size-value');
+        const companySizeContent = document.getElementById('company-size-content');
+
+        const toneSelectionDiv = document.getElementById('tone-selection');
+        const frameworkSelectionDiv = document.getElementById('framework-selection');
+        const leadAwarenessSelectionDiv = document.getElementById('lead-awareness-selection');
+
+        const campaignFlowPreview = document.getElementById('campaign-flow-preview');
+
+        const tabButtons = document.querySelectorAll('.tab-button');
+        const tabContents = {
+            initial: document.getElementById('tab-content-initial'),
+            followUp1: document.getElementById('tab-content-followUp1'),
+            followUp2: document.getElementById('tab-content-followUp2'),
+            breakup: document.getElementById('tab-content-breakup')
+        };
+
+        const downloadTxtButton = document.getElementById('download-txt-button');
+        const downloadCsvButton = document.getElementById('download-csv-button');
+
+        const accordionTriggers = document.querySelectorAll('.accordion-trigger');
+
+
+        // --- Template Presets ---
+        const templatePresets = {
+            'SaaS SDR Assertive': {
+                persona: 'SDR',
+                industry: 'SaaS',
+                companySize: 'Mid-market (51-500 employees)',
+                painPoint: 'Low demo show-up rate',
+                offer: 'Calendar automation tool that boosts demo show-ups by 30%',
+                outcome: 'Higher demo show-up rates and more qualified meetings',
+                tone: 'Assertive',
+                framework: 'PAS (Problem, Agitate, Solve)',
+                leadAwareness: 'Cold / Awareness',
+            },
+            'Coaching Founder Friendly': {
+                persona: 'Founder',
+                industry: 'Consulting/Coaching',
+                companySize: 'SMB (1-50 employees)',
+                painPoint: 'Struggling to scale client acquisition without burnout',
+                offer: '1-on-1 coaching program for sustainable business growth',
+                outcome: 'Clear growth strategy, increased revenue, and more free time',
+                tone: 'Friendly',
+                framework: 'AIDA (Attention, Interest, Desire, Action)',
+                leadAwareness: 'Warm / Consideration',
+            },
+            'Agency Head of Ops Punchy': {
+                persona: 'Head of Operations',
+                industry: 'Marketing Agency',
+                companySize: 'Enterprise (500+ employees)',
+                painPoint: 'Inefficient project management leading to missed deadlines',
+                offer: 'AI-powered project management software for agencies',
+                outcome: 'Streamlined workflows, on-time project delivery, and improved team productivity',
+                tone: 'Punchy',
+                framework: 'FAB (Features, Advantages, Benefits)',
+                leadAwareness: 'Hot / Decision',
+            },
+        };
+
+        // --- Email Script Library ---
+        const emailScriptLibrary = [
+            {
+                id: 'saas-sdr-assertive-low-demo-cold',
+                persona: 'SDR', industry: 'SaaS', companySize: 'Mid-market (51-500 employees)',
+                painPointKeywords: ['low demo show-up', 'missed demos', 'poor attendance'],
+                offerKeywords: ['calendar automation', 'scheduling tool', 'demo reminder'],
+                outcomeKeywords: ['increase show-ups', 'boost attendance', 'more demos'],
+                tone: 'Assertive', framework: 'PAS (Problem, Agitate, Solve)', leadAwareness: 'Cold / Awareness',
+                sequence: {
+                    initial: {
+                        subjectOptions: ['Still struggling with low demo show-ups?', 'Fixing [CompanyName]\'s demo attendance', 'Immediate boost for your demo show-up rate'],
+                        body: `Hi [FirstName],
+
+Are you frustrated with the number of qualified demos that don't show up at [CompanyName]? This is a common problem for [Industry] companies, costing valuable sales team time and pipeline momentum.
+
+Our [Offer] directly tackles this by automating smart reminders and re-engagement, leading to a proven [Outcome] for our clients.
+
+Ready to stop wasting time on no-shows?`,
+                        callToActionOptions: ['Book a 15-min strategy call here: [CalendarLink]', 'Reply "YES" to learn how we guarantee more show-ups', 'See our case study on boosting demo rates: [Link]'],
+                    },
+                    followUp1: {
+                        subjectOptions: ['Following up: Demo show-ups', 'Did you see this for [CompanyName]?', 'Quick thought on your demo pipeline'],
+                        body: `Hi [FirstName],
+
+Just wanted to quickly follow up on my previous email regarding [PainPoint].
+
+We consistently help sales teams like yours achieve [Outcome] with minimal effort.
+
+Still interested in improving your demo show-up rates?`,
+                        callToActionOptions: ['Reply to this email if you\'d like to chat briefly', 'Learn more about our solution: [Link]', 'What are your thoughts on this challenge?'],
+                    },
+                    followUp2: {
+                        subjectOptions: ['Last chance: Boost demo show-ups', 'One more idea for [CompanyName]', 'Don\'t miss out on higher demo rates'],
+                        body: `Hi [FirstName],
+
+Circling back one last time on how [Offer] can help [CompanyName] achieve [Outcome].
+
+We understand you're busy, but this could genuinely save your team significant time and revenue.
+
+If now isn't the right time, no worries. If it is, let's connect.`,
+                        callToActionOptions: ['Click here to opt-out of future emails', 'Reply "Not now" if this isn\'t a priority', 'Is this something worth exploring later?'],
+                    },
+                    breakup: {
+                        subjectOptions: ['Closing the loop on demo show-ups', 'Permission to close your file?', 'Goodbye from [Your Company]'],
+                        body: `Hi [FirstName],
+
+It seems my previous emails haven't resonated, which is perfectly fine. I'll take this as a sign that now isn't the best time to discuss improving [CompanyName]'s demo show-up rates.
+
+I'll close your file for now. If anything changes in the future, feel free to reach out.
+
+Wishing you all the best,
+[Your Name]`,
+                        callToActionOptions: ['Click here to connect when ready', 'No hard feelings, unsubscribe here', 'Reply if you change your mind'],
+                    },
+                }
+            },
+            {
+                id: 'coaching-founder-friendly-burnout-warm',
+                persona: 'Founder', industry: 'Consulting/Coaching', companySize: 'SMB (1-50 employees)',
+                painPointKeywords: ['burnout', 'scaling issues', 'client acquisition stress'],
+                offerKeywords: ['coaching program', 'growth strategy', 'business mentorship'],
+                outcomeKeywords: ['sustainable growth', 'more free time', 'increased revenue'],
+                tone: 'Friendly', framework: 'AIDA (Attention, Interest, Desire, Action)', leadAwareness: 'Warm / Consideration',
+                sequence: {
+                    initial: {
+                        subjectOptions: ['A quick thought for [FirstName] at [CompanyName]', 'Scaling without the stress?', 'Your next growth leap'],
+                        body: `Hey [FirstName],
+
+I've been following [CompanyName]'s journey and it's inspiring! Many founders I speak with often hit a wall trying to scale without burning out. Does that resonate with you?
+
+I help founders like you create a clear roadmap for sustainable growth, leading to both increased revenue and more personal freedom. Imagine having a strategy that brings in clients consistently, without the constant grind.
+
+Curious how we do it?`,
+                        callToActionOptions: ['Let\'s chat for 15 minutes about your growth goals', 'Reply "Growth" if you\'d like to see an example plan', 'Check out our founder success stories: [Link]'],
+                    },
+                    followUp1: {
+                        subjectOptions: ['Following up: Your growth strategy', 'Still thinking about [CompanyName]\'s next step', 'Quick idea for sustainable scaling'],
+                        body: `Hi [FirstName],
+
+Just wanted to gently follow up on my last email. I know building a business is a marathon, not a sprint, and finding the right support can make all the difference.
+
+My coaching program is designed to give you the clarity and systems you need to achieve [Outcome].
+
+Is this a challenge you're actively looking to solve?`,
+                        callToActionOptions: ['What are your biggest scaling challenges right now?', 'Schedule a discovery call: [CalendarLink]', 'Happy to answer any questions you have!'],
+                    },
+                    followUp2: {
+                        subjectOptions: ['One last thought on scaling [CompanyName]', 'A different approach to [PainPoint]', 'Final check-in from [Your Name]'],
+                        body: `Hey [FirstName],
+
+I'm reaching out one more time. I genuinely believe that with the right guidance, you can overcome [PainPoint] and truly enjoy the journey of growing [CompanyName].
+
+If now isn't the right time, that's totally okay. No pressure at all.
+
+If you ever decide to explore a more sustainable path to [Outcome], I'm here.`,
+                        callToActionOptions: ['No worries if not now, just reply "No thanks"', 'Connect with me on LinkedIn: [LinkedIn Profile]', 'Keep me in mind for the future'],
+                    },
+                    breakup: {
+                        subjectOptions: ['Closing the loop on growth for [CompanyName]', 'All the best from [Your Company]', 'Final message from [Your Name]'],
+                        body: `Hi [FirstName],
+
+It looks like my messages might not be a priority for you right now, and that's completely understandable. I'll assume you're all set for now and won't reach out further.
+
+I wish you immense success with [CompanyName] and hope you achieve all your growth aspirations.
+
+Warmly,
+[Your Name]`,
+                        callToActionOptions: ['Reach out if anything changes!', 'Unsubscribe from future emails', 'Let\'s connect another time'],
+                    },
+                }
+            },
+            {
+                id: 'default-professional-cold',
+                persona: 'Any', industry: 'Any', companySize: 'Any',
+                painPointKeywords: [], offerKeywords: [], outcomeKeywords: [],
+                tone: 'Professional', framework: 'None', leadAwareness: 'Cold / Awareness',
+                sequence: {
+                    initial: {
+                        subjectOptions: ['Connecting about [CompanyName]', 'Opportunity for [Outcome]'],
+                        body: `Dear [FirstName],
+
+I hope this email finds you well. I'm reaching out because our [Offer] helps businesses like [CompanyName] achieve [Outcome].
+
+We understand that [PainPoint] can be a significant challenge. Our solution is designed to address this directly.
+
+Would you be open to a brief discussion to explore how we can assist you?
+
+Sincerely,
+[Your Name]`,
+                        callToActionOptions: ['Schedule a call: [CalendarLink]', 'Reply to learn more'],
+                    },
+                    followUp1: {
+                        subjectOptions: ['Following up: [Outcome] for [CompanyName]'],
+                        body: `Dear [FirstName],
+
+Just a quick follow-up on my previous email regarding [CompanyName]'s potential to achieve [Outcome].
+
+I believe our [Offer] could provide significant value in overcoming [PainPoint].
+
+Please let me know if you'd like to explore this further.
+
+Regards,
+[Your Name]`,
+                        callToActionOptions: ['Reply to this email', 'Visit our website: [WebsiteLink]'],
+                    },
+                    followUp2: {
+                        subjectOptions: ['Last attempt: [Offer] for [CompanyName]'],
+                        body: `Dear [FirstName],
+
+I'm reaching out one last time regarding [Offer] and its potential to help [CompanyName] with [PainPoint].
+
+If this isn't a priority for you at the moment, I completely understand.
+
+Wishing you success,
+[Your Name]`,
+                        callToActionOptions: ['Unsubscribe from future emails', 'Reply "No thanks"'],
+                    },
+                    breakup: {
+                        subjectOptions: ['Closing the loop from [Your Company]'],
+                        body: `Dear [FirstName],
+
+As I haven't heard back, I'll assume this isn't the right time for [CompanyName] to explore [Offer].
+
+I'll close your file for now. Please don't hesitate to reach out if your needs change in the future.
+
+Best regards,
+[Your Name]`,
+                        callToActionOptions: ['Reply if you change your mind', 'Connect on LinkedIn'],
+                    },
+                }
+            },
+            {
+                id: 'default-friendly-warm',
+                persona: 'Any', industry: 'Any', companySize: 'Any',
+                painPointKeywords: [], offerKeywords: [], outcomeKeywords: [],
+                tone: 'Friendly', framework: 'None', leadAwareness: 'Warm / Consideration',
+                sequence: {
+                    initial: {
+                        subjectOptions: ['Thought of you, [FirstName]', 'Quick idea for [CompanyName]'],
+                        body: `Hey [FirstName],
+
+Hope you're having a good week! I was thinking about [CompanyName] and how our [Offer] could potentially help you with [PainPoint].
+
+We've seen great results helping others in [Industry] achieve [Outcome].
+
+Would you be up for a quick chat to see if there's a fit?
+
+Best,
+[Your Name]`,
+                        callToActionOptions: ['Grab 15 minutes on my calendar: [CalendarLink]', 'Reply if you\'re curious to learn more'],
+                    },
+                    followUp1: {
+                        subjectOptions: ['Following up on [CompanyName]', 'Still relevant?'],
+                        body: `Hey [FirstName],
+
+Just wanted to bump my last email. I know things get busy, but I genuinely believe our [Offer] could make a real difference in tackling [PainPoint] for [CompanyName].
+
+No pressure at all, but if you're keen to explore [Outcome], let me know!
+
+Cheers,
+[Your Name]`,
+                        callToActionOptions: ['What are your thoughts?', 'Happy to send over more info'],
+                    },
+                    followUp2: {
+                        subjectOptions: ['One last thought for [CompanyName]', 'Worth a quick look?'],
+                        body: `Hey [FirstName],
+
+One final note on how we help with [PainPoint]. Our [Offer] is pretty straightforward, and the results for clients like you have been fantastic ([Outcome]).
+
+If it's not a good time, no worries at all.
+
+All the best,
+[Your Name]`,
+                        callToActionOptions: ['No worries if not now', 'Connect on LinkedIn if you prefer: [LinkedIn Profile]'],
+                    },
+                    breakup: {
+                        subjectOptions: ['All the best from [Your Company]'],
+                        body: `Hey [FirstName],
+
+Looks like my timing might be off, or perhaps our [Offer] isn't the right fit for [CompanyName] right now. That's totally fine!
+
+I'll stop sending emails for now. If you ever need help with [PainPoint] in the future, you know where to find me.
+
+Wishing you success,
+[Your Name]`,
+                        callToActionOptions: ['Reply if you change your mind', 'Unsubscribe here'],
+                    },
+                }
+            }
+        ];
+
+        // --- Swipe File Content ---
+        const swipeFileContent = [
+            {
+                category: 'Subject Lines',
+                examples: [
+                    { title: 'Pain-Focused', content: 'Struggling with [PainPoint]?' },
+                    { title: 'Curiosity-Driven', content: 'Quick question about [CompanyName]' },
+                    { title: 'Benefit-Oriented', content: 'Boost your [Outcome] by X%' },
+                    { title: 'Urgency/Scarcity', content: 'Last chance for [Offer Benefit]' },
+                    { title: 'Personalized Intro', content: 'Thought of you, [FirstName]' },
+                    { title: 'Problem/Solution', content: '[Problem] + [Your Solution]' },
+                    { title: 'Question-Based', content: 'Are you open to [Benefit]?' },
+                    { title: 'Referral (if applicable)', content: 'Referred by [Mutual Connection]' },
+                ],
+            },
+            {
+                category: 'Initial Email Bodies',
+                examples: [
+                    {
+                        title: 'PAS Framework Example',
+                        content: `Hi [FirstName],
+
+I noticed [CompanyName] might be facing [PainPoint]. Many [Industry] companies struggle with this, leading to [Agitation consequence].
+
+Our [Offer] helps you [Solve/Outcome]. We've seen clients achieve [Specific Result].
+
+Would you be open to a quick 15-minute chat to see how this could work for you?
+
+Best,
+[Your Name]`,
+                        persona: 'Any', industry: 'Any', painPoint: 'a common challenge', offer: 'our solution', outcome: 'great results', tone: 'Professional', framework: 'PAS'
+                    },
+                    {
+                        title: 'AIDA Framework Example',
+                        content: `Subject: [Attention-grabbing subject]
+
+Hi [FirstName],
+
+Are you looking to [Interest-generating question related to outcome]? Many [Role]s at [CompanyName]'s size are focused on [common goal].
+
+Imagine achieving [Desired outcome] with [Specific feature/benefit]. Our [Offer] is designed to help you do just that.
+
+Would you be interested in learning more about how we can help you [Actionable benefit]?
+
+Best,
+[Your Name]`,
+                        persona: 'Any', industry: 'Any', painPoint: 'a challenge', offer: 'our solution', outcome: 'great results', tone: 'Friendly', framework: 'AIDA'
+                    },
+                    {
+                        title: 'FAB Framework Example',
+                        content: `Hi [FirstName],
+
+I'm reaching out because our [Offer] has a unique [Feature] that provides [Advantage], leading to the significant [Benefit] of [Outcome].
+
+For example, clients like [Similar Company] used our [Offer] to [Specific Result].
+
+Are you available for a brief call to explore how these benefits could apply to [CompanyName]?
+
+Best,
+[Your Name]`,
+                        persona: 'Any', industry: 'Any', painPoint: 'a challenge', offer: 'our solution', outcome: 'great results', tone: 'Professional', framework: 'FAB'
+                    },
+                    {
+                        title: 'Problem-Solution (Concise)',
+                        content: `Hi [FirstName],
+
+Quick thought: Are you finding it tough to [PainPoint] at [CompanyName]?
+
+My team helps [Role]s like you [Outcome] using [Offer].
+
+Worth a 10-min chat?
+
+Cheers,
+[Your Name]`,
+                        persona: 'Any', industry: 'Any', painPoint: 'a specific problem', offer: 'our solution', outcome: 'a positive change', tone: 'Casual', framework: 'None'
+                    },
+                    {
+                        title: 'Value-Driven (Social Proof)',
+                        content: `Hi [FirstName],
+
+We've recently helped companies in [Industry] like [Similar Company 1] and [Similar Company 2] achieve [Specific Outcome] by [Offer].
+
+Given [CompanyName]'s focus on [Relevant Company Goal], I thought you might find value in exploring how we could help you [Desired Outcome].
+
+Let me know if you're open to a brief discussion.
+
+Regards,
+[Your Name]`,
+                        persona: 'Any', industry: 'Any', painPoint: 'a common challenge', offer: 'our solution', outcome: 'measurable results', tone: 'Professional', framework: 'None'
+                    },
+                ],
+            },
+        ];
+
+        // --- Utility Functions ---
+        function displayNotification(message) {
+            notificationElem.textContent = message;
+            notificationElem.classList.remove('hidden');
+            notificationElem.classList.add('show');
+            setTimeout(() => {
+                notificationElem.classList.remove('show');
+                notificationElem.classList.add('hidden');
+            }, 3000);
+        }
+
+        function showError(message) {
+            errorTextElem.textContent = message;
+            errorElem.classList.remove('hidden');
+        }
+
+        function hideError() {
+            errorElem.classList.add('hidden');
+        }
+
+        function copyToClipboard(content, message = 'Content copied to clipboard!') {
+            const textarea = document.createElement('textarea');
+            textarea.value = content;
+            document.body.appendChild(textarea);
+            textarea.select();
+            try {
+                document.execCommand('copy');
+                displayNotification(message);
+            } catch (err) {
+                console.error('Failed to copy text: ', err);
+                showError('Failed to copy content.');
+            }
+            document.body.removeChild(textarea);
+        }
+
+        // --- Page Navigation ---
+        function setPage(pageId) {
+            currentPage = pageId;
+            inputsPage.classList.add('hidden');
+            generatedPage.classList.add('hidden');
+            bestPracticesPage.classList.add('hidden');
+            swipeFilePage.classList.add('hidden');
+
+            // Reset all nav buttons to inactive state
+            navInputsBtn.classList.remove('bg-[#22c55e]', 'text-[#0a0a0a]', 'shadow-md');
+            navInputsBtn.classList.add('bg-[#0a0a0a]', 'text-[#f0f0f0]', 'hover:bg-[#2a2a2a]', 'border', 'border-[#444]');
+            navGeneratedBtn.classList.remove('bg-[#22c55e]', 'text-[#0a0a0a]', 'shadow-md');
+            navGeneratedBtn.classList.add('bg-[#0a0a0a]', 'text-[#f0f0f0]', 'hover:bg-[#2a2a2a]', 'border', 'border-[#444]');
+            navBestPracticesBtn.classList.remove('bg-[#22c55e]', 'text-[#0a0a0a]', 'shadow-md');
+            navBestPracticesBtn.classList.add('bg-[#0a0a0a]', 'text-[#f0f0f0]', 'hover:bg-[#2a2a2a]', 'border', 'border-[#444]');
+            navSwipeFileBtn.classList.remove('bg-[#22c55e]', 'text-[#0a0a0a]', 'shadow-md');
+            navSwipeFileBtn.classList.add('bg-[#0a0a0a]', 'text-[#f0f0f0]', 'hover:bg-[#2a2a2a]', 'border', 'border-[#444]');
+
+            let targetPage;
+            let targetNavBtn;
+
+            switch (pageId) {
+                case 'inputs':
+                    targetPage = inputsPage;
+                    targetNavBtn = navInputsBtn;
+                    break;
+                case 'generated':
+                    targetPage = generatedPage;
+                    targetNavBtn = navGeneratedBtn;
+                    break;
+                case 'bestPractices':
+                    targetPage = bestPracticesPage;
+                    targetNavBtn = navBestPracticesBtn;
+                    break;
+                case 'swipeFile':
+                    targetPage = swipeFilePage;
+                    targetNavBtn = navSwipeFileBtn;
+                    break;
+            }
+
+            targetPage.classList.remove('hidden');
+            // Set active nav button styles
+            targetNavBtn.classList.add('bg-[#22c55e]', 'text-[#0a0a0a]', 'shadow-md');
+            targetNavBtn.classList.remove('bg-[#0a0a0a]', 'text-[#f0f0f0]', 'hover:bg-[#2a2a2a]', 'border', 'border-[#444]');
+        }
+
+        // --- Custom Select / Dropdown Logic ---
+        function setupCustomSelect(triggerId, valueId, contentId, options, initialValue, onChangeCallback) {
+            const trigger = document.getElementById(triggerId);
+            const valueDisplay = document.getElementById(valueId);
+            const content = document.getElementById(contentId);
+
+            valueDisplay.textContent = initialValue;
+
+            // Populate options if provided
+            if (options && content) {
+                content.innerHTML = ''; // Clear existing
+                options.forEach(option => {
+                    const item = document.createElement('div');
+                    item.className = 'select-item';
+                    item.setAttribute('data-value', option);
+                    item.textContent = option;
+                    item.addEventListener('click', () => {
+                        valueDisplay.textContent = option;
+                        content.classList.add('hidden');
+                        onChangeCallback(option);
+                    });
+                    content.appendChild(item);
+                });
+            }
+
+            trigger.addEventListener('click', (event) => {
+                event.stopPropagation(); // Prevent document click from closing immediately
+                content.classList.toggle('hidden');
+            });
+
+            // Close when clicking outside
+            document.addEventListener('click', (event) => {
+                if (!trigger.contains(event.target) && !content.contains(event.target)) {
+                    content.classList.add('hidden');
+                }
+            });
+        }
+
+        // --- Button Selection Logic (for Tone, Framework, Lead Awareness) ---
+        function setupButtonSelection(containerId, initialValue, onChangeCallback) {
+            const container = document.getElementById(containerId);
+            const buttons = container.querySelectorAll('button');
+
+            buttons.forEach(button => {
+                if (button.dataset.value === initialValue) {
+                    button.classList.add('bg-[#22c55e]', 'text-[#0a0a0a]', 'border-[#22c55e]', 'shadow-md', 'transform', 'scale-105');
+                    button.classList.remove('bg-[#1a1a1a]', 'text-[#c7c7c7]', 'border-[#444]', 'hover:bg-[#2a2a2a]', 'hover:border-[#FFD700]');
+                }
+
+                button.addEventListener('click', () => {
+                    buttons.forEach(btn => {
+                        btn.classList.remove('bg-[#22c55e]', 'text-[#0a0a0a]', 'border-[#22c55e]', 'shadow-md', 'transform', 'scale-105');
+                        btn.classList.add('bg-[#1a1a1a]', 'text-[#c7c7c7]', 'border-[#444]', 'hover:bg-[#2a2a2a]', 'hover:border-[#FFD700]');
+                    });
+                    button.classList.add('bg-[#22c55e]', 'text-[#0a0a0a]', 'border-[#22c55e]', 'shadow-md', 'transform', 'scale-105');
+                    button.classList.remove('bg-[#1a1a1a]', 'text-[#c7c7c7]', 'border-[#444]', 'hover:bg-[#2a2a2a]', 'hover:border-[#FFD700]');
+                    onChangeCallback(button.dataset.value);
+                });
+            });
+        }
+
+        // --- Email Card Rendering ---
+        function renderEmailCard(containerElement, title, emailData, emailTypeKey) { // Added emailTypeKey parameter
+            if (!emailData) {
+                containerElement.innerHTML = '';
+                return;
+            }
+
+            let ctaOptionsHtml = '';
+            emailData.callToActionOptions.forEach((cta, index) => {
+                ctaOptionsHtml += `<div class="select-item" data-value="${cta.replace(/"/g, '&quot;')}">${cta}</div>`;
+            });
+
+            containerElement.innerHTML = `
+                <div class="card p-6 rounded-lg shadow-xl mb-6 relative">
+                    <h3 class="text-2xl font-bold text-[#f0f0f0] mb-4">${title}</h3>
+                    <button class="absolute top-4 right-4 bg-[#22c55e] hover:bg-opacity-80 text-[#0a0a0a] p-2 rounded-full shadow-md transition duration-200 flex items-center justify-center copy-email-btn"
+                            title="Copy Email Content" data-email-type="${emailTypeKey}">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-clipboard-copy"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+                    </button>
+                    <p class="text-sm text-[#c7c7c7] mb-4 flex items-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-clock mr-2 text-[#FFD700]"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+                        Timing: <span class="font-semibold ml-1">${emailData.timing}</span>
+                    </p>
+                    <p class="text-sm text-[#c7c7c7] mb-4 flex items-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-lightbulb mr-2 text-[#FFD700]"><path d="M22 13.5V12a10 10 0 0 0-10-10C6.6 2 2 6.6 2 12c0 2.2.8 4.2 2 5.8"></path><polyline points="15 17 12 21 9 17"></polyline><line x1="12" y1="22" x2="12" y2="21"></line></svg>
+                        Framework: <span class="font-semibold ml-1">${emailData.frameworkUsed || 'N/A'}</span>
+                    </p>
+
+                    <div class="mb-4">
+                        <h4 class="text-lg font-semibold text-[#f0f0f0] mb-2">Subject Lines:</h4>
+                        <ul class="list-disc list-inside text-[#c7c7c7]">
+                            ${emailData.subjectOptions.map(s => `<li>${s}</li>`).join('')}
+                        </ul>
+                    </div>
+
+                    <div class="mb-4">
+                        <h4 class="text-lg font-semibold text-[#f0f0f0] mb-2">Body:</h4>
+                        <div class="bg-[#0a0a0a] p-4 rounded-md border border-[#444] text-[#f0f0f0] whitespace-pre-wrap">
+                            ${emailData.body}
+                        </div>
+                    </div>
+
+                    <div>
+                        <h4 class="text-lg font-semibold text-[#f0f0f0] mb-2">Call to Action:</h4>
+                        <div class="relative inline-block w-full">
+                            <div class="block w-full px-4 py-2 text-[#FFD700] bg-[#1a1a1a] border border-[#444] rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-[#FFD700] focus:border-[#FFD700] transition duration-200 ease-in-out flex justify-between items-center font-medium cta-select-trigger"
+                                data-email-type="${emailTypeKey}">
+                                <span class="cta-select-value">${emailData.selectedCta}</span>
+                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-down"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                            </div>
+                            <div class="select-content cta-select-content hidden">
+                                ${ctaOptionsHtml}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            // Add event listeners for the newly rendered elements
+            containerElement.querySelectorAll('.copy-email-btn').forEach(button => {
+                button.addEventListener('click', () => {
+                    const type = button.dataset.emailType;
+                    const emailContent = generatedEmails[type];
+                    if (emailContent) {
+                        copyToClipboard(`Subject: ${emailContent.subjectOptions[0]}\n\n${emailContent.body}\n\n${emailContent.selectedCta}`);
+                    }
+                });
+            });
+
+            containerElement.querySelectorAll('.cta-select-trigger').forEach(trigger => {
+                const ctaSelectContent = trigger.nextElementSibling;
+                trigger.addEventListener('click', (event) => {
+                    event.stopPropagation();
+                    ctaSelectContent.classList.toggle('hidden');
+                });
+                ctaSelectContent.querySelectorAll('.select-item').forEach(item => {
+                    item.addEventListener('click', () => {
+                        const newCta = item.dataset.value;
+                        const type = trigger.dataset.emailType;
+                        handleCtaChange(type, newCta);
+                        trigger.querySelector('.cta-select-value').textContent = newCta;
+                        ctaSelectContent.classList.add('hidden');
+                    });
+                });
+            });
+
+            // Close CTA select content when clicking outside
+            document.addEventListener('click', (event) => {
+                containerElement.querySelectorAll('.cta-select-content').forEach(content => {
+                    const trigger = content.previousElementSibling;
+                    if (!trigger.contains(event.target) && !content.contains(event.target)) {
+                        content.classList.add('hidden');
+                    }
+                });
+            });
+        }
+
+        // Function to update selected CTA for a specific email type
+        function handleCtaChange(emailType, newCta) {
+            const updatedEmails = { ...generatedEmails };
+            // Find the correct key regardless of casing/spacing
+            const actualEmailKey = Object.keys(updatedEmails).find(key => key.toLowerCase().includes(emailType.toLowerCase()));
+            if (actualEmailKey) {
+                updatedEmails[actualEmailKey].selectedCta = newCta;
+                generatedEmails = updatedEmails; // Update global state
+            }
+        }
+
+
+        // --- Core Logic Functions (Adapted from React) ---
+        function applyTemplatePreset(presetName) {
+            hideError();
+            const preset = templatePresets[presetName];
+            if (preset) {
+                campaignNameInput.value = presetName + ' Campaign';
+                personaInput.value = preset.persona;
+                industryInput.value = preset.industry;
+
+                // Update custom select for company size
+                companySize = preset.companySize;
+                document.getElementById('company-size-value').textContent = preset.companySize;
+
+                painPointInput.value = preset.painPoint;
+                offerInput.value = preset.offer;
+                outcomeInput.value = preset.outcome;
+
+                // Update button selections
+                tone = preset.tone;
+                framework = preset.framework;
+                leadAwareness = preset.leadAwareness;
+
+                updateButtonSelectionUI('tone-selection', tone);
+                updateButtonSelectionUI('framework-selection', framework);
+                updateButtonSelectionUI('lead-awareness-selection', leadAwareness);
+            }
+        }
+
+        function updateButtonSelectionUI(containerId, selectedValue) {
+            const container = document.getElementById(containerId);
+            const buttons = container.querySelectorAll('button');
+            buttons.forEach(button => {
+                if (button.dataset.value === selectedValue) {
+                    button.classList.add('bg-[#22c55e]', 'text-[#0a0a0a]', 'border-[#22c55e]', 'shadow-md', 'transform', 'scale-105');
+                    button.classList.remove('bg-[#1a1a1a]', 'text-[#c7c7c7]', 'border-[#444]', 'hover:bg-[#2a2a2a]', 'hover:border-[#FFD700]');
+                } else {
+                    button.classList.remove('bg-[#22c55e]', 'text-[#0a0a0a]', 'border-[#22c55e]', 'shadow-md', 'transform', 'scale-105');
+                    button.classList.add('bg-[#1a1a1a]', 'text-[#c7c7c7]', 'border-[#444]', 'hover:bg-[#2a2a2a]', 'hover:border-[#FFD700]');
+                }
+            });
+        }
+
+
+        function generateEmailContentFromLibrary(emailType, timingRecommendation) {
+            let bestMatch = null;
+            let maxScore = -1;
+
+            const currentPainPoint = painPointInput.value.toLowerCase();
+            const currentOffer = offerInput.value.toLowerCase();
+            const currentOutcome = outcomeInput.value.toLowerCase();
+
+            emailScriptLibrary.forEach(template => {
+                let score = 0;
+
+                if (template.persona === persona) score += 10;
+                if (template.industry === industry) score += 10;
+                if (template.companySize === companySize) score += 10;
+                if (template.tone === tone) score += 10;
+                if (template.framework === framework) score += 10;
+                if (template.leadAwareness === leadAwareness) score += 10;
+
+                template.painPointKeywords.forEach(keyword => {
+                    if (currentPainPoint.includes(keyword.toLowerCase())) score += 5;
+                });
+                template.offerKeywords.forEach(keyword => {
+                    if (currentOffer.includes(keyword.toLowerCase())) score += 5;
+                });
+                template.outcomeKeywords.forEach(keyword => {
+                    if (currentOutcome.includes(keyword.toLowerCase())) score += 5;
+                });
+
+                if (template.persona === 'Any') score += 1;
+                if (template.industry === 'Any') score += 1;
+                if (template.companySize === 'Any') score += 1;
+                if (template.tone === 'Any') score += 1;
+                if (template.framework === 'Any') score += 1;
+                if (template.leadAwareness === 'Any') score += 1;
+
+                if (score > maxScore) {
+                    maxScore = score;
+                    bestMatch = template;
+                }
+            });
+
+            if (!bestMatch || maxScore < 10) {
+                bestMatch = emailScriptLibrary.find(t => t.id === 'default-professional-cold');
+                if (!bestMatch) {
+                    showError("No suitable email template found in the library for your criteria. Please try different inputs.");
+                    return null;
+                }
+            }
+
+            const emailContent = bestMatch.sequence[emailType];
+            if (!emailContent) {
+                showError(`Email type "${emailType}" not found in the selected template.`);
+                return null;
+            }
+
+            let body = emailContent.body
+                .replace(/\[FirstName\]/g, '[FirstName]')
+                .replace(/\[CompanyName\]/g, '[CompanyName]')
+                .replace(/\[Role\]/g, '[Role]')
+                .replace(/\[PainPoint\]/g, painPointInput.value)
+                .replace(/\[Industry\]/g, industryInput.value)
+                .replace(/\[Offer\]/g, offerInput.value)
+                .replace(/\[Outcome\]/g, outcomeInput.value)
+                .replace(/\[Your Company\]/g, '[Your Company Name]')
+                .replace(/\[Your Name\]/g, '[Your Name]');
+
+            body = body.replace(/\[Agitation consequence\]/g, 'lost productivity and missed targets');
+            body = body.replace(/\[Specific Result\]/g, 'a 25% increase in lead conversion');
+            body = body.replace(/\[Similar Company\]/g, 'a leading competitor');
+            body = body.replace(/\[Attention-grabbing subject\]/g, 'Your next big win');
+            body = body.replace(/\[Interest-generating question related to outcome\]/g, 'supercharge your sales pipeline');
+            body = body.replace(/\[common goal\]/g, 'efficient lead generation');
+            body = body.replace(/\[Actionable benefit\]/g, 'get more qualified meetings');
+            body = body.replace(/\[Feature\]/g, 'AI-driven analytics');
+            body = body.replace(/\[Advantage\]/g, 'unparalleled insights');
+            body = body.replace(/\[Benefit\]/g, 'a significant competitive edge');
+            body = body.replace(/\[Similar Company 1\]/g, 'Company A');
+            body = body.replace(/\[Similar Company 2\]/g, 'Company B');
+            body = body.replace(/\[Relevant Company Goal\]/g, 'market expansion');
+
+            const ctaOptions = emailContent.callToActionOptions.map(cta =>
+                cta.replace(/\[CalendarLink\]/g, '[Your Calendar Link]')
+                   .replace(/\[Link\]/g, '[Your Website Link]')
+                   .replace(/\[WebsiteLink\]/g, '[Your Website Link]')
+                   .replace(/\[LinkedIn Profile\]/g, '[Your LinkedIn Profile]')
+            );
+
+            return {
+                subjectOptions: emailContent.subjectOptions,
+                body: body,
+                callToActionOptions: ctaOptions,
+                selectedCta: ctaOptions[0],
+                frameworkUsed: bestMatch.framework,
+                timing: timingRecommendation
+            };
+        }
+
+        async function generateFullSequence() {
+            hideError();
+            loading = true;
+            generateButton.disabled = true;
+            generateButton.innerHTML = `<svg class="animate-spin h-5 w-5 text-[#0a0a0a] mr-3" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>Generating...`;
+
+            // Read current input values
+            campaignName = campaignNameInput.value;
+            persona = personaInput.value;
+            industry = industryInput.value;
+            painPoint = painPointInput.value;
+            offer = offerInput.value;
+            outcome = outcomeInput.value;
+
+            console.log('Generating sequence with inputs:', {
+                campaignName, persona, industry, companySize, painPoint, offer, outcome, tone, framework, leadAwareness
+            });
+
+            if (!persona || !industry || !painPoint || !offer || !outcome || !campaignName) {
+                showError("Please fill in all required input fields (Campaign Name, Persona, Industry, Pain Point, Offer, Outcome).");
+                loading = false;
+                generateButton.disabled = false;
+                generateButton.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-mail mr-2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>Generate Email Sequence`;
+                console.log('Validation failed.');
+                return;
+            }
+
+            const initialEmail = generateEmailContentFromLibrary('initial', 'Immediate');
+            if (!initialEmail) { loading = false; console.log('Initial email generation failed.'); return; }
+
+            const followUp1 = generateEmailContentFromLibrary('followUp1', '1-2 days later');
+            if (!followUp1) { loading = false; console.log('Follow-up 1 generation failed.'); return; }
+
+            const followUp2 = generateEmailContentFromLibrary('followUp2', '3-5 days later');
+            if (!followUp2) { loading = false; console.log('Follow-up 2 generation failed.'); return; }
+
+            const breakupEmail = generateEmailContentFromLibrary('breakup', '7-10 days later');
+            if (!breakupEmail) { loading = false; console.log('Breakup email generation failed.'); return; }
+
+            generatedEmails = {
+                initial: initialEmail,
+                followUp1: followUp1,
+                followUp2: followUp2,
+                breakup: breakupEmail,
+            };
+            console.log('Generated Emails:', generatedEmails);
+
+            loading = false;
+            generateButton.disabled = false;
+            generateButton.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-mail mr-2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>Generate Email Sequence`;
+
+            renderGeneratedEmails();
+            console.log('Rendering generated emails and setting page.');
+            setPage('generated');
+        }
+
+        function renderGeneratedEmails() {
+            // Render campaign flow preview
+            campaignFlowPreview.innerHTML = '';
+            Object.entries(generatedEmails).forEach(([key, email], index) => {
+                const flowItem = document.createElement('div');
+                flowItem.className = 'flex flex-col items-center';
+                flowItem.innerHTML = `
+                    <div class="bg-[#1a1a1a] text-[#f0f0f0] rounded-lg px-4 py-2 font-semibold text-sm shadow-md border border-[#444]">
+                        ${key.replace(/([A-Z])/g, ' $1').trim()}
+                    </div>
+                    <p class="text-xs text-[#c7c7c7] mt-1">${email.timing}</p>
+                    ${index < Object.keys(generatedEmails).length - 1 ? `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-right text-[#c7c7c7] mt-2"><polyline points="9 18 15 12 9 6"></polyline></svg>` : ''}
+                `;
+                campaignFlowPreview.appendChild(flowItem);
+            });
+
+            // Render email cards in tabs
+            Object.keys(tabContents).forEach(emailTypeKey => {
+                renderEmailCard(tabContents[emailTypeKey], emailTypeKey.replace(/([A-Z])/g, ' $1').trim().replace('initial', 'Initial Outreach'), generatedEmails[emailTypeKey], emailTypeKey);
+            });
+
+            // Set active tab
+            setActiveTabContent(activeTab);
+            if (Object.keys(generatedEmails).length > 0) {
+                navGeneratedBtn.disabled = false;
+            }
+        }
+
+        function setActiveTabContent(tabId) {
+            activeTab = tabId;
+            tabButtons.forEach(button => {
+                if (button.dataset.tab === tabId) {
+                    button.classList.add('active');
+                } else {
+                    button.classList.remove('active');
+                }
+            });
+
+            Object.keys(tabContents).forEach(key => {
+                if (key === tabId) {
+                    tabContents[key].classList.remove('hidden');
+                } else {
+                    tabContents[key].classList.add('hidden');
+                }
+            });
+        }
+
+        function downloadTxt() {
+            let content = `Campaign Name: ${campaignName}\n\n`;
+            Object.entries(generatedEmails).forEach(([key, email]) => {
+                if (email) {
+                    content += `--- ${key.replace(/([A-Z])/g, ' $1').trim().toUpperCase()} EMAIL ---\n`;
+                    content += `Timing: ${email.timing}\n`;
+                    content += `Subject Options:\n${email.subjectOptions.map(s => `- ${s}`).join('\n')}\n`;
+                    content += `Body:\n${email.body}\n`;
+                    content += `Selected CTA: ${email.selectedCta}\n\n`;
+                }
+            });
+
+            const blob = new Blob([content], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `${campaignName.replace(/\s+/g, '_').toLowerCase()}_cold_email_sequence.txt`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+
+        function downloadCsv() {
+            let csvContent = "Campaign Name,Email Type,Timing,Subject Option 1,Subject Option 2,Subject Option 3,Body,Selected CTA,Framework Used\n";
+
+            Object.entries(generatedEmails).forEach(([key, email]) => {
+                if (email) {
+                    const type = key.replace(/([A-Z])/g, ' $1').trim();
+                    const subjects = email.subjectOptions.map(s => `"${s.replace(/"/g, '""')}"`).join(',');
+                    const body = `"${email.body.replace(/"/g, '""').replace(/\n/g, '\\n')}"`;
+                    const selectedCta = `"${email.selectedCta.replace(/"/g, '""')}"`;
+                    const framework = email.frameworkUsed || 'N/A';
+                    csvContent += `"${campaignName.replace(/"/g, '""')}",${type},${email.timing},${subjects},${body},${selectedCta},${framework}\n`;
+                }
+            });
+
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `${campaignName.replace(/\s+/g, '_').toLowerCase()}_cold_email_sequence.csv`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+
+        function applySwipeFileContent(content, type) {
+            hideError();
+            // Trim content before using it
+            const trimmedContent = content.trim();
+            if (type === 'subject') {
+                copyToClipboard(trimmedContent, `Subject line copied! Paste it into a subject field in the Personalization Inputs tab.`);
+            } else if (type === 'body') {
+                copyToClipboard(trimmedContent, `Email body copied! It has also been pasted into 'Your Offer' field. Please adapt and distribute content as needed across other fields.`);
+                offerInput.value = trimmedContent;
+                offer = trimmedContent; // Update global state
+            }
+            setPage('inputs');
+        }
+
+        // --- Local Storage Operations ---
+        function saveSequencesToLocalStorage() {
+            try {
+                localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(savedSequences));
+                console.log("Sequences saved to local storage.");
+            } catch (e) {
+                console.error("Error saving to local storage:", e);
+                showError("Failed to save sequences to local storage.");
+            }
+        }
+
+        function loadSequencesFromLocalStorage() {
+            try {
+                const data = localStorage.getItem(LOCAL_STORAGE_KEY);
+                savedSequences = data ? JSON.parse(data) : [];
+                console.log("Sequences loaded from local storage:", savedSequences);
+            } catch (e) {
+                console.error("Error loading from local storage:", e);
+                showError("Failed to load sequences from local storage.");
+                savedSequences = []; // Reset on error
+            }
+            loadingSavedSequences = false; // Mark as loaded
+        }
+
+        // --- Modal Control ---
+        function openSaveModal() {
+            showSaveModal = true;
+            saveModal.classList.remove('hidden');
+            newSequenceNameInput.value = campaignName; // Pre-fill with campaign name
+            newSequenceName = campaignName; // Update state
+            toggleSaveButtonState(); // Check button state on open
+        }
+
+        function closeSaveModal() {
+            showSaveModal = false;
+            saveModal.classList.add('hidden');
+            newSequenceNameInput.value = '';
+            newSequenceName = '';
+        }
+
+        function openLoadModal() {
+            showLoadModal = true;
+            loadModal.classList.remove('hidden');
+            renderSavedSequencesList(); // Ensure list is fresh
+        }
+
+        function closeLoadModal() {
+            showLoadModal = false;
+            loadModal.classList.add('hidden');
+        }
+
+        function toggleSaveButtonState() {
+            confirmSaveButton.disabled = !newSequenceNameInput.value.trim();
+        }
+
+        function renderSavedSequencesList() {
+            if (loadingSequencesElem) loadingSequencesElem.classList.add('hidden');
+            if (savedSequences.length === 0) {
+                if (noSequencesFoundElem) noSequencesFoundElem.classList.remove('hidden');
+            } else {
+                if (noSequencesFoundElem) noSequencesFoundElem.classList.add('hidden');
+                savedSequencesList.innerHTML = ''; // Clear existing list
+                savedSequences.forEach((seq) => {
+                    const listItem = document.createElement('li');
+                    listItem.className = "flex items-center justify-between p-4 bg-[#0a0a0a] rounded-lg border border-[#444] hover:bg-[#2a2a2a] cursor-pointer transition duration-200";
+                    listItem.innerHTML = `
+                        <span class="font-medium text-[#f0f0f0]">${seq.name}</span>
+                        <span class="text-sm text-[#c7c7c7]">
+                            ${seq.timestamp ? new Date(seq.timestamp.seconds * 1000).toLocaleDateString() : 'N/A'}
+                        </span>
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-right text-[#c7c7c7]"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                    `;
+                    listItem.addEventListener('click', () => loadSequence(seq));
+                    savedSequencesList.appendChild(listItem);
+                });
+            }
+        }
+
+
+        // --- DOMContentLoaded and Initial Setup ---
+        document.addEventListener('DOMContentLoaded', () => {
+            loadSequencesFromLocalStorage(); // Load sequences on startup
+
+            // Initial page load
+            setPage('inputs');
+
+            // Setup custom selects
+            setupCustomSelect('template-preset-trigger', 'template-preset-value', 'template-preset-content', Object.keys(templatePresets), 'Select a preset to auto-fill fields', applyTemplatePreset);
+            setupCustomSelect('company-size-trigger', 'company-size-value', 'company-size-content', ['SMB (1-50 employees)', 'Mid-market (51-500 employees)', 'Enterprise (500+ employees)'], 'Select company size', (value) => { companySize = value; });
+
+            // Setup button selections
+            setupButtonSelection('tone-selection', tone, (value) => { tone = value; });
+            setupButtonSelection('framework-selection', framework, (value) => { framework = value; });
+            setupButtonSelection('lead-awareness-selection', leadAwareness, (value) => { leadAwareness = value; });
+
+            // Populate Swipe File content
+            const swipeFileContainer = document.getElementById('swipe-file-content');
+            swipeFileContent.forEach(category => {
+                const categoryDiv = document.createElement('div');
+                categoryDiv.className = 'mb-8';
+                categoryDiv.innerHTML = `
+                    <h3 class="text-2xl font-bold text-[#f0f0f0] mb-4 border-b pb-2 border-[#2a2a2a]">${category.category}</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6" id="category-${category.category.replace(/\s/g, '-')}-examples">
+                    </div>
+                `;
+                swipeFileContainer.appendChild(categoryDiv);
+
+                const examplesGrid = document.getElementById(`category-${category.category.replace(/\s/g, '-')}-examples`);
+                category.examples.forEach(example => {
+                    const exampleDiv = document.createElement('div');
+                    exampleDiv.className = 'bg-[#1a1a1a] p-5 rounded-lg border border-[#444] shadow-sm';
+                    exampleDiv.innerHTML = `
+                        <h4 class="text-lg font-semibold text-[#f0f0f0] mb-2">${example.title}</h4>
+                        <div class="bg-[#0a0a0a] p-3 rounded-md border border-[#2a2a2a] text-[#f0f0f0] text-sm whitespace-pre-wrap mb-3">
+                            ${example.content.trim()}
+                        </div>
+                        <button class="cta-btn w-full bg-[#22c55e] hover:bg-opacity-80 text-[#0a0a0a] text-sm use-this-btn"
+                                data-content="${example.content.trim().replace(/"/g, '&quot;')}" data-type="${category.category === 'Subject Lines' ? 'subject' : 'body'}">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-clipboard-copy mr-2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+                            Use This
+                        </button>
+                    `;
+                    examplesGrid.appendChild(exampleDiv);
+                });
+            });
+
+            // Add event listeners for dynamically added "Use This" buttons
+            document.querySelectorAll('.use-this-btn').forEach(button => {
+                button.addEventListener('click', () => {
+                    const content = button.dataset.content;
+                    const type = button.dataset.type;
+                    applySwipeFileContent(content, type);
+                });
+            });
+
+            // --- Event Listeners (Moved inside DOMContentLoaded) ---
+            saveSequenceButton.addEventListener('click', openSaveModal);
+            loadSequenceButton.addEventListener('click', openLoadModal);
+        });
+
+        // --- Event Listeners ---
+        navInputsBtn.addEventListener('click', () => setPage('inputs'));
+        navGeneratedBtn.addEventListener('click', () => setPage('generated'));
+        navBestPracticesBtn.addEventListener('click', () => setPage('bestPractices'));
+        navSwipeFileBtn.addEventListener('click', () => setPage('swipeFile'));
+
+        document.getElementById('email-form').addEventListener('submit', (e) => {
+            e.preventDefault();
+            generateFullSequence();
+        });
+
+        cancelSaveButton.addEventListener('click', closeSaveModal);
+        confirmSaveButton.addEventListener('click', () => {
+            // In local storage, we just save the current state
+            const sequenceData = {
+                id: Date.now(), // Simple unique ID
+                name: newSequenceNameInput.value.trim(),
+                campaignName, persona, industry, companySize, painPoint, offer, outcome, tone, framework, leadAwareness,
+                generatedEmails,
+                timestamp: { seconds: Math.floor(Date.now() / 1000) } // Simulate Firebase timestamp structure
+            };
+            savedSequences.push(sequenceData);
+            saveSequencesToLocalStorage();
+            displayNotification("Sequence saved successfully!");
+            closeSaveModal();
+        });
+        newSequenceNameInput.addEventListener('input', toggleSaveButtonState);
+
+        closeLoadButton.addEventListener('click', closeLoadModal);
+
+        downloadTxtButton.addEventListener('click', downloadTxt);
+        downloadCsvButton.addEventListener('click', downloadCsv);
+
+        // Tab switching logic
+        tabButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                setActiveTabContent(button.dataset.tab);
+            });
+        });
+
+        // Accordion logic
+        accordionTriggers.forEach(trigger => {
+            trigger.addEventListener('click', () => {
+                const content = trigger.nextElementSibling;
+                const isExpanded = trigger.getAttribute('aria-expanded') === 'true';
+
+                // Close all other accordions
+                accordionTriggers.forEach(otherTrigger => {
+                    if (otherTrigger !== trigger) {
+                        otherTrigger.setAttribute('aria-expanded', 'false');
+                        otherTrigger.nextElementSibling.classList.remove('open');
+                        otherTrigger.nextElementSibling.style.maxHeight = null;
+                    }
+                });
+
+                // Toggle current accordion
+                trigger.setAttribute('aria-expanded', !isExpanded);
+                if (isExpanded) {
+                    content.classList.add('open');
+                    content.style.maxHeight = content.scrollHeight + 'px';
+                } else {
+                    content.classList.remove('open');
+                    content.style.maxHeight = null;
+                }
+            });
+        });
+
+    </script>
+</body>
+</html>
