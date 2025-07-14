@@ -1,0 +1,696 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Unlock Resources - ReuxMarketing</title>
+
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Google Fonts: Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    
+    <!-- Custom Tailwind Config (from index.html) -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        gold: '#FFD700',
+                        'lime-green': '#32CD32',
+                    },
+                    boxShadow: {
+                        'gold-glow': '0 0 20px 0px rgba(255, 215, 0, 0.5)',
+                    }
+                }
+            }
+        }
+    </script>
+
+    <!-- Custom Styles (ReuxMarketing Theme & MailerLite Overrides) -->
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0A0A0A;
+            color: #F5F5F5;
+        }
+        .hover\:bg-gold-dark:hover { background-color: #e6c200; }
+        .reveal {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+        }
+        .reveal.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        .spinner {
+            border: 4px solid rgba(255, 255, 255, 0.3);
+            border-top: 4px solid #FFD700;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* ReuxMarketing Official Style Guide - Core Variables & Reusable Components */
+        :root {
+            --bg-main: #0a0a0a;
+            --bg-card: #1a1a1a;
+            --text-primary: #f0f0f0;
+            --text-secondary: #c7c7c7;
+            --accent-gold: #FFD700;
+            --accent-green: #22c55e;
+            --border-color: #444;
+            --nav-blur-bg: rgba(10, 10, 10, 0.8);
+        }
+        /* Ensure body background and text color match the main site's dark theme */
+        body {
+            background-color: var(--bg-main);
+            color: var(--text-primary);
+        }
+        .gold-text { color: var(--accent-gold); }
+        .cta-btn {
+            background-color: var(--accent-green);
+            color: #0a0a0a;
+            font-weight: 700;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(34, 197, 94, 0.2);
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            text-decoration: none;
+        }
+        .cta-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(34, 197, 94, 0.3);
+        }
+        .card {
+            background-color: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 0.75rem;
+            overflow: hidden;
+        }
+        /* Footer styling */
+        .main-footer {
+            text-align: center;
+            padding: 2rem 1rem;
+            margin-top: 3rem;
+            border-top: 1px solid #2a2a2a;
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        /* MailerLite Form Overrides for ReuxMarketing Theme */
+        /* This is the CSS provided by MailerLite, heavily adapted for your theme */
+        /* LOADER */
+        .ml-form-embedSubmitLoad {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+        }
+
+        .g-recaptcha {
+            transform: scale(1);
+            -webkit-transform: scale(1);
+            transform-origin: 0 0;
+            -webkit-transform-origin: 0 0;
+            height: auto; /* Corrected from empty string */
+        }
+
+        .sr-only {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            margin: -1px;
+            overflow: hidden;
+            clip: rect(0,0,0,0);
+            border: 0;
+        }
+
+        .ml-form-embedSubmitLoad:after {
+            content: " ";
+            display: block;
+            width: 11px;
+            height: 11px;
+            margin: 1px;
+            border-radius: 50%;
+            border: 4px solid #fff;
+            border-color: #ffffff #ffffff #ffffff transparent;
+            animation: ml-form-embedSubmitLoad 1.2s linear infinite;
+        }
+        @keyframes ml-form-embedSubmitLoad {
+            0% {
+                transform: rotate(0deg);
+            }
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+        #mlb2-28370270.ml-form-embedContainer {
+            box-sizing: border-box;
+            display: table;
+            margin: 0 auto;
+            position: static;
+            width: 100% !important;
+        }
+        #mlb2-28370270.ml-form-embedContainer h4,
+        #mlb2-28370270.ml-form-embedContainer p,
+        #mlb2-28370270.ml-form-embedContainer span,
+        #mlb2-28370270.ml-form-embedContainer button {
+            text-transform: none !important;
+            letter-spacing: normal !important;
+        }
+        #mlb2-28370270.ml-form-embedContainer .ml-form-embedWrapper {
+            background-color: var(--bg-card) !important; /* Adapted to dark theme */
+            border-width: 0px !important; /* REMOVED BORDER */
+            border-color: transparent !important; /* Ensure no border color */
+            border-radius: 0.75rem !important; /* Match card border-radius */
+            border-style: solid; /* Keep solid even if width is 0 */
+            box-sizing: border-box;
+            display: inline-block !important;
+            margin: 0;
+            padding: 2rem !important; /* Add padding for content inside */
+            position: relative;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2) !important; /* Added shadow */
+        }
+        #mlb2-28370270.ml-form-embedContainer .ml-form-embedWrapper.embedPopup,
+        #mlb2-28370270.ml-form-embedContainer .ml-form-embedWrapper.embedDefault { width: 400px; }
+        #mlb2-28370270.ml-form-embedContainer .ml-form-embedWrapper.embedForm { max-width: 400px; width: 100%; }
+        #mlb2-28370270.ml-form-embedContainer .ml-form-align-left { text-align: left; }
+        #mlb2-28370270.ml-form-embedContainer .ml-form-align-center { text-align: center; }
+        #mlb2-28370270.ml-form-embedContainer .ml-form-align-default { display: table-cell !important; vertical-align: middle !important; text-align: center !important; }
+        #mlb2-28370270.ml-form-embedContainer .ml-form-align-right { text-align: right; }
+        #mlb2-28370270.ml-form-embedContainer .ml-form-embedWrapper .ml-form-embedHeader img {
+            border-top-left-radius: 4px;
+            border-top-right-radius: 4px;
+            height: auto;
+            margin: 0 auto !important;
+            max-width: 100%;
+            width: undefinedpx;
+        }
+        /* Combined padding for body to ensure consistent spacing */
+        #mlb2-28370270.ml-form-embedContainer .ml-form-embedWrapper .ml-form-embedBody,
+        #mlb2-28370270.ml-form-embedContainer .ml-form-embedWrapper .ml-form-successBody {
+            padding: 0 !important; /* Padding is now on .ml-form-embedWrapper */
+        }
+        #mlb2-28370270.ml-form-embedContainer .ml-form-embedWrapper .ml-form-embedBody.ml-form-embedBodyHorizontal {
+            padding-bottom: 0;
+        }
+        #mlb2-28370270.ml-form-embedContainer .ml-form-embedWrapper .ml-form-embedBody .ml-form-embedContent,
+        #mlb2-28370270.ml-form-embedContainer .ml-form-embedWrapper .ml-form-successBody .ml-form-successContent {
+            text-align: left;
+            margin: 0 0 20px 0;
+        }
+        #mlb2-28370270.ml-form-embedContainer .ml-form-embedWrapper .ml-form-embedBody .ml-form-embedContent h4,
+        #mlb2-28370270.ml-form-embedContainer .ml-form-embedWrapper .ml-form-successBody .ml-form-successContent h4 {
+            color: var(--text-primary) !important; /* Adapted to dark theme */
+            font-family: 'Inter', Arial, Helvetica, sans-serif !important; /* Adapted to Inter */
+            font-size: 1.75rem; /* Adjusted for better visual hierarchy */
+            font-weight: 700; /* Adjusted to bold */
+            margin: 0 0 1rem 0 !important; /* Adjusted margin */
+            text-align: center; /* Centered for better look */
+            word-break: break-word;
+        }
+        #mlb2-28370270.ml-form-embedContainer .ml-form-embedWrapper .ml-form-embedBody .ml-form-embedContent p,
+        #mlb2-28370270.ml-form-embedContainer .ml-form-embedWrapper .ml-form-successBody .ml-form-successContent p {
+            color: var(--text-secondary) !important; /* Adapted to dark theme */
+            font-family: 'Inter', Arial, Helvetica, sans-serif !important; /* Adapted to Inter */
+            font-size: 1rem; /* Slightly larger */
+            font-weight: 400;
+            line-height: 1.5; /* Adjusted line height */
+            margin: 0 0 1.5rem 0 !important; /* Adjusted margin */
+            text-align: center; /* Centered for better look */
+        }
+        #mlb2-28370270.ml-form-embedContainer .ml-form-embedWrapper .ml-form-embedBody .ml-form-embedContent ul,
+        #mlb2-28370270.ml-form-embedContainer .ml-form-embedWrapper .ml-form-embedBody .ml-form-embedContent ol,
+        #mlb2-28370270.ml-form-embedContainer .ml-form-embedWrapper .ml-form-successBody .ml-form-successContent ul,
+        #mlb2-28370270.ml-form-embedContainer .ml-form-embedWrapper .ml-form-successBody .ml-form-successContent ol {
+            color: var(--text-primary) !important; /* Adapted to dark theme */
+            font-family: 'Inter', Arial, Helvetica, sans-serif !important; /* Adapted to Inter */
+            font-size: 14px;
+        }
+        #mlb2-28370270.ml-form-embedContainer .ml-form-embedWrapper .ml-form-embedBody .ml-form-embedContent ol ol,
+        #mlb2-28370270.ml-form-embedContainer .ml-form-embedWrapper .ml-form-successBody .ml-form-successContent ol ol {
+            list-style-type: lower-alpha;
+        }
+        #mlb2-28370270.ml-form-embedContainer .ml-form-embedWrapper .ml-form-embedBody .ml-form-embedContent ol ol ol,
+        #mlb2-28370270.ml-form-embedContainer .ml-form-embedWrapper .ml-form-successBody .ml-form-successContent ol ol ol {
+            list-style-type: lower-roman;
+        }
+        #mlb2-28370270.ml-form-embedContainer .ml-form-embedWrapper .ml-form-embedBody .ml-form-embedContent p a,
+        #mlb2-28370270.ml-form-embedContainer .ml-form-embedWrapper .ml-form-successBody .ml-form-successContent p a {
+            color: var(--accent-gold) !important; /* Adapted to gold accent */
+            text-decoration: underline;
+        }
+
+        #mlb2-28370270.ml-form-embedContainer .ml-block-form .ml-field-group {
+            text-align: left !important;
+        }
+
+        #mlb2-28370270.ml-form-embedContainer .ml-block-form .ml-field-group label {
+            margin-bottom: 0.5rem !important; /* Adjusted margin */
+            color: var(--text-primary) !important; /* Adapted to dark theme */
+            font-size: 0.875rem !important; /* text-sm */
+            font-family: 'Inter', Arial, Helvetica, sans-serif !important; /* Adapted to Inter */
+            font-weight: 600 !important; /* Adjusted to semi-bold */
+            display: inline-block;
+            line-height: normal;
+        }
+        #mlb2-28370270.ml-form-embedContainer .ml-form-embedWrapper .ml-form-embedBody .ml-form-embedContent p:last-child,
+        #mlb2-28370270.ml-form-embedContainer .ml-form-embedWrapper .ml-form-successBody .ml-form-successContent p:last-child {
+            margin: 0;
+        }
+        #mlb2-28370270.ml-form-embedContainer .ml-form-embedWrapper .ml-form-embedBody form {
+            margin: 0;
+            width: 100%;
+        }
+        /* FIX: Ensure form sections stack correctly */
+        #mlb2-28370270.ml-form-embedContainer .ml-form-embedWrapper .ml-form-embedBody .ml-form-formContent,
+        #mlb2-28370270.ml-form-embedContainer .ml-form-embedWrapper .ml-form-checkboxRow,
+        #mlb2-28370270.ml-form-embedContainer .ml-form-embedWrapper .ml-form-embedBody .ml-form-embedSubmit { /* Added submit button container */
+            margin: 0 0 1.25rem 0 !important; /* Adjusted margin-bottom */
+            width: 100% !important;
+            float: none !important; /* Crucial: Remove float */
+            display: block !important; /* Ensure it behaves as a block element */
+        }
+        /* Specific override to ensure the checkbox label itself is a block for proper stacking */
+        #mlb2-28370270.ml-form-embedContainer .ml-form-embedWrapper .ml-form-embedBody .ml-form-checkboxRow label {
+            display: flex !important; /* Use flexbox for alignment */
+            align-items: center !important; /* Center items vertically */
+            min-height: auto !important; /* Reset min-height */
+            padding-left: 0 !important; /* Remove MailerLite's default padding-left */
+            margin: 0 !important; /* Remove default margin */
+            width: 100% !important; /* Ensure it takes full width */
+        }
+        /* Adjust the custom checkbox icon positioning */
+        #mlb2-28370270.ml-form-embedContainer .ml-form-embedWrapper .ml-form-embedBody .ml-form-checkboxRow .label-description::before {
+            position: static !important; /* Remove absolute positioning */
+            margin-right: 0.5rem !important; /* Add space between checkbox and text */
+            flex-shrink: 0 !important; /* Prevent shrinking */
+            top: auto !important; /* Reset top */
+            left: auto !important; /* Reset left */
+            transform: none !important; /* Reset transform */
+        }
+        #mlb2-28370270.ml-form-embedContainer .ml-form-embedWrapper .ml-form-embedBody .ml-form-checkboxRow input[type=checkbox]:checked ~ .label-description::after {
+            position: static !important; /* Remove absolute positioning */
+            margin-left: -1.75rem !important; /* Pull checkmark over the box */
+            margin-right: 0.5rem !important; /* Space after checkmark */
+            top: auto !important; /* Reset top */
+            left: auto !important; /* Reset left */
+            transform: none !important; /* Reset transform */
+        }
+
+
+        #mlb2-28370270.ml-form-embedContainer .ml-form-embedWrapper .ml-form-embedBody .ml-form-formContent.horozintalForm {
+            margin: 0;
+            padding: 0 0 20px 0;
+            width: 100%;
+            height: auto;
+            float: left; /* Keep this float for horizontal form layout if needed elsewhere */
+        }
+        #mlb2-28370270.ml-form-embedContainer .ml-form-embedWrapper .ml-form-embedBody .ml-form-fieldRow {
+            margin: 0 0 1rem 0 !important; /* Adjusted margin-bottom */
+            width: 100%;
+        }
+        #mlb2-28370270.ml-form-embedContainer .ml-form-embedWrapper .ml-form-embedBody .ml-form-fieldRow.ml-last-item {
+            margin-bottom: 0 !important; /* Ensure last item has no bottom margin */
+        }
+        #mlb2-28370270.ml-form-embedContainer .ml-form-embedWrapper .ml-form-embedBody .ml-form-fieldRow.ml-formfieldHorizintal {
+            margin: 0;
+        }
+        #mlb2-28370270.ml-form-embedContainer .ml-form-embedWrapper .ml-form-embedBody .ml-form-fieldRow input {
+            background-color: var(--bg-main) !important; /* Adapted to dark theme */
+            color: var(--text-primary) !important; /* Adapted to dark theme */
+            border-color: var(--border-color) !important; /* Adapted to dark theme */
+            border-radius: 0.5rem !important; /* Match Tailwind rounded-md */
+            border-style: solid !important;
+            border-width: 1px !important;
+            font-family: 'Inter', Arial, Helvetica, sans-serif !important; /* Adapted to Inter */
+            font-size: 1rem !important; /* Adjusted size */
+            height: auto;
+            line-height: 1.5 !important; /* Adjusted line height */
+            margin: 0 !important; /* Remove MailerLite's default margins */
+            padding: 0.75rem 1rem !important; /* Match Tailwind padding */
+            width: 100% !important;
+            box-sizing: border-box !important;
+            max-width: 100% !important;
+        }
+        /* Placeholder text color */
+        #mlb2-28370270.ml-form-embedContainer .ml-form-embedWrapper .ml-form-embedBody .ml-form-fieldRow input::-webkit-input-placeholder,
+        #mlb2-28370270.ml-form-embedContainer .ml-form-embedWrapper .ml-form-embedBody .ml-form-horizontalRow input::-webkit-input-placeholder { color: var(--text-secondary) !important; opacity: 0.7 !important; }
+        #mlb2-28370270.ml-form-embedContainer .ml-form-embedWrapper .ml-form-embedBody .ml-form-fieldRow input::-moz-placeholder,
+        #mlb2-28370270.ml-form-embedContainer .ml-form-embedWrapper .ml-form-embedBody .ml-form-horizontalRow input::-moz-placeholder { color: var(--text-secondary) !important; opacity: 0.7 !important; }
+        #mlb2-28370270.ml-form-embedContainer .ml-form-embedWrapper .ml-form-embedBody .ml-form-fieldRow input:-ms-input-placeholder,
+        #mlb2-28370270.ml-form-embedContainer .ml-form-embedWrapper .ml-form-embedBody .ml-form-horizontalRow input:-ms-input-placeholder { color: var(--text-secondary) !important; opacity: 0.7 !important; }
+        #mlb2-28370270.ml-form-embedContainer .ml-form-embedWrapper .ml-form-embedBody .ml-form-fieldRow input:-moz-placeholder,
+        #mlb2-28370270.ml-form-embedContainer .ml-form-embedWrapper .ml-form-embedBody .ml-form-horizontalRow input:-moz-placeholder { color: var(--text-secondary) !important; opacity: 0.7 !important; }
+
+        #mlb2-28370270.ml-form-embedContainer .ml-form-embedWrapper .ml-form-embedBody .ml-form-fieldRow textarea, #mlb2-28370270.ml-form-embedContainer .ml-form-embedWrapper .ml-form-embedBody .ml-form-horizontalRow textarea {
+            background-color: var(--bg-main) !important; /* Adapted to dark theme */
+            color: var(--text-primary) !important; /* Adapted to dark theme */
+            border-color: var(--border-color) !important; /* Adapted to dark theme */
+            border-radius: 0.5rem !important; /* Match Tailwind rounded-md */
+            border-style: solid !important;
+            border-width: 1px !important;
+            font-family: 'Inter', Arial, Helvetica, sans-serif !important; /* Adapted to Inter */
+            font-size: 1rem !important;
+            height: auto;
+            line-height: 1.5 !important;
+            margin: 0 !important;
+            padding: 0.75rem 1rem !important;
+            width: 100% !important;
+            box-sizing: border-box !important;
+            max-width: 100% !important;
+        }
+
+        /* Submit button */
+        #mlb2-28370270.ml-form-embedContainer .ml-form-embedWrapper .ml-form-embedBody .ml-form-embedSubmit button {
+            background-color: var(--accent-green) !important;
+            border: none !important;
+            border-radius: 0.5rem !important; /* Rounded corners */
+            box-shadow: 0 4px 15px rgba(34, 197, 94, 0.2) !important; /* Green shadow */
+            color: var(--bg-main) !important; /* Dark text for contrast */
+            cursor: pointer;
+            font-family: 'Inter', Arial, Helvetica, sans-serif !important; /* Adapted to Inter */
+            font-size: 1.125rem !important; /* text-lg */
+            font-weight: 700 !important;
+            line-height: 1.75rem !important; /* Adjusted line height */
+            height: auto;
+            padding: 0.75rem 1.5rem !important; /* Larger padding */
+            width: 100% !important;
+            box-sizing: border-box !important;
+            transition: all 0.3s ease; /* Smooth transition */
+        }
+        #mlb2-28370270.ml-form-embedContainer .ml-form-embedWrapper .ml-form-embedBody .ml-form-embedSubmit button.loading {
+            display: none;
+        }
+        #mlb2-28370270.ml-form-embedContainer .ml-form-embedWrapper .ml-form-embedBody .ml-form-embedSubmit button:hover {
+            background-color: #1e9e4f !important; /* Darker green on hover */
+            transform: translateY(-2px); /* Lift effect */
+            box-shadow: 0 6px 20px rgba(34, 197, 94, 0.3) !important;
+        }
+
+        /* Success message styling */
+        .ml-form-successBody h4 {
+            color: var(--accent-green) !important; /* Success message heading color */
+            font-family: 'Inter', sans-serif !important;
+            font-size: 2rem !important;
+            font-weight: 700 !important;
+            text-align: center !important;
+        }
+        .ml-form-successBody p {
+            color: var(--text-primary) !important;
+            font-family: 'Inter', sans-serif !important;
+            font-size: 1rem !important;
+            text-align: center !important;
+        }
+
+        /* Error styling */
+        .ml-error input, .ml-error textarea, .ml-error select {
+            border-color: #ef4444!important; /* Tailwind red-500 */
+        }
+        .ml-error .label-description,
+        .ml-error .label-description p,
+        .ml-error .label-description p a {
+            color: #ef4444 !important; /* Tailwind red-500 */
+        }
+
+        /* Responsive adjustments for MailerLite form */
+        @media only screen and (max-width: 400px){
+            .ml-form-embedWrapper {
+                padding: 1.5rem !important; /* Reduce padding on small screens */
+            }
+            .ml-form-embedWrapper.embedDefault, .ml-form-embedWrapper.embedPopup, .ml-form-embedWrapper.embedForm {
+                width: 100% !important;
+                max-width: 100% !important;
+            }
+        }
+    </style>
+</head>
+<body class="bg-[#0A0A0A] text-[#F5F5F5] antialiased">
+
+    <!-- ===== Header (Integrated from index.html) ===== -->
+    <header id="header" class="bg-[#0A0A0A]/80 backdrop-blur-sm sticky top-0 z-50 transition-all duration-300">
+        <nav class="container mx-auto px-6 py-4 flex justify-between items-center">
+            <a href="index.html" class="text-2xl font-bold tracking-tighter">
+                Reux<span class="text-gold">Marketing</span>
+            </a>
+            <div class="hidden md:flex items-center space-x-8">
+                <!-- Links assuming sections on index.html -->
+                <a href="index.html#services" class="text-sm font-medium hover:text-gold transition-colors duration-300">Services</a>
+                <a href="index.html#why-us" class="text-sm font-medium hover:text-gold transition-colors duration-300">Why Us</a>
+                <a href="index.html#resources" class="text-sm font-medium hover:text-gold transition-colors duration-300">Resources</a>
+                <button class="calendly-trigger bg-gold text-black text-sm font-bold py-2 px-5 rounded-lg hover:bg-gold-dark transition-all duration-300 transform hover:scale-105">
+                    Free Strategy Call
+                </button>
+            </div>
+            <div class="md:hidden">
+                <button id="mobile-menu-button" class="text-white focus:outline-none">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7"></path></svg>
+                </button>
+            </div>
+        </nav>
+        <div id="mobile-menu" class="hidden md:hidden bg-[#111111]">
+            <a href="index.html#services" class="mobile-link block py-3 px-6 text-sm hover:bg-gray-800">Services</a>
+            <a href="index.html#why-us" class="mobile-link block py-3 px-6 text-sm hover:bg-gray-800">Why Us</a>
+            <a href="index.html#resources" class="mobile-link block py-3 px-6 text-sm hover:bg-gray-800">Resources</a>
+            <div class="p-4">
+                <button class="calendly-trigger w-full bg-gold text-black text-sm font-bold py-3 px-5 rounded-lg hover:bg-gold-dark">
+                    Free Strategy Call
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content Area -->
+    <main class="max-w-xl mx-auto px-4 py-12">
+        <section class="text-center mb-12 reveal">
+            <h1 class="text-4xl md:text-5xl font-extrabold text-primary mb-4">Unlock Your Marketing Edge!</h1>
+            <p class="text-lg md:text-xl text-secondary max-w-2xl mx-auto">
+                Join the ReuxMarketing community and gain <span class="gold-text font-bold">free, immediate access</span> to our powerful suite of marketing tools. Plus, opt-in to our exclusive email list for digital products and actionable marketing advice delivered straight to your inbox. <span class="font-bold">No fluff, only value.</span>
+            </p>
+        </section>
+
+        <section class="card p-6 md:p-8 reveal">
+            <!-- MailerLite Form Embed Code -->
+            <!-- This div is where the MailerLite form will be injected by their script -->
+            <!-- The ID 'mlb2-28370270' is from your original MailerLite embed code -->
+            <div id="mlb2-28370270" class="ml-form-embedContainer ml-subscribe-form ml-subscribe-form-28370270">
+                <div class="ml-form-align-center ">
+                    <div class="ml-form-embedWrapper embedForm">
+                        <div class="ml-form-embedBody ml-form-embedBodyDefault row-form">
+                            <div class="ml-form-embedContent" style=" ">
+                                <!-- These H4 and P tags will be populated/overwritten by MailerLite's script -->
+                                <h4>Claim Your Free Marketing Arsenal</h4>
+                                <p>Enter your email below to get started!</p>
+                            </div>
+                            <!-- This form structure is from MailerLite's legacy embed -->
+                            <form class="ml-block-form" action="https://assets.mailerlite.com/jsonp/1664028/forms/159908600858281926/subscribe" data-code="" method="post" target="_blank">
+                                <div class="ml-form-formContent">
+                                    <div class="ml-form-fieldRow ml-last-item">
+                                        <div class="ml-field-group ml-field-email ml-validate-email ml-validate-required">
+                                            <input aria-label="email" aria-required="true" type="email" class="form-control" data-inputmask="" name="fields[email]" placeholder="Email" autocomplete="email">
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="ml-form-checkboxRow ml-validate-required">
+                                    <label class="checkbox">
+                                        <input type="checkbox" required>
+                                        <div class="label-description">
+                                            <p>Opt in to receive marketing value and updates</p>
+                                        </div>
+                                    </label>
+                                </div>
+                                <input type="hidden" name="ml-submit" value="1">
+                                <div class="ml-form-embedSubmit">
+                                    <button type="submit" class="primary">Subscribe</button>
+                                    <button disabled="disabled" style="display: none;" type="button" class="loading">
+                                        <div class="ml-form-embedSubmitLoad"></div>
+                                        <span class="sr-only">Loading...</span>
+                                    </button>
+                                </div>
+                                <input type="hidden" name="anticsrf" value="true">
+                            </form>
+                        </div>
+                        <div class="ml-form-successBody row-success" style="display: none">
+                            <div class="ml-form-successContent">
+                                <h4>Thank you!</h4>
+                                <p>You have successfully gained access to my tools and joined my&nbsp;subscriber list.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- End MailerLite Form Embed Code -->
+        </section>
+    </main>
+    
+    <!-- ===== Footer (Integrated from index.html) ===== -->
+    <footer class="py-8 border-t border-gray-800">
+        <div class="container mx-auto px-6 text-center text-gray-400">
+            <div class="flex justify-center space-x-6 mb-4">
+                <!-- X/Twitter Icon -->
+                <a href="https://x.com/ReuxMarketing" target="_blank" rel="noopener noreferrer" class="hover:text-gold transition-colors duration-300" aria-label="X/Twitter">
+                    <svg class="h-6 w-6" fill="currentColor" viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H4.68l4.713 6.231L18.244 2.25zM17.5 19.5h1.5l-8.5-11.5h-1.5l8.5 11.5z"/></svg>
+                </a>
+                <!-- YouTube Icon -->
+                <a href="https://www.youtube.com/@ReuxMarketing" target="_blank" rel="noopener noreferrer" class="hover:text-gold transition-colors duration-300" aria-label="YouTube">
+                    <svg class="h-6 w-6" fill="currentColor" viewBox="0 0 24 24"><path d="M19.615 3.184c-3.604-.246-11.631-.245-15.23 0-3.897.266-4.356 2.62-4.385 8.816.029 6.185.484 8.549 4.385 8.816 3.6.245 11.626.246 15.23 0 3.897-.266 4.356-2.62 4.385-8.816-.029-6.185-.484-8.549-4.385-8.816zm-10.615 12.816v-8l8 3.993-8 4.007z"/></svg>
+                </a>
+                <!-- Instagram Icon -->
+                <a href="https://www.instagram.com/reuxmarketing/" target="_blank" rel="noopener noreferrer" class="hover:text-gold transition-colors duration-300" aria-label="Instagram">
+                    <svg class="h-6 w-6" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.85s-.011 3.584-.069 4.85c-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07s-3.584-.012-4.85-.07c-3.252-.148-4.771-1.691-4.919-4.919-.058-1.265-.069-1.645-.069-4.85s.011-3.584.069-4.85c.149-3.225 1.664-4.771 4.919-4.919 1.266-.057 1.644-.069 4.85-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948s.014 3.667.072 4.947c.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072s3.667-.014 4.947-.072c4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.947s-.014-3.667-.072-4.947c-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.689-.073-4.948-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.162 6.162 6.162 6.162-2.759 6.162-6.162-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4s1.791-4 4-4 4 1.79 4 4-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44 1.441-.645 1.441-1.44-.645-1.44-1.441-1.44z"/></svg>
+                </a>
+                <!-- Discord Icon -->
+                <a href="https://discord.gg/4TgWtMK6fX" target="_blank" rel="noopener noreferrer" class="hover:text-gold transition-colors duration-300" aria-label="Discord">
+                   <svg class="h-6 w-6" fill="currentColor" role="img" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M20.317 4.37a19.79 19.79 0 0 0-4.88-1.52.08.08 0 0 0-.08.04c-.21.38-.45.83-.62 1.25a17.74 17.74 0 0 0-4.08 0 18.44 18.44 0 0 0-.62-1.25.08.08 0 0 0-.08-.04 19.74 19.74 0 0 0-4.88 1.52C2.7 5.1 2 6.23 2 6.23a17.91 17.91 0 0 0 6.28 15.66.08.08 0 0 0 .08 0 16.57 16.57 0 0 0 1.83-2 .08.08 0 0 0-.04-.12 12.65 12.65 0 0 1-1.92-.88.08.08 0 0 1 0-.12c.02-.02.05-.04.08-.05a12.1 12.1 0 0 1 1.84-.55.08.08 0 0 1 .09 0c.39.19.74.4 1.08.62a.08.08 0 0 0 .09.05c.44.28.84.58 1.22.91a.08.08 0 0 0 .09.04 16.57 16.57 0 0 0 1.83 2 .08.08 0 0 0 .08 0 17.91 17.91 0 0 0 6.28-15.66S22.21 5.1 20.317 4.37zM15.61 15.89c-.78 0-1.41-.63-1.41-1.41s.63-1.41 1.41-1.41 1.41.63 1.41 1.41-1.19 1.41-1.41 1.41zm-4.59 0c-.78 0-1.41-.63-1.41-1.41s.63-1.41 1.41-1.41 1.41.63 1.41 1.41-1.19 1.41-1.41 1.41z"/></svg>
+                </a>
+            </div>
+            <p class="text-sm">&copy; 2025 ReuxMarketing. All Rights Reserved.</p>
+        </div>
+    </footer>
+
+    <!-- ===== Calendly Modal (Integrated from index.html) ===== -->
+    <div id="calendly-modal" class="fixed inset-0 bg-black bg-opacity-80 backdrop-blur-sm flex items-center justify-center z-50 hidden">
+        <div class="bg-[#1A1A1A] rounded-lg w-11/12 max-w-4xl h-5/6 relative p-4">
+            <button id="close-modal" class="absolute -top-3 -right-3 text-white bg-black rounded-full p-2 z-10 hover:bg-gray-700 transition-colors">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+            </button>
+            <div class="w-full h-full rounded-lg overflow-hidden relative">
+                <!-- Loading Spinner for Calendly -->
+                <div id="calendly-loading" class="absolute inset-0 flex items-center justify-center bg-[#1A1A1A] text-white">
+                    <div class="spinner"></div>
+                    <p class="ml-4 text-lg">Loading Calendly...</p>
+                </div>
+                <div id="calendly-fallback" class="hidden absolute inset-0 bg-[#1A1A1A] flex-col items-center justify-center text-center p-4">
+                    <h3 class="text-2xl font-bold text-white mb-4">Having trouble loading?</h3>
+                    <p class="text-gray-300 mb-6">You can book your call directly or email us.</p>
+                    <a href="mailto:contact@reuxmarketing.com" class="bg-gold text-black font-bold py-3 px-6 rounded-lg hover:bg-gold-dark">Email Us: contact@reuxmarketing.com</a>
+                </div>
+                <iframe id="calendly-iframe" src="" class="w-full h-full border-0 hidden"></iframe>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Mobile menu toggle logic
+            const mobileMenuButton = document.getElementById('mobile-menu-button');
+            const mobileMenu = document.getElementById('mobile-menu');
+            const mobileLinks = document.querySelectorAll('.mobile-link');
+
+            mobileMenuButton.addEventListener('click', () => {
+                mobileMenu.classList.toggle('hidden');
+            });
+
+            const closeMobileMenu = () => {
+                mobileMenu.classList.add('hidden');
+            };
+            
+            mobileLinks.forEach(link => link.addEventListener('click', closeMobileMenu));
+
+            // Calendly Modal logic (copied from index.html)
+            const calendlyModal = document.getElementById('calendly-modal');
+            const closeModalButton = document.getElementById('close-modal');
+            const calendlyTriggers = document.querySelectorAll('.calendly-trigger');
+            const calendlyIframe = document.getElementById('calendly-iframe');
+            const calendlyFallback = document.getElementById('calendly-fallback');
+            const calendlyLoading = document.getElementById('calendly-loading');
+            const calendlyUrl = 'https://calendly.com/reuben-reuxmarketing/15m-information-call'; // Your Calendly URL
+
+            const openModal = (e) => {
+                e.preventDefault();
+                calendlyLoading.classList.remove('hidden');
+                calendlyFallback.classList.add('hidden');
+                calendlyIframe.classList.add('hidden');
+
+                if (calendlyIframe.src !== calendlyUrl) {
+                    calendlyIframe.src = calendlyUrl;
+                }
+                calendlyModal.classList.remove('hidden');
+                document.body.style.overflow = 'hidden';
+            };
+
+            const closeModal = () => {
+                calendlyModal.classList.add('hidden');
+                document.body.style.overflow = '';
+                calendlyIframe.src = ''; 
+            };
+
+            calendlyTriggers.forEach(trigger => trigger.addEventListener('click', openModal));
+            closeModalButton.addEventListener('click', closeModal);
+            calendlyModal.addEventListener('click', (e) => {
+                if (e.target === calendlyModal) {
+                    closeModal();
+                }
+            });
+            
+            calendlyIframe.onload = function() {
+                calendlyLoading.classList.add('hidden');
+                calendlyIframe.classList.remove('hidden');
+            };
+
+            calendlyIframe.onerror = function() {
+                calendlyLoading.classList.add('hidden');
+                calendlyIframe.classList.add('hidden');
+                calendlyFallback.classList.remove('hidden');
+                calendlyFallback.classList.add('flex');
+            };
+
+            // Reveal animation for sections (copied from index.html)
+            const revealElements = document.querySelectorAll('.reveal');
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('visible');
+                    }
+                });
+            }, { threshold: 0.1 });
+
+            revealElements.forEach(el => observer.observe(el));
+
+            // Header shadow on scroll (copied from index.html)
+            const header = document.getElementById('header');
+            window.addEventListener('scroll', () => {
+                header.classList.toggle('shadow-lg', window.scrollY > 10);
+                header.classList.toggle('shadow-black/20', window.scrollY > 10);
+            });
+        });
+
+        // MailerLite specific JS (from your provided code)
+        function ml_webform_success_28370270() {
+            var $ = ml_jQuery || jQuery; // Use ml_jQuery if available, fallback to global jQuery
+            if ($) {
+                $('.ml-subscribe-form-28370270 .row-success').show();
+                $('.ml-subscribe-form-28370270 .row-form').hide();
+            } else {
+                console.warn("jQuery or ml_jQuery not found. MailerLite success function might not work as expected.");
+                // Fallback for environments without jQuery if needed
+                document.querySelector('.ml-subscribe-form-28370270 .row-success').style.display = 'block';
+                document.querySelector('.ml-subscribe-form-28370270 .row-form').style.display = 'none';
+            }
+            // Redirect to tools page after success
+            try {
+                window.top.location.href = 'https://www.reuxmarketing.com/tools';
+            } catch (e) {
+                window.location.href = 'https://www.reuxmarketing.com/tools.html';
+            }
+        }
+    </script>
+    <!-- MailerLite Webforms Script (Legacy) -->
+    <script src="https://groot.mailerlite.com/js/w/webforms.min.js?v176e10baa5e7ed80d35ae235be3d5024" type="text/javascript"></script>
+    <!-- MailerLite JSONP Fetch (Legacy) -->
+    <script>
+        // This fetch call is part of the legacy embed to ensure form loads.
+        fetch("https://assets.mailerlite.com/jsonp/1664028/forms/159908600858281926/takel")
+    </script>
+</body>
+</html>
