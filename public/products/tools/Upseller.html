@@ -1,0 +1,567 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Upsell Generator — ReuxMarketing</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    
+    <style>
+        /* === ReuxMarketing Official Style Guide === */
+
+        /* --- Core Variables & Body --- */
+        :root {
+            --bg-main: #0a0a0a;
+            --bg-card: #1a1a1a;
+            --text-primary: #f0f0f0;
+            --text-secondary: #c7c7c7; /* For less emphasis */
+            --accent-gold: #FFD700;
+            --accent-green: #22c55e;
+            --border-color: #444;
+            --nav-blur-bg: rgba(10, 10, 10, 0.8);
+            --font-main: 'Inter', sans-serif;
+        }
+        body {
+            font-family: var(--font-main);
+            background-color: var(--bg-main);
+            color: var(--text-primary);
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        /* --- Reusable Components --- */
+        .gold-text { color: var(--accent-gold); }
+        .cta-btn {
+            background-color: var(--accent-green);
+            color: #0a0a0a; /* Dark text for contrast on green button */
+            font-weight: 700;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(34, 197, 94, 0.2);
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            text-decoration: none;
+        }
+        .cta-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(34, 197, 94, 0.3);
+        }
+        .input-field {
+            background-color: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 0.5rem;
+            padding: 0.75rem 1rem;
+            color: var(--text-primary);
+            transition: border-color 0.3s ease;
+            width: 100%;
+        }
+        .input-field:focus {
+            outline: none;
+            border-color: var(--accent-gold);
+        }
+        .card {
+            background-color: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 0.75rem;
+            overflow: hidden;
+        }
+
+        /* --- Main Header --- */
+        .main-header {
+            text-align: center;
+            padding: 2.5rem 1rem;
+            border-bottom: 1px solid #2a2a2a;
+        }
+        .main-header .brand-logo {
+            font-weight: 900;
+            font-size: 2.5rem;
+            color: var(--text-primary);
+            margin-bottom: 0.5rem;
+        }
+        .main-header .tool-title {
+            font-size: 1.25rem;
+            color: var(--text-secondary);
+        }
+
+        /* --- Cross-Tool Navigation Menu --- */
+        #tool-navigator {
+            position: sticky;
+            top: 0;
+            z-index: 50;
+            background-color: var(--nav-blur-bg);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            padding: 0.75rem 1rem;
+            border-bottom: 1px solid #2a2a2a;
+        }
+        #tool-navigator .nav-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .nav-cta-link {
+            color: var(--accent-gold);
+            font-weight: 700;
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+        .nav-cta-link:hover {
+            color: var(--text-primary);
+        }
+        .nav-tools-btn {
+            background-color: transparent;
+            border: 2px solid var(--border-color);
+            color: var(--text-secondary);
+            font-weight: 600;
+            font-size: 0.9rem;
+            padding: 0.4rem 1rem;
+            border-radius: 0.5rem;
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+        .nav-tools-btn:hover {
+            border-color: var(--accent-gold);
+            background-color: rgba(255, 215, 0, 0.1);
+            color: var(--accent-gold);
+        }
+
+        /* --- Footer --- */
+        .main-footer {
+            text-align: center;
+            padding: 2rem 1rem;
+            margin-top: 3rem;
+            border-top: 1px solid #2a2a2a;
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        /* Page-specific styles */
+        .secondary-btn {
+            background-color: var(--bg-card); /* Using bg-card for secondary button */
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+            font-weight: 600;
+            transition: all 0.3s ease;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+        }
+        .secondary-btn:hover {
+            background-color: #2a2a2a; /* Slightly lighter bg-card on hover */
+            border-color: var(--accent-gold);
+            color: var(--accent-gold);
+        }
+        /* Tooltip styles */
+        .tooltip {
+            position: relative;
+            cursor: help;
+        }
+        .tooltip .tooltip-text {
+            visibility: hidden;
+            width: 220px;
+            background-color: #1f2937;
+            color: #fff;
+            text-align: center;
+            border-radius: 6px;
+            padding: 8px;
+            position: absolute;
+            z-index: 1;
+            bottom: 125%;
+            left: 50%;
+            margin-left: -110px;
+            opacity: 0;
+            transition: opacity 0.3s;
+            font-size: 0.8rem;
+            line-height: 1.2;
+        }
+        .tooltip:hover .tooltip-text {
+            visibility: visible;
+            opacity: 1;
+        }
+        /* Custom animation for results appearing */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .fade-in {
+            animation: fadeIn 0.8s ease-out forwards;
+        }
+    </style>
+</head>
+<body class="bg-black">
+
+    <header class="main-header">
+        <div class="brand-logo">Reux<span class="gold-text">Marketing</span></div>
+        <p class="tool-title">Transform your single sale into a high-value customer journey</p>
+    </header>
+
+    <nav id="tool-navigator">
+        <div class="nav-container">
+            <a href="tools.html" class="nav-tools-btn">Back to Tools</a>
+            <a href="index.html" class="nav-cta-link">Explore The Marketing With Me &rarr;</a>
+        </div>
+    </nav>
+
+    <main class="max-w-4xl mx-auto px-4 py-12">
+        <!-- Section 1: Input Form -->
+        <section id="input-section" class="mb-16">
+            <div class="max-w-3xl mx-auto">
+                <h2 class="text-3xl font-bold text-center mb-2">First, Tell Us About Your Core Offer</h2>
+                <p class="text-center text-gray-400 mb-8">The more detail you provide, the smarter the suggestions.</p>
+                <form id="offer-form" class="space-y-6">
+                    <div>
+                        <label for="offer-name" class="block text-sm font-semibold mb-2 gold-text">Offer Name</label>
+                        <input type="text" id="offer-name" class="input-field" placeholder="e.g., The 'Momentum' Marketing Course" required>
+                    </div>
+                    <div>
+                        <label for="offer-description" class="block text-sm font-semibold mb-2 gold-text">Offer Description (include keywords like 'course', 'service', 'ebook', 'coaching', 'software')</label>
+                        <textarea id="offer-description" class="input-field h-28" placeholder="Briefly describe what your offer is and who it's for." required></textarea>
+                    </div>
+                    <div class="grid md:grid-cols-2 gap-6">
+                        <div>
+                            <label for="price-point" class="block text-sm font-semibold mb-2 gold-text">Price Point ($)</label>
+                            <input type="number" id="price-point" class="input-field" placeholder="e.g., 497" required>
+                        </div>
+                        <div>
+                            <label for="primary-promise" class="block text-sm font-semibold mb-2 gold-text">Primary Promise / Result</label>
+                            <input type="text" id="primary-promise" class="input-field" placeholder="e.g., Double your leads in 90 days" required>
+                        </div>
+                    </div>
+                    <div>
+                        <label for="customer-pain-point" class="block text-sm font-semibold mb-2 gold-text">Target Customer's #1 Pain Point</label>
+                        <textarea id="customer-pain-point" class="input-field h-24" placeholder="What is the main problem your customer is trying to solve?" required></textarea>
+                    </div>
+                    <div class="text-center pt-4">
+                        <button type="submit" class="cta-btn px-12 py-4 text-lg">
+                           💡 Show Me My Hidden Revenue
+                        </button>
+                        <p class="text-xs text-gray-500 mt-3">These insights are based on psychological triggers, not just templates.</p>
+                    </div>
+                </form>
+            </div>
+        </section>
+
+        <!-- Section 2: Upsell Generator Results -->
+        <section id="results-section" class="mb-16 hidden">
+            <h2 class="text-3xl font-bold text-center mb-4">Your Custom Upsell Strategy</h2>
+            <div id="results-actions" class="flex justify-center items-center space-x-4 mb-8">
+                <!-- Action buttons will be injected here -->
+            </div>
+            <div id="results-output" class="grid md:grid-cols-1 lg:grid-cols-3 gap-8">
+                <!-- Dynamic content will be injected here -->
+            </div>
+        </section>
+    </main>
+    
+    <footer class="main-footer">
+        <p>&copy; 2025 ReuxMarketing. All Rights Reserved. Built to help you grow.</p>
+    </footer>
+
+    <!-- Message Box for Clipboard -->
+    <div id="clipboard-message" class="fixed bottom-5 right-5 bg-green-500 text-white py-2 px-4 rounded-lg shadow-lg transition-transform translate-y-20 opacity-0">
+        Results copied to clipboard!
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // --- ICON REPLACEMENT ---
+            lucide.createIcons();
+
+            // --- DOM ELEMENT REFERENCES ---
+            const form = document.getElementById('offer-form');
+            const resultsSection = document.getElementById('results-section');
+            const resultsActions = document.getElementById('results-actions');
+            const resultsOutput = document.getElementById('results-output');
+            const clipboardMessage = document.getElementById('clipboard-message');
+            
+            // --- LOCALSTORAGE ---
+            const inputs = ['offer-name', 'offer-description', 'price-point', 'primary-promise', 'customer-pain-point'];
+            
+            function saveInputs() {
+                const data = {};
+                inputs.forEach(id => {
+                    data[id] = document.getElementById(id).value;
+                });
+                localStorage.setItem('upsellGeneratorInputs', JSON.stringify(data));
+            }
+
+            function loadInputs() {
+                const savedData = localStorage.getItem('upsellGeneratorInputs');
+                if (savedData) {
+                    const data = JSON.parse(savedData);
+                    inputs.forEach(id => {
+                        if (data[id]) {
+                            document.getElementById(id).value = data[id];
+                        }
+                    });
+                }
+            }
+            
+            loadInputs();
+            inputs.forEach(id => document.getElementById(id).addEventListener('input', saveInputs));
+
+            // --- FORM SUBMISSION LOGIC ---
+            form.addEventListener('submit', function(e) {
+                e.preventDefault();
+                runGenerator();
+            });
+            
+            function runGenerator() {
+                const offerDetails = {};
+                inputs.forEach(id => offerDetails[id.replace(/-./g, x=>x[1].toUpperCase())] = document.getElementById(id).value);
+                offerDetails.pricePoint = parseFloat(offerDetails.pricePoint);
+
+                generateAndDisplayResults(offerDetails);
+
+                resultsSection.classList.remove('hidden');
+                
+                // Smooth scroll to results only on first generation
+                if(!resultsActions.hasChildNodes()){
+                     setTimeout(() => {
+                        resultsSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    }, 100);
+                }
+            }
+
+            // --- CORE GENERATION LOGIC ---
+            function generateAndDisplayResults(offer) {
+                resultsOutput.innerHTML = ''; // Clear previous results
+                resultsActions.innerHTML = ''; // Clear previous actions
+
+                // Add action buttons
+                resultsActions.innerHTML = `
+                    <button id="refresh-btn" class="secondary-btn flex items-center space-x-2">
+                        <i data-lucide="refresh-cw" class="w-4 h-4"></i>
+                        <span>Refresh Suggestions</span>
+                    </button>
+                    <button id="copy-btn" class="secondary-btn flex items-center space-x-2">
+                        <i data-lucide="copy" class="w-4 h-4"></i>
+                        <span>Copy Results</span>
+                    </button>
+                `;
+                document.getElementById('refresh-btn').addEventListener('click', runGenerator);
+                document.getElementById('copy-btn').addEventListener('click', copyResultsToClipboard);
+
+                const suggestions = [
+                    generateUpsell(offer),
+                    generateOrderBump(offer),
+                    generateBundle(offer)
+                ];
+
+                suggestions.forEach(s => displayResultCard(s, offer.pricePoint));
+                
+                lucide.createIcons(); // Re-run lucide to render new icons
+            }
+
+            function getRandomItem(library, offer) {
+                const validItems = library.filter(item => item.condition(offer));
+                const fallback = library.find(item => item.condition === true);
+                const targetItems = validItems.length > 1 ? validItems.filter(item => item.condition !== true) : validItems.length ? validItems : [fallback];
+                return targetItems[Math.floor(Math.random() * targetItems.length)];
+            }
+            
+            function getRandomAOVBoost(base, range) {
+                const min = base;
+                const max = base + range;
+                const boostMin = Math.floor(Math.random() * (range + 1) + min);
+                const boostMax = Math.floor(Math.random() * (range / 2 + 1) + boostMin);
+                return { min: boostMin, max: boostMax, display: `+${boostMin}–${boostMax}%` };
+            }
+            
+            // --- EXPANDED SUGGESTION LIBRARIES ---
+            function generateUpsell(offer) {
+                const library = [
+                    {
+                        condition: o => o.pricePoint < 100 && o.offerDescription.toLowerCase().includes('course'),
+                        shortTitle: "The 'Pro' Version",
+                        suggestion: `Offer a "Pro" version of ${offer.offerName} with extra modules, live Q&A sessions, and a private community.`,
+                        reasoning: "Appeals to the most motivated customers seeking status and deeper results. Creates a powerful premium tier.",
+                        aov: { base: 40, range: 20 }
+                    },
+                    {
+                        condition: o => o.primaryPromise.toLowerCase().includes('time') || o.primaryPromise.toLowerCase().includes('fast'),
+                        shortTitle: "Accelerated Results Package",
+                        suggestion: `Offer an "Accelerated Results" package with 1-on-1 coaching to implement ${offer.offerName} faster.`,
+                        reasoning: `Leverages the customer's primary desire for speed. Perfect for those who want to overcome the ${offer.customerPainPoint} immediately.`,
+                        aov: { base: 50, range: 25 }
+                    },
+                    {
+                        condition: o => o.offerDescription.toLowerCase().includes('service') || o.offerDescription.toLowerCase().includes('agency'),
+                        shortTitle: "Ongoing Retainer",
+                        suggestion: `Offer a recurring retainer for ongoing implementation, support, and optimization of the service results.`,
+                        reasoning: "Transitions a one-time project into a recurring revenue stream, providing stability for you and continuous value for the client.",
+                        aov: { base: 100, range: 50 }
+                    },
+                    {
+                        condition: o => o.offerDescription.toLowerCase().includes('software') || o.offerDescription.toLowerCase().includes('app'),
+                        shortTitle: "Team / Business License",
+                        suggestion: `Sell a "Team" or "Business" license with multi-user access and priority support.`,
+                        reasoning: "Unlocks a higher-value B2B customer segment. The incremental cost to you is low, but the value to a team is immense.",
+                        aov: { base: 60, range: 40 }
+                    },
+                    {
+                        condition: o => true, // Default fallback
+                        shortTitle: "'Done For You' Service",
+                        suggestion: `Add a "Done For You" setup or implementation service for ${offer.offerName}.`,
+                        reasoning: "Targets customers who value speed and convenience over cost. A high-ticket offer that significantly boosts AOV.",
+                        aov: { base: 30, range: 20 }
+                    }
+                ];
+
+                const selected = getRandomItem(library, offer);
+                return { type: 'High-Impact Upsell', icon: 'chevrons-up', ...selected, aovBoost: getRandomAOVBoost(selected.aov.base, selected.aov.range) };
+            }
+
+            function generateOrderBump(offer) {
+                const library = [
+                    {
+                        condition: o => o.customerPainPoint.toLowerCase().includes('tech') || o.customerPainPoint.toLowerCase().includes('overwhelm'),
+                        shortTitle: "Quick Start Guide",
+                        suggestion: `A "Quick Start" video guide to overcome the initial setup hurdles of ${offer.offerName}.`,
+                        reasoning: "Directly addresses the initial friction or fear, making the 'yes' to the main offer easier by providing an immediate, easy win.",
+                        aov: { base: 8, range: 7 }
+                    },
+                    {
+                        condition: o => o.pricePoint > 500,
+                        shortTitle: "Personal Strategy Audit",
+                        suggestion: `Offer a personal 30-minute strategy audit to complement ${offer.offerName}.`,
+                        reasoning: "Adds a layer of personalization and perceived value that feels like a steal, reducing risk for a high-ticket purchase.",
+                        aov: { base: 15, range: 10 }
+                    },
+                    {
+                        condition: o => o.offerDescription.toLowerCase().includes('ebook') || o.offerDescription.toLowerCase().includes('guide'),
+                        shortTitle: "Audiobook Version",
+                        suggestion: `An audio version of ${offer.offerName} for on-the-go learning.`,
+                        reasoning: "Adds value through convenience, catering to different learning styles and busy schedules. High-margin and easy to produce.",
+                        aov: { base: 12, range: 8 }
+                    },
+                    {
+                        condition: o => o.offerDescription.toLowerCase().includes('course'),
+                        shortTitle: "Transcripts & Notes",
+                        suggestion: `A transcript and notes package for all video lessons in ${offer.offerName}.`,
+                        reasoning: "Perfect for students who prefer reading or want to quickly reference key concepts without re-watching videos.",
+                        aov: { base: 10, range: 5 }
+                    },
+                    {
+                        condition: o => true, // Default fallback
+                        shortTitle: "Implementation Toolkit",
+                        suggestion: `A toolkit of checklists, swipe files, and templates to help execute the lessons from ${offer.offerName}.`,
+                        reasoning: "An impulse-buy that simplifies implementation and reduces overwhelm, making the main offer seem more achievable.",
+                        aov: { base: 10, range: 8 }
+                    }
+                ];
+                
+                const selected = getRandomItem(library, offer);
+                return { type: 'Impulse Add-On', icon: 'plus-circle', ...selected, aovBoost: getRandomAOVBoost(selected.aov.base, selected.aov.range) };
+            }
+            
+            function generateBundle(offer) {
+                const library = [
+                    {
+                        condition: o => o.primaryPromise.toLowerCase().includes('content') || o.primaryPromise.toLowerCase().includes('marketing'),
+                        shortTitle: "Social Media Prompts",
+                        suggestion: `Bundle ${offer.offerName} with a pack of 50 pre-written social media prompts to announce their results.`,
+                        reasoning: "Provides immediate, usable assets that leverage the success from the core offer. It's a highly synergistic add-on.",
+                        aov: { base: 18, range: 12 }
+                    },
+                    {
+                        condition: o => o.primaryPromise.toLowerCase().includes('design') || o.primaryPromise.toLowerCase().includes('build'),
+                        shortTitle: "Maintenance Package",
+                        suggestion: `Combine ${offer.offerName} with a 'Maintenance Package' or 'Ongoing Support' subscription.`,
+                        reasoning: "Creates recurring revenue and offers peace of mind, solving the long-term problem of upkeep after the initial result is achieved.",
+                        aov: { base: 22, range: 13 }
+                    },
+                    {
+                        condition: o => o.offerDescription.toLowerCase().includes('coaching'),
+                        shortTitle: "Workshop Library Access",
+                        suggestion: `Bundle your coaching package with lifetime access to a library of your past workshop recordings.`,
+                        reasoning: "Dramatically increases the perceived value of the offer by adding a deep well of resources for a low marginal cost.",
+                        aov: { base: 25, range: 10 }
+                    },
+                    {
+                        condition: o => o.offerDescription.toLowerCase().includes('fitness') || o.offerDescription.toLowerCase().includes('health'),
+                        shortTitle: "Custom Nutrition Plan",
+                        suggestion: `Bundle ${offer.offerName} with a custom nutrition plan or recipe book that complements the training program.`,
+                        reasoning: "Solves a related, adjacent problem for the customer, creating a more holistic and effective solution.",
+                        aov: { base: 20, range: 15 }
+                    },
+                    {
+                        condition: o => true, // Default fallback
+                        shortTitle: "Monetization Mini-Course",
+                        suggestion: `Package ${offer.offerName} with a complementary mini-course on "How to Monetize Your New Skill".`,
+                        reasoning: "Answers the 'what's next?' question in the customer's mind. Increases perceived value by solving a future problem.",
+                        aov: { base: 20, range: 10 }
+                    }
+                ];
+
+                const selected = getRandomItem(library, offer);
+                return { type: 'Value Stack Bundle', icon: 'package', ...selected, aovBoost: getRandomAOVBoost(selected.aov.base, selected.aov.range) };
+            }
+
+            // --- UI DISPLAY LOGIC ---
+            function displayResultCard(data, price) {
+                const boostValueMin = (price * (data.aovBoost.min / 100)).toFixed(2);
+                const boostValueMax = (price * (data.aovBoost.max / 100)).toFixed(2);
+
+                const cardHTML = `
+                    <div class="card p-6 fade-in flex flex-col">
+                        <div class="flex-grow">
+                            <div class="flex items-start justify-between mb-4">
+                                <h3 class="text-2xl font-bold">${data.type}: <span class="gold-text">'${data.shortTitle}'</span></h3>
+                                <i data-lucide="${data.icon}" class="w-8 h-8 text-gray-500 ml-3 flex-shrink-0"></i>
+                            </div>
+                            <p class="text-gray-300 mb-4">${data.suggestion}</p>
+                        </div>
+                        <div class="mt-auto">
+                            <p class="text-sm font-semibold gold-text mb-2">Psychological Reasoning:</p>
+                            <p class="text-sm text-gray-400 mb-4">${data.reasoning}</p>
+                            <div class="tooltip bg-green-500/10 border border-green-500/30 rounded-md p-3 text-center">
+                                <span class="tooltip-text">For a $${price} offer, this could increase the average sale to between $${(price + parseFloat(boostValueMin)).toFixed(2)} and $${(price + parseFloat(boostValueMax)).toFixed(2)}.</span>
+                                <p class="text-sm text-green-300">Estimated AOV Boost</p>
+                                <p class="text-2xl font-bold text-white">${data.aovBoost.display}</p>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                resultsOutput.innerHTML += cardHTML;
+            }
+            
+            // --- UTILITY FUNCTIONS ---
+            function copyResultsToClipboard() {
+                const cards = resultsOutput.querySelectorAll('.card');
+                let fullReport = `My Upsell Strategy Report\n============================\n\n`;
+                
+                cards.forEach(card => {
+                    const title = card.querySelector('h3').innerText;
+                    const suggestion = card.querySelector('.text-gray-300').innerText;
+                    const reasoning = card.querySelector('.text-gray-400').innerText;
+                    const boost = card.querySelector('.text-2xl').innerText;
+
+                    fullReport += `TYPE: ${title}\n`;
+                    fullReport += `SUGGESTION: ${suggestion}\n`;
+                    fullReport += `REASONING: ${reasoning}\n`;
+                    fullReport += `ESTIMATED AOV BOOST: ${boost}\n`;
+                    fullReport += `----------------------------\n\n`;
+                });
+                
+                const tempTextArea = document.createElement('textarea');
+                tempTextArea.value = fullReport;
+                document.body.appendChild(tempTextArea);
+                tempTextArea.select();
+                document.execCommand('copy');
+                document.body.removeChild(tempTextArea);
+
+                clipboardMessage.classList.remove('translate-y-20', 'opacity-0');
+                setTimeout(() => {
+                    clipboardMessage.classList.add('translate-y-20', 'opacity-0');
+                }, 2000);
+            }
+        });
+    </script>
+</body>
+</html>
